@@ -1,0 +1,44 @@
+schema_version: "1.0"
+
+project:
+  id: "selection_sorter"
+  name: "Selection Sorter"
+  description: "Sorts random integers using intentionally O(n^2) selection sort."
+  root: "."
+  performance_issues:
+    - category: "Inefficient algorithms"
+      file: "selection_sorter.py"
+      markers:
+        start: "[ISSUE START: (Inefficient algorithms)]"
+        end: "[ISSUE END: (Inefficient algorithms)]"
+
+environment:
+  python_min: "3.9"
+  python_max: "3.12"
+
+venv:
+  dir: ".venv"
+  python_hint: "python3"  # Or "py -3" on Windows
+
+dependencies:
+  requirements_files:
+    - "requirements.txt"
+
+entrypoint:
+  type: "script"             # "script" | "module" | "callable"
+  script: "selection_sorter.py"
+  module: null               # e.g., "pkg.module"
+  callable: null             # e.g., "pkg.module:main"
+  working_dir: "."
+  python_opts: []            # e.g., ["-X", "faulthandler"]
+  env: {}
+
+run:
+  default_args: ["--n", "200", "--seed", "42"]
+  timeout_seconds: 60
+
+notes:
+  usage_examples:
+    - "python selection_sorter.py --n 1500"
+  comments:
+    - "Use built-in sorted() for a faster O(n log n) alternative."
