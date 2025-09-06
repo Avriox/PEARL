@@ -1,598 +1,750 @@
-# ChunkDatabase.py (complete file with all methods)
 import sqlite3
 import json
 import logging
+from dataclasses import asdict
 from pathlib import Path
-from typing import List, Optional, Dict, Any
-from datetime import datetime
+from typing import List, Optional, Dict, Any, Tuple
 
 
 class ChunkDatabase:
-    """SQLite database for storing code chunks with full reconstruction support"""
-
     def __init__(self, db_path: Path):
         self.db_path = Path(db_path)
-        self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        self.conn = None
-        self._connect()
-        self._create_tables()
-
-    def _connect(self):
-        """Connect to the database"""
         self.conn = sqlite3.connect(str(self.db_path))
         self.conn.row_factory = sqlite3.Row
-        logging.info(f"Connected to database: {self.db_path}")
+        self._create_tables()
 
+    # ------------------------
+    # Schema
+    # ------------------------
     def _create_tables(self):
-        """Create database tables if they don't exist"""
         cursor = self.conn.cursor()
 
-        # Projects table
+        # Functions table - contains everything needed
         cursor.execute(
             """
-                       CREATE TABLE IF NOT EXISTS projects (
-                                                               project_id TEXT PRIMARY KEY,
-                                                               project_name TEXT NOT NULL,
-                                                               project_hash TEXT NOT NULL,
-                                                               last_parsed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                                               file_count INTEGER,
-                                                               chunk_count INTEGER,
-                                                               project_root TEXT
-                       )
-                       """
+            CREATE TABLE IF NOT EXISTS functions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fqn TEXT NOT NULL,  -- fully qualified name
+                project_id TEXT NOT NULL,
+                function_name TEXT NOT NULL,
+                source_code TEXT NOT NULL,
+                signature TEXT NOT NULL,
+                parameters TEXT,  -- JSON array
+                return_annotation TEXT,
+                decorators TEXT,  -- JSON array
+                docstring TEXT,
+                is_async BOOLEAN DEFAULT FALSE,
+                is_method BOOLEAN DEFAULT FALSE,
+                is_staticmethod BOOLEAN DEFAULT FALSE,
+                is_classmethod BOOLEAN DEFAULT FALSE,
+                is_property BOOLEAN DEFAULT FALSE,
+                parent_class_fqn TEXT,  -- if method, the class FQN
+                module_fqn TEXT NOT NULL,
+                file_path TEXT NOT NULL,
+                start_line INTEGER NOT NULL,
+                end_line INTEGER NOT NULL,
+                line_count INTEGER NOT NULL,
+                version INTEGER NOT NULL DEFAULT 0,
+                ast_hash TEXT NOT NULL,
+                called_functions TEXT,  -- JSON array
+                static_features TEXT,  -- JSON of StaticFeatures
+                UNIQUE(fqn, project_id, version)
+            )
+            """
         )
 
-        # Files table - stores complete file information
+        # Classes table - metadata only, references functions
         cursor.execute(
             """
-                       CREATE TABLE IF NOT EXISTS files (
-                                                            id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                                            project_id TEXT NOT NULL,
-                                                            file_path TEXT NOT NULL,  -- relative to project root
-                                                            original_source TEXT NOT NULL,  -- complete original file content
-                                                            file_hash TEXT NOT NULL,
-                                                            total_lines INTEGER NOT NULL,
-                                                            encoding TEXT DEFAULT 'utf-8',
-                                                            UNIQUE(project_id, file_path),
-                           FOREIGN KEY (project_id) REFERENCES projects(project_id) ON DELETE CASCADE
-                           )
-                       """
-        )
-
-        # Main chunks table with position info
-        cursor.execute(
+            CREATE TABLE IF NOT EXISTS classes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fqn TEXT NOT NULL,
+                project_id TEXT NOT NULL,
+                class_name TEXT NOT NULL,
+                decorators TEXT,  -- JSON array
+                base_classes TEXT,  -- JSON array
+                docstring TEXT,
+                methods TEXT NOT NULL,  -- JSON array of method FQNs
+                class_variables TEXT,  -- JSON array
+                module_fqn TEXT NOT NULL,
+                file_path TEXT NOT NULL,
+                start_line INTEGER NOT NULL,
+                end_line INTEGER NOT NULL,
+                line_count INTEGER NOT NULL,
+                version INTEGER NOT NULL DEFAULT 0,
+                ast_hash TEXT NOT NULL,
+                UNIQUE(fqn, project_id, version)
+            )
             """
-                       CREATE TABLE IF NOT EXISTS chunks (
-                                                             id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                                             chunk_type TEXT NOT NULL,  -- 'function', 'class', 'module'
-                                                             fqn TEXT NOT NULL,
-                                                             project_id TEXT NOT NULL,
-                                                             file_id INTEGER,
-                                                             file_path TEXT NOT NULL,
-                                                             start_line INTEGER NOT NULL,
-                                                             end_line INTEGER NOT NULL,
-                                                             start_col INTEGER DEFAULT 0,
-                                                             end_col INTEGER DEFAULT -1,
-                                                             indentation_level INTEGER DEFAULT 0,
-                                                             position_in_parent INTEGER NOT NULL,  -- order within parent (file/class)
-                                                             parent_fqn TEXT,  -- FQN of parent (for methods in classes)
-                                                             ast_hash TEXT NOT NULL,
-                                                             source_code TEXT NOT NULL,
-                                                             version INTEGER NOT NULL DEFAULT 0,
-                                                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                                             is_active BOOLEAN DEFAULT TRUE,  -- for soft delete/versioning
-                                                             UNIQUE(fqn, project_id, version),
-                           FOREIGN KEY (project_id) REFERENCES projects(project_id) ON DELETE CASCADE
-                           )
-                       """
-        )
-
-        # File structure table - tracks all elements in order
-        cursor.execute(
-            """
-                       CREATE TABLE IF NOT EXISTS file_structure (
-                                                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                                                     file_id INTEGER NOT NULL,
-                                                                     project_id TEXT NOT NULL,
-                                                                     element_type TEXT NOT NULL,  -- 'import', 'from_import', 'function', 'class', 'global_var', 'comment_block', 'blank_lines'
-                                                                     element_fqn TEXT,  -- FQN if it's a chunk, NULL otherwise
-                                                                     element_content TEXT,  -- actual content if not a chunk
-                                                                     start_line INTEGER NOT NULL,
-                                                                     end_line INTEGER NOT NULL,
-                                                                     position INTEGER NOT NULL,  -- absolute order in file
-                                                                     parent_class_fqn TEXT,  -- if this element is inside a class
-                                                                     FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE,
-                           FOREIGN KEY (project_id) REFERENCES projects(project_id) ON DELETE CASCADE
-                           )
-                       """
-        )
-
-        # Functions table with additional metadata
-        cursor.execute(
-            """
-                       CREATE TABLE IF NOT EXISTS functions (
-                                                                chunk_id INTEGER PRIMARY KEY,
-                                                                signature TEXT,
-                                                                decorators TEXT,  -- JSON array
-                                                                decorators_code TEXT,  -- JSON array of actual decorator code
-                                                                docstring TEXT,
-                                                                imports_needed TEXT,  -- JSON array of imports this function needs
-                                                                called_functions TEXT,  -- JSON array
-                                                                parameters TEXT,  -- JSON array
-                                                                return_annotation TEXT,
-                                                                is_async BOOLEAN,
-                                                                is_method BOOLEAN,
-                                                                is_staticmethod BOOLEAN,
-                                                                is_classmethod BOOLEAN,
-                                                                is_property BOOLEAN,
-                                                                class_name TEXT,
-                                                                module_name TEXT,
-                                                                FOREIGN KEY (chunk_id) REFERENCES chunks(id) ON DELETE CASCADE
-                           )
-                       """
-        )
-
-        # Classes table
-        cursor.execute(
-            """
-                       CREATE TABLE IF NOT EXISTS classes (
-                                                              chunk_id INTEGER PRIMARY KEY,
-                                                              decorators TEXT,  -- JSON array
-                                                              decorators_code TEXT,  -- JSON array
-                                                              docstring TEXT,
-                                                              base_classes TEXT,  -- JSON array
-                                                              base_classes_code TEXT,  -- JSON array
-                                                              methods TEXT,  -- JSON array of method FQNs
-                                                              method_positions TEXT,  -- JSON dict of method positions
-                                                              class_attributes TEXT,  -- JSON array
-                                                              instance_attributes TEXT,  -- JSON array (from __init__)
-                                                              imports_needed TEXT,  -- JSON array
-                                                              module_name TEXT,
-                                                              metaclass TEXT,
-                                                              FOREIGN KEY (chunk_id) REFERENCES chunks(id) ON DELETE CASCADE
-                           )
-                       """
         )
 
         # Modules table
         cursor.execute(
             """
-                       CREATE TABLE IF NOT EXISTS modules (
-                                                              chunk_id INTEGER PRIMARY KEY,
-                                                              docstring TEXT,
-                                                              imports TEXT,  -- JSON array with position info
-                                                              from_imports TEXT,  -- JSON array with position info
-                                                              functions TEXT,  -- JSON array of FQNs
-                                                              classes TEXT,  -- JSON array of FQNs
-                                                              global_variables TEXT,  -- JSON array with values
-                                                              shebang TEXT,  -- #!/usr/bin/env python etc
-                                                              encoding_declaration TEXT,  -- # -*- coding: utf-8 -*-
-                                                              future_imports TEXT,  -- JSON array
-                                                              module_level_code TEXT,  -- JSON array of non-function/class code
-                                                              FOREIGN KEY (chunk_id) REFERENCES chunks(id) ON DELETE CASCADE
-                           )
-                       """
-        )
-
-        # Inter-chunk code segments (code between functions/classes)
-        cursor.execute(
-            """
-                       CREATE TABLE IF NOT EXISTS code_segments (
-                                                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                                                    file_id INTEGER NOT NULL,
-                                                                    project_id TEXT NOT NULL,
-                                                                    segment_type TEXT NOT NULL,  -- 'between_chunks', 'file_header', 'file_footer'
-                                                                    content TEXT NOT NULL,
-                                                                    start_line INTEGER NOT NULL,
-                                                                    end_line INTEGER NOT NULL,
-                                                                    before_chunk_fqn TEXT,  -- chunk that comes after this segment
-                                                                    after_chunk_fqn TEXT,   -- chunk that comes before this segment
-                                                                    FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE,
-                           FOREIGN KEY (project_id) REFERENCES projects(project_id) ON DELETE CASCADE
-                           )
-                       """
-        )
-
-        # Create indexes for performance
-        cursor.execute(
-            "CREATE INDEX IF NOT EXISTS idx_chunks_project_version ON chunks(project_id, version)"
-        )
-        cursor.execute(
-            "CREATE INDEX IF NOT EXISTS idx_chunks_fqn_version ON chunks(fqn, version)"
-        )
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_chunks_file ON chunks(file_id)")
-        cursor.execute(
-            "CREATE INDEX IF NOT EXISTS idx_chunks_parent ON chunks(parent_fqn)"
-        )
-        cursor.execute(
-            "CREATE INDEX IF NOT EXISTS idx_file_struct_file ON file_structure(file_id)"
-        )
-        cursor.execute(
-            "CREATE INDEX IF NOT EXISTS idx_file_struct_position ON file_structure(file_id, position)"
-        )
-        cursor.execute(
-            "CREATE INDEX IF NOT EXISTS idx_segments_file ON code_segments(file_id)"
-        )
-
-        self.conn.commit()
-        logging.info("Database tables created/verified")
-
-    def get_project_hash(self, project_id: str) -> Optional[str]:
-        """Get the stored hash for a project"""
-        cursor = self.conn.cursor()
-        cursor.execute(
-            "SELECT project_hash FROM projects WHERE project_id = ?", (project_id,)
-        )
-        row = cursor.fetchone()
-        return row["project_hash"] if row else None
-
-    def update_project(
-        self,
-        project_id: str,
-        project_name: str,
-        project_hash: str,
-        file_count: int,
-        chunk_count: int,
-    ):
-        """Update or insert project metadata"""
-        cursor = self.conn.cursor()
-        cursor.execute(
-            """
-            INSERT OR REPLACE INTO projects 
-            (project_id, project_name, project_hash, last_parsed, file_count, chunk_count)
-            VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
-        """,
-            (project_id, project_name, project_hash, file_count, chunk_count),
-        )
-        self.conn.commit()
-
-    def clear_project_data(self, project_id: str):
-        """Clear all data for a project"""
-        cursor = self.conn.cursor()
-
-        # Delete chunks (cascades to functions, classes, modules tables)
-        cursor.execute("DELETE FROM chunks WHERE project_id = ?", (project_id,))
-
-        # Delete files (cascades to file_structure and code_segments)
-        cursor.execute("DELETE FROM files WHERE project_id = ?", (project_id,))
-
-        # Delete project entry
-        cursor.execute("DELETE FROM projects WHERE project_id = ?", (project_id,))
-
-        self.conn.commit()
-        logging.info(f"Cleared all data for project {project_id}")
-
-    def insert_file_info(self, file_info: "FileInfo", project_id: str) -> int:
-        """Insert file information"""
-        cursor = self.conn.cursor()
-
-        cursor.execute(
-            """
-            INSERT OR REPLACE INTO files 
-            (project_id, file_path, original_source, file_hash, total_lines, encoding)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """,
-            (
-                project_id,
-                file_info.file_path,
-                file_info.original_source,
-                file_info.file_hash,
-                file_info.total_lines,
-                file_info.encoding,
-            ),
-        )
-
-        self.conn.commit()
-        return cursor.lastrowid
-
-    def insert_file_element(
-        self, element: "FileElement", file_info: "FileInfo", project_id: str
-    ):
-        """Insert a file element"""
-        cursor = self.conn.cursor()
-
-        # Get file_id
-        cursor.execute(
-            "SELECT id FROM files WHERE project_id = ? AND file_path = ?",
-            (project_id, file_info.file_path),
-        )
-        row = cursor.fetchone()
-        if not row:
-            logging.error(f"File not found in database: {file_info.file_path}")
-            return
-
-        file_id = row["id"]
-
-        cursor.execute(
-            """
-                       INSERT INTO file_structure
-                       (file_id, project_id, element_type, element_fqn, element_content,
-                        start_line, end_line, position, parent_class_fqn)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                       """,
-            (
-                file_id,
-                project_id,
-                element.element_type,
-                element.element_fqn,
-                element.element_content,
-                element.start_line,
-                element.end_line,
-                element.position,
-                element.parent_class_fqn,
-            ),
-        )
-
-        self.conn.commit()
-
-    def insert_code_segment(
-        self, segment: "CodeSegment", file_info: "FileInfo", project_id: str
-    ):
-        """Insert a code segment"""
-        cursor = self.conn.cursor()
-
-        # Get file_id
-        cursor.execute(
-            "SELECT id FROM files WHERE project_id = ? AND file_path = ?",
-            (project_id, file_info.file_path),
-        )
-        row = cursor.fetchone()
-        if not row:
-            logging.error(f"File not found in database: {file_info.file_path}")
-            return
-
-        file_id = row["id"]
-
-        cursor.execute(
-            """
-                       INSERT INTO code_segments
-                       (file_id, project_id, segment_type, content, start_line, end_line,
-                        before_chunk_fqn, after_chunk_fqn)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                       """,
-            (
-                file_id,
-                project_id,
-                segment.segment_type,
-                segment.content,
-                segment.start_line,
-                segment.end_line,
-                segment.before_chunk_fqn,
-                segment.after_chunk_fqn,
-            ),
-        )
-
-        self.conn.commit()
-
-    def insert_chunk(self, chunk: "CodeChunk") -> int:
-        """Insert a code chunk into the database"""
-        cursor = self.conn.cursor()
-
-        # Get file_id if we have file_info
-        file_id = None
-        if hasattr(chunk, "file_info") and chunk.file_info:
-            cursor.execute(
-                "SELECT id FROM files WHERE project_id = ? AND file_path = ?",
-                (chunk.project_id, chunk.file_info.file_path),
+            CREATE TABLE IF NOT EXISTS modules (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fqn TEXT NOT NULL,
+                project_id TEXT NOT NULL,
+                module_name TEXT NOT NULL,
+                source_code TEXT NOT NULL,  -- full module source
+                docstring TEXT,
+                imports TEXT,  -- JSON array
+                functions TEXT,  -- JSON array of function FQNs
+                classes TEXT,  -- JSON array of class FQNs
+                global_vars TEXT,  -- JSON array
+                file_path TEXT NOT NULL,
+                line_count INTEGER NOT NULL,
+                version INTEGER NOT NULL DEFAULT 0,
+                file_hash TEXT NOT NULL,
+                UNIQUE(fqn, project_id, version)
             )
-            row = cursor.fetchone()
-            if row:
-                file_id = row["id"]
+            """
+        )
 
-        # Insert into main chunks table
+        # Indexes for fast lookup
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_func_fqn ON functions(fqn, version)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_func_project ON functions(project_id, version)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_class_fqn ON classes(fqn, version)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_module_fqn ON modules(fqn, version)"
+        )
+
+        # Dynamic profiling normalized tables
         cursor.execute(
             """
-                       INSERT INTO chunks (chunk_type, fqn, project_id, file_id, file_path,
-                                           start_line, end_line, start_col, end_col,
-                                           indentation_level, position_in_parent, parent_fqn,
-                                           ast_hash, source_code, version)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                       """,
+            CREATE TABLE IF NOT EXISTS dynamic_runs (
+                run_id TEXT PRIMARY KEY,
+                project_id TEXT NOT NULL,
+                timestamp TEXT NOT NULL,
+                total_time_ms REAL NOT NULL
+            )
+            """
+        )
+
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS dynamic_functions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id TEXT NOT NULL,
+                run_id TEXT NOT NULL,
+                fqn TEXT NOT NULL,
+                module_name TEXT NOT NULL,
+                function_name TEXT NOT NULL,
+                file_path TEXT NOT NULL,
+                inclusive_time_ms REAL,
+                exclusive_time_ms REAL,
+                call_count INTEGER,
+                avg_time_ms REAL,
+                fraction_of_total REAL,
+                UNIQUE(project_id, run_id, fqn)
+            )
+            """
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_dynfunc_run ON dynamic_functions(project_id, run_id)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_dynfunc_fqn ON dynamic_functions(fqn)"
+        )
+
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS dynamic_line_timings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id TEXT NOT NULL,
+                run_id TEXT NOT NULL,
+                fqn TEXT NOT NULL,
+                file_path TEXT NOT NULL,
+                line_no INTEGER NOT NULL,
+                time_ms REAL NOT NULL,
+                hits INTEGER NOT NULL,
+                is_loop_like INTEGER NOT NULL,
+                preview TEXT
+            )
+            """
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_dynline_run_fqn ON dynamic_line_timings(project_id, run_id, fqn)"
+        )
+
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS dynamic_edges (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id TEXT NOT NULL,
+                run_id TEXT NOT NULL,
+                caller TEXT NOT NULL,
+                callee TEXT NOT NULL,
+                time_ms REAL,
+                count INTEGER
+            )
+            """
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_dynedge_run ON dynamic_edges(project_id, run_id)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_dynedge_pair ON dynamic_edges(caller, callee)"
+        )
+
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS dynamic_hotspots (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id TEXT NOT NULL,
+                run_id TEXT NOT NULL,
+                rank INTEGER NOT NULL,
+                fqn TEXT NOT NULL,
+                exclusive_time_ms REAL NOT NULL,
+                fraction_of_total REAL NOT NULL,
+                call_count INTEGER NOT NULL,
+                avg_time_ms REAL NOT NULL,
+                UNIQUE(project_id, run_id, fqn)
+            )
+            """
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_dynhot_run ON dynamic_hotspots(project_id, run_id)"
+        )
+
+        self.conn.commit()
+
+    # ------------------------
+    # Inserts for static code
+    # ------------------------
+    def insert_function_with_features(self, chunk: "FunctionChunk"):
+        """Insert function with static features"""
+        cursor = self.conn.cursor()
+
+        features_json = None
+        if chunk.static_features:
+            features_json = json.dumps(asdict(chunk.static_features))
+
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO functions (
+                fqn, project_id, function_name, source_code, signature,
+                parameters, return_annotation, decorators, docstring,
+                is_async, is_method, is_staticmethod, is_classmethod, is_property,
+                parent_class_fqn, module_fqn, file_path, start_line, end_line,
+                line_count, version, ast_hash, called_functions, static_features
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
             (
-                chunk.chunk_type,
                 chunk.fqn,
                 chunk.project_id,
-                file_id,
+                chunk.fqn.split(".")[-1],
+                chunk.source_code,
+                chunk.signature,
+                json.dumps(chunk.parameters),
+                chunk.return_annotation,
+                json.dumps(chunk.decorators),
+                chunk.docstring,
+                chunk.is_async,
+                chunk.is_method,
+                chunk.is_staticmethod,
+                chunk.is_classmethod,
+                chunk.is_property,
+                chunk.class_name,
+                chunk.module_name,
                 chunk.file_path,
                 chunk.start_line,
                 chunk.end_line,
-                getattr(chunk, "start_col", 0),
-                getattr(chunk, "end_col", -1),
-                getattr(chunk, "indentation_level", 0),
-                getattr(chunk, "position_in_parent", 0),
-                getattr(chunk, "parent_fqn", None),
-                chunk.ast_hash,
-                chunk.source_code,
+                chunk.end_line - chunk.start_line + 1,
                 chunk.version,
-            ),
-        )
-
-        chunk_id = cursor.lastrowid
-
-        # Insert type-specific data
-        if chunk.chunk_type == "function":
-            self._insert_function_data(cursor, chunk_id, chunk)
-        elif chunk.chunk_type == "class":
-            self._insert_class_data(cursor, chunk_id, chunk)
-        elif chunk.chunk_type == "module":
-            self._insert_module_data(cursor, chunk_id, chunk)
-
-        self.conn.commit()
-        return chunk_id
-
-    def _insert_function_data(self, cursor, chunk_id: int, chunk: "FunctionChunk"):
-        """Insert function-specific data"""
-        cursor.execute(
-            """
-                       INSERT INTO functions (chunk_id, signature, decorators, decorators_code,
-                                              docstring, imports_needed, called_functions, parameters,
-                                              return_annotation, is_async, is_method, is_staticmethod,
-                                              is_classmethod, is_property, class_name, module_name)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                       """,
-            (
-                chunk_id,
-                chunk.signature,
-                json.dumps(chunk.decorators),
-                json.dumps(getattr(chunk, "decorators_code", [])),
-                chunk.docstring,
-                json.dumps(getattr(chunk, "imports_needed", [])),
+                chunk.ast_hash,
                 json.dumps(chunk.called_functions),
-                json.dumps(chunk.parameters),
-                chunk.return_annotation,
-                chunk.is_async,
-                chunk.is_method,
-                getattr(chunk, "is_staticmethod", False),
-                getattr(chunk, "is_classmethod", False),
-                getattr(chunk, "is_property", False),
-                chunk.class_name,
-                chunk.module_name,
+                features_json,
             ),
         )
+        self.conn.commit()
 
-    def _insert_class_data(self, cursor, chunk_id: int, chunk: "ClassChunk"):
-        """Insert class-specific data"""
+    def insert_class(self, chunk: "ClassChunk"):
+        cursor = self.conn.cursor()
         cursor.execute(
             """
-                       INSERT INTO classes (chunk_id, decorators, decorators_code, docstring,
-                                            base_classes, base_classes_code, methods, method_positions,
-                                            class_attributes, instance_attributes, imports_needed,
-                                            module_name, metaclass)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                       """,
+            INSERT OR REPLACE INTO classes (
+                fqn, project_id, class_name, decorators, base_classes,
+                docstring, methods, class_variables, module_fqn, file_path,
+                start_line, end_line, line_count, version, ast_hash
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
             (
-                chunk_id,
+                chunk.fqn,
+                chunk.project_id,
+                chunk.fqn.split(".")[-1],
                 json.dumps(chunk.decorators),
-                json.dumps(getattr(chunk, "decorators_code", [])),
-                chunk.docstring,
                 json.dumps(chunk.base_classes),
-                json.dumps(getattr(chunk, "base_classes_code", [])),
+                chunk.docstring,
                 json.dumps(chunk.methods),
-                json.dumps(getattr(chunk, "method_positions", {})),
                 json.dumps(chunk.class_attributes),
-                json.dumps(getattr(chunk, "instance_attributes", [])),
-                json.dumps(getattr(chunk, "imports_needed", [])),
                 chunk.module_name,
-                getattr(chunk, "metaclass", None),
+                chunk.file_path,
+                chunk.start_line,
+                chunk.end_line,
+                chunk.end_line - chunk.start_line + 1,
+                chunk.version,
+                chunk.ast_hash,
             ),
         )
+        self.conn.commit()
 
-    def _insert_module_data(self, cursor, chunk_id: int, chunk: "ModuleChunk"):
-        """Insert module-specific data"""
+    def insert_module(self, chunk: "ModuleChunk"):
+        cursor = self.conn.cursor()
         cursor.execute(
             """
-                       INSERT INTO modules (chunk_id, docstring, imports, from_imports,
-                                            functions, classes, global_variables, shebang,
-                                            encoding_declaration, future_imports, module_level_code)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                       """,
+            INSERT OR REPLACE INTO modules (
+                fqn, project_id, module_name, source_code, docstring,
+                imports, functions, classes, global_vars, file_path,
+                line_count, version, file_hash
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
             (
-                chunk_id,
+                chunk.fqn,
+                chunk.project_id,
+                chunk.fqn,
+                chunk.source_code,
                 chunk.docstring,
-                json.dumps(getattr(chunk, "imports", [])),
-                json.dumps(getattr(chunk, "from_imports", [])),
+                json.dumps(chunk.imports + chunk.from_imports),
                 json.dumps(chunk.functions),
                 json.dumps(chunk.classes),
-                json.dumps(getattr(chunk, "global_variables", [])),
-                getattr(chunk, "shebang", None),
-                getattr(chunk, "encoding_declaration", None),
-                json.dumps(getattr(chunk, "future_imports", [])),
-                json.dumps(getattr(chunk, "module_level_code", [])),
+                json.dumps(chunk.global_variables),
+                chunk.file_path,
+                chunk.end_line,
+                chunk.version,
+                chunk.ast_hash,
             ),
         )
+        self.conn.commit()
 
-    def insert_chunks(self, chunks: List["CodeChunk"]) -> None:
-        """Insert multiple chunks"""
+    def insert_chunks(self, chunks: List["CodeChunk"]):
         for chunk in chunks:
-            try:
-                self.insert_chunk(chunk)
-            except sqlite3.IntegrityError as e:
-                logging.warning(f"Chunk already exists: {chunk.fqn} v{chunk.version}")
-            except Exception as e:
-                logging.error(f"Failed to insert chunk {chunk.fqn}: {e}")
+            if chunk.chunk_type == "function":
+                self.insert_function_with_features(chunk)
+            elif chunk.chunk_type == "class":
+                self.insert_class(chunk)
+            elif chunk.chunk_type == "module":
+                self.insert_module(chunk)
 
-    def get_chunk_by_fqn(
-        self, fqn: str, project_id: str, version: int = 0
-    ) -> Optional[Dict[str, Any]]:
-        """Get a chunk by its FQN"""
+    # ------------------------
+    # Inserts for dynamic profiling
+    # ------------------------
+    def insert_dynamic_run(
+        self, project_id: str, run_id: str, total_time_ms: float, timestamp: str
+    ):
         cursor = self.conn.cursor()
-
         cursor.execute(
             """
-                       SELECT c.*,
-                              f.*,
-                              cl.*,
-                              m.*
-                       FROM chunks c
-                                LEFT JOIN functions f ON c.id = f.chunk_id
-                                LEFT JOIN classes cl ON c.id = cl.chunk_id
-                                LEFT JOIN modules m ON c.id = m.chunk_id
-                       WHERE c.fqn = ? AND c.project_id = ? AND c.version = ?
-                       """,
-            (fqn, project_id, version),
+            INSERT OR REPLACE INTO dynamic_runs (run_id, project_id, timestamp, total_time_ms)
+            VALUES (?, ?, ?, ?)
+            """,
+            (run_id, project_id, timestamp, float(total_time_ms)),
         )
+        self.conn.commit()
+
+    def insert_dynamic_function_metric(
+        self,
+        project_id: str,
+        run_id: str,
+        fqn: str,
+        module_name: str,
+        function_name: str,
+        file_path: str,
+        inclusive_time_ms: float,
+        exclusive_time_ms: float,
+        call_count: int,
+        avg_time_ms: float,
+        fraction_of_total: float,
+    ):
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO dynamic_functions (
+                project_id, run_id, fqn, module_name, function_name, file_path,
+                inclusive_time_ms, exclusive_time_ms, call_count, avg_time_ms, fraction_of_total
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                project_id,
+                run_id,
+                fqn,
+                module_name,
+                function_name,
+                file_path,
+                float(inclusive_time_ms or 0.0),
+                float(exclusive_time_ms or 0.0),
+                int(call_count or 0),
+                float(avg_time_ms or 0.0),
+                float(fraction_of_total or 0.0),
+            ),
+        )
+        self.conn.commit()
+
+    def bulk_insert_line_timings(
+        self,
+        project_id: str,
+        run_id: str,
+        fqn: str,
+        file_path: str,
+        timings: List[Dict[str, Any]],
+    ):
+        cursor = self.conn.cursor()
+        rows = []
+        for t in timings:
+            rows.append(
+                (
+                    project_id,
+                    run_id,
+                    fqn,
+                    file_path,
+                    int(t.get("line", 0) or 0),
+                    float(t.get("time_ms", 0.0) or 0.0),
+                    int(t.get("hits", 0) or 0),
+                    1 if t.get("is_loop_like") else 0,
+                    t.get("preview", None),
+                )
+            )
+        cursor.executemany(
+            """
+            INSERT INTO dynamic_line_timings (
+                project_id, run_id, fqn, file_path, line_no, time_ms, hits, is_loop_like, preview
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            rows,
+        )
+        self.conn.commit()
+
+    def insert_dynamic_edge(self, project_id: str, run_id: str, edge: Dict):
+        """Insert dynamic call graph edge"""
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO dynamic_edges (
+                project_id, run_id, caller, callee, time_ms, count
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                project_id,
+                run_id,
+                edge["caller"],
+                edge["callee"],
+                float(edge.get("time_ms", 0.0) or 0.0),
+                int(edge.get("count", 0) or 0),
+            ),
+        )
+        self.conn.commit()
+
+    # ------------------------
+    # Hotspots (post-analysis)
+    # ------------------------
+    def clear_dynamic_hotspots(self, project_id: str, run_id: str):
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "DELETE FROM dynamic_hotspots WHERE project_id = ? AND run_id = ?",
+            (project_id, run_id),
+        )
+        self.conn.commit()
+
+    def insert_dynamic_hotspots(
+        self, project_id: str, run_id: str, hotspots: List[Dict[str, Any]]
+    ):
+        cursor = self.conn.cursor()
+        rows = []
+        for rank, h in enumerate(hotspots, start=1):
+            rows.append(
+                (
+                    project_id,
+                    run_id,
+                    rank,
+                    h["fqn"],
+                    float(h["exclusive_time_ms"]),
+                    float(h["fraction_of_total"]),
+                    int(h["call_count"]),
+                    float(h["avg_time_ms"]),
+                )
+            )
+        cursor.executemany(
+            """
+            INSERT INTO dynamic_hotspots (
+                project_id, run_id, rank, fqn, exclusive_time_ms, fraction_of_total, call_count, avg_time_ms
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            rows,
+        )
+        self.conn.commit()
+
+    # ------------------------
+    # Queries for pipeline/debug
+    # ------------------------
+    def get_top_hot_functions(
+        self, project_id: str, run_id: str, n: int = 10
+    ) -> List[Dict[str, Any]]:
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            SELECT fqn, exclusive_time_ms, fraction_of_total, call_count, avg_time_ms
+            FROM dynamic_hotspots
+            WHERE project_id = ? AND run_id = ?
+            ORDER BY rank ASC
+            LIMIT ?
+            """,
+            (project_id, run_id, n),
+        )
+        return [dict(r) for r in cursor.fetchall()]
+
+    def fetch_dynamic_functions(
+        self, project_id: str, run_id: str
+    ) -> List[Dict[str, Any]]:
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            SELECT * FROM dynamic_functions
+            WHERE project_id = ? AND run_id = ?
+            """,
+            (project_id, run_id),
+        )
+        return [dict(r) for r in cursor.fetchall()]
+
+    # ------------------------
+    # Other existing getters (unchanged)
+    # ------------------------
+    def get_function(
+        self, fqn: str, project_id: str, version: Optional[int] = None
+    ) -> Optional[Dict]:
+        cursor = self.conn.cursor()
+        if version is None:
+            cursor.execute(
+                """
+                SELECT * FROM functions
+                WHERE fqn = ? AND project_id = ?
+                ORDER BY version DESC LIMIT 1
+                """,
+                (fqn, project_id),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT * FROM functions
+                WHERE fqn = ? AND project_id = ? AND version = ?
+                """,
+                (fqn, project_id, version),
+            )
 
         row = cursor.fetchone()
         if row:
-            return dict(row)
+            result = dict(row)
+            result["parameters"] = (
+                json.loads(result["parameters"]) if result["parameters"] else []
+            )
+            result["decorators"] = (
+                json.loads(result["decorators"]) if result["decorators"] else []
+            )
+            result["called_functions"] = (
+                json.loads(result["called_functions"])
+                if result["called_functions"]
+                else []
+            )
+            return result
         return None
 
-    def get_chunks_by_project(
-        self, project_id: str, chunk_type: Optional[str] = None, version: int = 0
-    ) -> List[Dict[str, Any]]:
-        """Get all chunks for a project"""
-        cursor = self.conn.cursor()
+    def get_functions(self, fqns: List[str], project_id: str) -> List[Dict]:
+        results = []
+        for fqn in fqns:
+            func = self.get_function(fqn, project_id)
+            if func:
+                results.append(func)
+        return results
 
-        query = """
-                SELECT c.*,
-                       f.*,
-                       cl.*,
-                       m.*
-                FROM chunks c
-                         LEFT JOIN functions f ON c.id = f.chunk_id
-                         LEFT JOIN classes cl ON c.id = cl.chunk_id
-                         LEFT JOIN modules m ON c.id = m.chunk_id
-                WHERE c.project_id = ? AND c.version = ? \
+    def get_class(
+        self, fqn: str, project_id: str, version: Optional[int] = None
+    ) -> Optional[Dict]:
+        cursor = self.conn.cursor()
+        if version is None:
+            cursor.execute(
                 """
+                SELECT * FROM classes
+                WHERE fqn = ? AND project_id = ?
+                ORDER BY version DESC LIMIT 1
+                """,
+                (fqn, project_id),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT * FROM classes
+                WHERE fqn = ? AND project_id = ? AND version = ?
+                """,
+                (fqn, project_id, version),
+            )
 
-        params = [project_id, version]
+        row = cursor.fetchone()
+        if row:
+            result = dict(row)
+            result["methods"] = (
+                json.loads(result["methods"]) if result["methods"] else []
+            )
+            result["decorators"] = (
+                json.loads(result["decorators"]) if result["decorators"] else []
+            )
+            result["base_classes"] = (
+                json.loads(result["base_classes"]) if result["base_classes"] else []
+            )
+            result["class_variables"] = (
+                json.loads(result["class_variables"])
+                if result["class_variables"]
+                else []
+            )
+            return result
+        return None
 
-        if chunk_type:
-            query += " AND c.chunk_type = ?"
-            params.append(chunk_type)
+    def get_class_with_methods(self, fqn: str, project_id: str) -> Optional[Dict]:
+        class_info = self.get_class(fqn, project_id)
+        if not class_info:
+            return None
 
-        cursor.execute(query, params)
-        return [dict(row) for row in cursor.fetchall()]
+        method_sources = []
+        for method_fqn in class_info["methods"]:
+            method = self.get_function(method_fqn, project_id)
+            if method:
+                method_sources.append(method)
 
-    def search_chunks(
-        self, query: str, project_id: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
-        """Search for chunks by name pattern"""
+        class_info["method_sources"] = method_sources
+        return class_info
+
+    def get_module(
+        self, fqn: str, project_id: str, version: Optional[int] = None
+    ) -> Optional[Dict]:
         cursor = self.conn.cursor()
+        if version is None:
+            cursor.execute(
+                """
+                SELECT * FROM modules
+                WHERE fqn = ? AND project_id = ?
+                ORDER BY version DESC LIMIT 1
+                """,
+                (fqn, project_id),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT * FROM modules
+                WHERE fqn = ? AND project_id = ? AND version = ?
+                """,
+                (fqn, project_id, version),
+            )
 
-        sql = """
-              SELECT c.*,
-                     f.*,
-                     cl.*,
-                     m.*
-              FROM chunks c
-                       LEFT JOIN functions f ON c.id = f.chunk_id
-                       LEFT JOIN classes cl ON c.id = cl.chunk_id
-                       LEFT JOIN modules m ON c.id = m.chunk_id
-              WHERE c.fqn LIKE ? \
-              """
+        row = cursor.fetchone()
+        if row:
+            result = dict(row)
+            result["imports"] = (
+                json.loads(result["imports"]) if result["imports"] else []
+            )
+            result["functions"] = (
+                json.loads(result["functions"]) if result["functions"] else []
+            )
+            result["classes"] = (
+                json.loads(result["classes"]) if result["classes"] else []
+            )
+            result["global_vars"] = (
+                json.loads(result["global_vars"]) if result["global_vars"] else []
+            )
+            return result
+        return None
 
-        params = [f"%{query}%"]
+    def update_function_version(
+        self, fqn: str, project_id: str, new_source: str, new_version: int
+    ):
+        current = self.get_function(fqn, project_id)
+        if not current:
+            raise ValueError(f"Function {fqn} not found")
 
-        if project_id:
-            sql += " AND c.project_id = ?"
-            params.append(project_id)
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO functions (
+                fqn, project_id, function_name, source_code, signature,
+                parameters, return_annotation, decorators, docstring,
+                is_async, is_method, is_staticmethod, is_classmethod, is_property,
+                parent_class_fqn, module_fqn, file_path, start_line, end_line,
+                line_count, version, ast_hash, called_functions
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                fqn,
+                project_id,
+                current["function_name"],
+                new_source,
+                current["signature"],
+                json.dumps(current["parameters"]),
+                current["return_annotation"],
+                json.dumps(current["decorators"]),
+                current["docstring"],
+                current["is_async"],
+                current["is_method"],
+                current["is_staticmethod"],
+                current["is_classmethod"],
+                current["is_property"],
+                current["parent_class_fqn"],
+                current["module_fqn"],
+                current["file_path"],
+                current["start_line"],
+                current["end_line"],
+                len(new_source.split("\n")),
+                new_version,
+                f"updated_{new_version}",
+                json.dumps(current["called_functions"]),
+            ),
+        )
+        self.conn.commit()
 
-        cursor.execute(sql, params)
-        return [dict(row) for row in cursor.fetchall()]
+    def get_all_functions(
+        self, project_id: str, latest_only: bool = True
+    ) -> List[Dict]:
+        cursor = self.conn.cursor()
+        if latest_only:
+            cursor.execute(
+                """
+                SELECT * FROM functions
+                WHERE project_id = ? AND version = (
+                    SELECT MAX(version) FROM functions f2
+                    WHERE f2.fqn = functions.fqn AND f2.project_id = functions.project_id
+                )
+                """,
+                (project_id,),
+            )
+        else:
+            cursor.execute(
+                "SELECT * FROM functions WHERE project_id = ?", (project_id,)
+            )
+
+        results = []
+        for row in cursor.fetchall():
+            result = dict(row)
+            result["parameters"] = (
+                json.loads(result["parameters"]) if result["parameters"] else []
+            )
+            result["decorators"] = (
+                json.loads(result["decorators"]) if result["decorators"] else []
+            )
+            result["called_functions"] = (
+                json.loads(result["called_functions"])
+                if result["called_functions"]
+                else []
+            )
+            results.append(result)
+        return results
+
+    def reconstruct_module(self, module_fqn: str, project_id: str) -> Optional[str]:
+        module = self.get_module(module_fqn, project_id)
+        if not module:
+            return None
+        return module["source_code"]
 
     def close(self):
-        """Close database connection"""
-        if self.conn:
-            self.conn.close()
-            logging.info("Database connection closed")
+        self.conn.close()

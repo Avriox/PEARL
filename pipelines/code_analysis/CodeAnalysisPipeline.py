@@ -1,19 +1,29 @@
-# Updated CodeAnalysisPipeline.py
+import os
 from pathlib import Path
 import logging
-from typing import List, Optional
+from typing import List
 
+from .DynamicProfiler import DynamicProfiler
 from .Project import Project
-from .CodeParser import CodeParser
+from .CodeAnalyzer import CodeAnalyzer
 from .ChunkDatabase import ChunkDatabase
-from .ProjectHasher import ProjectHasher
+from .HotspotAnalyzer import HotspotAnalyzer
 
 
 class CodeAnalysisPipeline:
     def __init__(self, db_path: Path = Path("chunks.db")):
         logging.info("=== Initialized CodeAnalysisPipeline ===")
         self.projects: List[Project] = []
+
+        logging.info("Deleting old database file if present")
+        try:
+            Path(db_path).unlink(missing_ok=True)
+        except Exception as e:
+            logging.warning(f"Could not delete database file {db_path}: {e}")
+
         self.db = ChunkDatabase(db_path)
+
+        self.call_graphs = {}
 
     def load_projects(self, path):
         logging.info(f"Loading projects from {path}")
@@ -28,227 +38,69 @@ class CodeAnalysisPipeline:
             except Exception as e:
                 logging.error(f"Failed to load project from {directory}: {e}")
 
-    def extract_code_chunks(self, force_reparse: bool = False):
-        """Extract and store code chunks from all loaded projects"""
-        logging.info("=== Extracting code chunks from projects ===")
+    def extract_and_analyze(self):
+        """Extract code chunks and perform static analysis in one pass"""
+        logging.info("=== Extracting and analyzing code ===")
 
-        total_projects = len(self.projects)
-        parsed_projects = 0
-        skipped_projects = 0
-
-        for idx, project in enumerate(self.projects, 1):
-            project_id = project.project_info.get("id", "unknown")
-            project_name = project.project_info.get("name", "Unknown")
-
-            logging.info(
-                f"\n[{idx}/{total_projects}] Checking project: {project_name} ({project_id})"
-            )
-
-            # Compute hash for THIS SPECIFIC PROJECT
-            hasher = ProjectHasher(project.directory)
-            current_hash = hasher.compute_project_hash()
-            logging.info(f"  Current hash: {current_hash[:16]}...")
-
-            # Check if THIS SPECIFIC PROJECT needs parsing
-            stored_hash = self.db.get_project_hash(project_id)
-
-            # Determine if we need to parse THIS PROJECT
-            needs_parsing = False
-            reason = ""
-
-            if force_reparse:
-                needs_parsing = True
-                reason = "force_reparse=True"
-            elif not stored_hash:
-                needs_parsing = True
-                reason = "not in database"
-            elif stored_hash != current_hash:
-                needs_parsing = True
-                reason = f"hash changed (was {stored_hash[:16]}...)"
-
-            if not needs_parsing:
-                # THIS PROJECT hasn't changed, skip it
-                skipped_projects += 1
-                chunks_count = len(self.db.get_chunks_by_project(project_id))
-                logging.info(f"  ✓ Skipping (unchanged, {chunks_count} chunks in DB)")
-                continue
-
-            # THIS PROJECT needs parsing
-            parsed_projects += 1
-            logging.info(f"  → Parsing project (reason: {reason})")
-
-            # If project exists but changed, clear its old data
-            if stored_hash and stored_hash != current_hash:
-                logging.info(f"  → Clearing old data for project")
-                self.db.clear_project_data(project_id)
-
-            # Parse THIS SPECIFIC PROJECT
-            parser = CodeParser(project_id, project.directory)
-
-            # Parse project returns a tuple now: (chunks, parsed_files)
-            chunks, parsed_files = parser.parse_project()
-
-            logging.info(
-                f"  → Extracted {len(chunks)} chunks from {len(parsed_files)} files"
-            )
-
-            # Store chunks for THIS PROJECT
-            self.db.insert_chunks(chunks)
-
-            # Store file information and structure
-            for parsed_file in parsed_files:
-                # Store file info
-                self.db.insert_file_info(parsed_file.file_info, project_id)
-
-                # Store file elements
-                for element in parsed_file.file_elements:
-                    self.db.insert_file_element(
-                        element, parsed_file.file_info, project_id
-                    )
-
-                # Store code segments
-                for segment in parsed_file.code_segments:
-                    self.db.insert_code_segment(
-                        segment, parsed_file.file_info, project_id
-                    )
-
-            # Update THIS PROJECT's metadata
-            python_files = hasher.get_python_files()
-            self.db.update_project(
-                project_id=project_id,
-                project_name=project_name,
-                project_hash=current_hash,
-                file_count=len(python_files),
-                chunk_count=len(chunks),
-            )
-
-            # Log statistics for THIS PROJECT
-            functions = [c for c in chunks if c.chunk_type == "function"]
-            classes = [c for c in chunks if c.chunk_type == "class"]
-            modules = [c for c in chunks if c.chunk_type == "module"]
-
-            logging.info(
-                f"  → Breakdown: {len(functions)} functions, {len(classes)} classes, {len(modules)} modules"
-            )
-            logging.info(f"  → Hash saved: {current_hash[:16]}...")
-
-        # Summary
-        logging.info(f"\n=== Summary ===")
-        logging.info(f"Total projects: {total_projects}")
-        logging.info(f"Parsed: {parsed_projects}")
-        logging.info(f"Skipped (unchanged): {skipped_projects}")
-
-    def extract_single_project(self, project_id: str, force: bool = False):
-        """Extract chunks for a single project by ID"""
-        project = next(
-            (p for p in self.projects if p.project_info.get("id") == project_id), None
-        )
-
-        if not project:
-            logging.error(f"Project {project_id} not loaded")
-            return
-
-        project_name = project.project_info.get("name", "Unknown")
-        logging.info(f"Processing single project: {project_name} ({project_id})")
-
-        # Compute hash for this project
-        hasher = ProjectHasher(project.directory)
-        current_hash = hasher.compute_project_hash()
-
-        # Check if we need to parse
-        stored_hash = self.db.get_project_hash(project_id)
-
-        if not force and stored_hash == current_hash:
-            chunks_count = len(self.db.get_chunks_by_project(project_id))
-            logging.info(
-                f"Project unchanged (hash match), {chunks_count} chunks already in DB"
-            )
-            return
-
-        # Clear old data if exists
-        if stored_hash:
-            logging.info(f"Clearing old data for project")
-            self.db.clear_project_data(project_id)
-
-        # Parse the project
-        parser = CodeParser(project_id, project.directory)
-        chunks, parsed_files = parser.parse_project()
-
-        logging.info(f"Extracted {len(chunks)} chunks from {len(parsed_files)} files")
-
-        # Store in database
-        self.db.insert_chunks(chunks)
-
-        # Store file information
-        for parsed_file in parsed_files:
-            self.db.insert_file_info(parsed_file.file_info, project_id)
-
-            for element in parsed_file.file_elements:
-                self.db.insert_file_element(element, parsed_file.file_info, project_id)
-
-            for segment in parsed_file.code_segments:
-                self.db.insert_code_segment(segment, parsed_file.file_info, project_id)
-
-        # Update metadata
-        python_files = hasher.get_python_files()
-        self.db.update_project(
-            project_id=project_id,
-            project_name=project_name,
-            project_hash=current_hash,
-            file_count=len(python_files),
-            chunk_count=len(chunks),
-        )
-
-        logging.info(f"Project {project_name} successfully parsed and stored")
-
-    def get_project_chunks(self, project_id: str, chunk_type: Optional[str] = None):
-        """Get all chunks for a specific project"""
-        return self.db.get_chunks_by_project(project_id, chunk_type)
-
-    def search_functions(self, query: str, project_id: Optional[str] = None):
-        """Search for functions by name"""
-        results = self.db.search_chunks(query, project_id)
-        return [r for r in results if r["chunk_type"] == "function"]
-
-    def get_function_code(self, fqn: str, project_id: str, version: int = 0):
-        """Get the source code for a specific function"""
-        chunk = self.db.get_chunk_by_fqn(fqn, project_id, version)
-        if chunk:
-            return chunk["source_code"]
-        return None
-
-    def get_project_status(self):
-        """Get status of all loaded projects"""
-        status = []
         for project in self.projects:
             project_id = project.project_info.get("id", "unknown")
             project_name = project.project_info.get("name", "Unknown")
 
-            # Check if in database
-            stored_hash = self.db.get_project_hash(project_id)
+            logging.info(f"Analyzing project: {project_name}")
 
-            # Compute current hash
-            hasher = ProjectHasher(project.directory)
-            current_hash = hasher.compute_project_hash()
+            # Single-pass analysis
+            analyzer = CodeAnalyzer(project_id, project.directory)
+            chunks, call_graph = analyzer.analyze_project()
 
-            chunks_count = (
-                len(self.db.get_chunks_by_project(project_id)) if stored_hash else 0
+            logging.info(f"Extracted {len(chunks)} chunks")
+
+            # Store chunks with static features
+            for chunk in chunks:
+                if getattr(chunk, "chunk_type", None) == "function":
+                    self.db.insert_function_with_features(chunk)
+                else:
+                    self.db.insert_chunks([chunk])
+
+            # Save call graph
+            artifacts_dir = Path(f"artifacts/{project_id}")
+            analyzer.save_call_graph(artifacts_dir)
+            self.call_graphs[project_id] = call_graph
+
+            logging.info(
+                f"Call graph: {call_graph.number_of_nodes()} nodes, "
+                f"{call_graph.number_of_edges()} edges"
             )
 
-            status.append(
-                {
-                    "project_id": project_id,
-                    "project_name": project_name,
-                    "in_database": stored_hash is not None,
-                    "up_to_date": stored_hash == current_hash,
-                    "needs_parsing": stored_hash != current_hash,
-                    "chunks_count": chunks_count,
-                    "current_hash": current_hash[:16] + "...",
-                    "stored_hash": stored_hash[:16] + "..." if stored_hash else None,
-                }
+    def run_dynamic_analysis(self):
+        logging.info("=== Running dynamic analysis ===")
+        hotspot_analyzer = HotspotAnalyzer(self.db)
+
+        for project in self.projects:
+            project_id = project.project_info.get("id", "unknown")
+            project_name = project.project_info.get("name", "Unknown")
+
+            logging.info(f"Dynamically analyzing project: {project_name}")
+            profiler = DynamicProfiler(project, self.db)
+
+            # Profile (writes to DB)
+            run = profiler.profile_function_timing(args=None, warmup_runs=2)
+
+            print(
+                f"\nProfiling run: {run.run_id} | total_time_ms={run.total_time_ms:.2f}"
             )
 
-        return status
+            # Post-profiling hotspot analysis (writes hotspots to DB)
+            hotspot_analyzer.compute_hotspots(project_id, run.run_id, top_n=50)
+
+            # Print top functions from DB
+            print("\nTop hot functions (exclusive time):")
+            top = self.db.get_top_hot_functions(project_id, run.run_id, n=10)
+            for row in top:
+                print(
+                    f"  {row['fqn']}: {row['exclusive_time_ms']:.2f}ms "
+                    f"({row['fraction_of_total']:.1%}, "
+                    f"calls={row['call_count']}, avg={row['avg_time_ms']:.3f}ms)"
+                )
 
     def close(self):
         """Clean up resources"""
