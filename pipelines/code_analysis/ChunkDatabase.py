@@ -748,3 +748,39 @@ class ChunkDatabase:
 
     def close(self):
         self.conn.close()
+
+
+
+    def execute_sql(self, sql_string: str):
+        """
+        Generic SQL execution function.
+
+        Returns:
+        - None if no results
+        - Single value if result is 1 row × 1 column
+        - Dict if result is 1 row × multiple columns
+        - List of dicts if result is multiple rows
+        """
+        cursor = self.conn.cursor()
+        cursor.execute(sql_string)
+
+        # Get column names
+        columns = [description[0] for description in cursor.description] if cursor.description else []
+
+        # Fetch all results
+        rows = cursor.fetchall()
+
+        # No results
+        if not rows:
+            return None
+
+        # Single row, single column - return just the value
+        if len(rows) == 1 and len(columns) == 1:
+            return rows[0][0]
+
+        # Single row, multiple columns - return dict
+        if len(rows) == 1:
+            return dict(zip(columns, rows[0]))
+
+        # Multiple rows - return list of dicts
+        return [dict(zip(columns, row)) for row in rows]

@@ -105,3 +105,6 @@ class CodeAnalysisPipeline:
     def close(self):
         """Clean up resources"""
         self.db.close()
+
+    def get_projects(self):
+        return self.projects

@@ -46,25 +46,28 @@ class Project:
 
         logging.info(f"Loaded project: {self.project_info.get('name', 'Unknown')}")
 
+
     def _setup_venv(self):
         """Create a virtual environment in the project directory."""
         venv_dir = self.venv_config.get("dir", ".venv")
-        self.venv_path = self.directory / venv_dir
+        self.venv_path = (self.directory / venv_dir).resolve()
 
-        # Determine Python executable for venv
+        # Determine Python executable for venv (don't resolve symlinks for existence check)
         if sys.platform == "win32":
-            self.python_executable = self.venv_path / "Scripts" / "python.exe"
+            python_path = self.venv_path / "Scripts" / "python.exe"
         else:
-            self.python_executable = self.venv_path / "bin" / "python"
+            python_path = self.venv_path / "bin" / "python"
 
-        # Check if venv already exists
-        if self.venv_path.exists() and self.python_executable.exists():
+        # Check if venv already exists by checking the symlink itself, not its target
+        if self.venv_path.exists() and python_path.exists():
+            # Store the symlink path, not the resolved target
+            self.python_executable = python_path
             logging.info(f"Virtual environment already exists at {self.venv_path}")
             return
 
+        # Create virtual environment if it doesn't exist
         logging.info(f"Creating virtual environment at {self.venv_path}")
 
-        # Create virtual environment - using the original working approach
         try:
             subprocess.run(
                 [sys.executable, "-m", "venv", str(self.venv_path)],
@@ -74,6 +77,9 @@ class Project:
                 text=True,
             )
             logging.info("Virtual environment created successfully")
+
+            # Set the python executable path after creation
+            self.python_executable = python_path
 
             # Upgrade pip
             subprocess.run(
