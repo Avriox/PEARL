@@ -273,7 +273,9 @@ def assemble_evidence_pack(project: Project, db_path: Path = Path("chunks.db")):
             df.inclusive_time_ms, 
             df.exclusive_time_ms, 
             df.call_count, 
-            df.fraction_of_total FROM functions f
+            df.fraction_of_total,
+            df.loop_iterations_total
+             FROM functions f
             JOIN dynamic_functions df ON f.fqn = df.fqn
             WHERE f.project_id ='{project.config["project"]["id"]}'"""
     )
@@ -305,12 +307,18 @@ def assemble_evidence_pack(project: Project, db_path: Path = Path("chunks.db")):
                 "exclusive_time_ms": round(function["exclusive_time_ms"], 2),
                 "call_count": function["call_count"],
                 "fraction_of_total": round(function["fraction_of_total"], 2),
+                "loop_iterations": function["loop_iterations_total"],
             },
         }
+
+    peak_memory_mb = db.execute_sql(
+        f"SELECT peak_memory_mb FROM dynamic_runs WHERE project_id ='{project.config["project"]["id"]}' AND run_id = '{run_id}'"
+    )
 
     evidence_string = f"""
 == Project Info for Project: {project.config["project"]["name"]} ==
 Total Project Runtime: {total_runtime:.2f}ms;
+Peak Memory Usage: {peak_memory_mb:.2f}MB;
 Total Number of Functions: {total_n_functions};
 
 All Functions with Statistics:

@@ -23,32 +23,32 @@ class ChunkDatabase:
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS functions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                fqn TEXT NOT NULL,  -- fully qualified name
-                project_id TEXT NOT NULL,
-                function_name TEXT NOT NULL,
-                source_code TEXT NOT NULL,
-                signature TEXT NOT NULL,
-                parameters TEXT,  -- JSON array
-                return_annotation TEXT,
-                decorators TEXT,  -- JSON array
-                docstring TEXT,
-                is_async BOOLEAN DEFAULT FALSE,
-                is_method BOOLEAN DEFAULT FALSE,
-                is_staticmethod BOOLEAN DEFAULT FALSE,
-                is_classmethod BOOLEAN DEFAULT FALSE,
-                is_property BOOLEAN DEFAULT FALSE,
-                parent_class_fqn TEXT,  -- if method, the class FQN
-                module_fqn TEXT NOT NULL,
-                file_path TEXT NOT NULL,
-                start_line INTEGER NOT NULL,
-                end_line INTEGER NOT NULL,
-                line_count INTEGER NOT NULL,
-                version INTEGER NOT NULL DEFAULT 0,
-                ast_hash TEXT NOT NULL,
-                called_functions TEXT,  -- JSON array
-                static_features TEXT,  -- JSON of StaticFeatures
-                UNIQUE(fqn, project_id, version)
+                                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                     fqn TEXT NOT NULL,  -- fully qualified name
+                                                     project_id TEXT NOT NULL,
+                                                     function_name TEXT NOT NULL,
+                                                     source_code TEXT NOT NULL,
+                                                     signature TEXT NOT NULL,
+                                                     parameters TEXT,  -- JSON array
+                                                     return_annotation TEXT,
+                                                     decorators TEXT,  -- JSON array
+                                                     docstring TEXT,
+                                                     is_async BOOLEAN DEFAULT FALSE,
+                                                     is_method BOOLEAN DEFAULT FALSE,
+                                                     is_staticmethod BOOLEAN DEFAULT FALSE,
+                                                     is_classmethod BOOLEAN DEFAULT FALSE,
+                                                     is_property BOOLEAN DEFAULT FALSE,
+                                                     parent_class_fqn TEXT,  -- if method, the class FQN
+                                                     module_fqn TEXT NOT NULL,
+                                                     file_path TEXT NOT NULL,
+                                                     start_line INTEGER NOT NULL,
+                                                     end_line INTEGER NOT NULL,
+                                                     line_count INTEGER NOT NULL,
+                                                     version INTEGER NOT NULL DEFAULT 0,
+                                                     ast_hash TEXT NOT NULL,
+                                                     called_functions TEXT,  -- JSON array
+                                                     static_features TEXT,  -- JSON of StaticFeatures
+                                                     UNIQUE(fqn, project_id, version)
             )
             """
         )
@@ -57,23 +57,23 @@ class ChunkDatabase:
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS classes (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                fqn TEXT NOT NULL,
-                project_id TEXT NOT NULL,
-                class_name TEXT NOT NULL,
-                decorators TEXT,  -- JSON array
-                base_classes TEXT,  -- JSON array
-                docstring TEXT,
-                methods TEXT NOT NULL,  -- JSON array of method FQNs
-                class_variables TEXT,  -- JSON array
-                module_fqn TEXT NOT NULL,
-                file_path TEXT NOT NULL,
-                start_line INTEGER NOT NULL,
-                end_line INTEGER NOT NULL,
-                line_count INTEGER NOT NULL,
-                version INTEGER NOT NULL DEFAULT 0,
-                ast_hash TEXT NOT NULL,
-                UNIQUE(fqn, project_id, version)
+                                                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                   fqn TEXT NOT NULL,
+                                                   project_id TEXT NOT NULL,
+                                                   class_name TEXT NOT NULL,
+                                                   decorators TEXT,  -- JSON array
+                                                   base_classes TEXT,  -- JSON array
+                                                   docstring TEXT,
+                                                   methods TEXT NOT NULL,  -- JSON array of method FQNs
+                                                   class_variables TEXT,  -- JSON array
+                                                   module_fqn TEXT NOT NULL,
+                                                   file_path TEXT NOT NULL,
+                                                   start_line INTEGER NOT NULL,
+                                                   end_line INTEGER NOT NULL,
+                                                   line_count INTEGER NOT NULL,
+                                                   version INTEGER NOT NULL DEFAULT 0,
+                                                   ast_hash TEXT NOT NULL,
+                                                   UNIQUE(fqn, project_id, version)
             )
             """
         )
@@ -82,21 +82,21 @@ class ChunkDatabase:
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS modules (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                fqn TEXT NOT NULL,
-                project_id TEXT NOT NULL,
-                module_name TEXT NOT NULL,
-                source_code TEXT NOT NULL,  -- full module source
-                docstring TEXT,
-                imports TEXT,  -- JSON array
-                functions TEXT,  -- JSON array of function FQNs
-                classes TEXT,  -- JSON array of class FQNs
-                global_vars TEXT,  -- JSON array
-                file_path TEXT NOT NULL,
-                line_count INTEGER NOT NULL,
-                version INTEGER NOT NULL DEFAULT 0,
-                file_hash TEXT NOT NULL,
-                UNIQUE(fqn, project_id, version)
+                                                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                   fqn TEXT NOT NULL,
+                                                   project_id TEXT NOT NULL,
+                                                   module_name TEXT NOT NULL,
+                                                   source_code TEXT NOT NULL,  -- full module source
+                                                   docstring TEXT,
+                                                   imports TEXT,  -- JSON array
+                                                   functions TEXT,  -- JSON array of function FQNs
+                                                   classes TEXT,  -- JSON array of class FQNs
+                                                   global_vars TEXT,  -- JSON array
+                                                   file_path TEXT NOT NULL,
+                                                   line_count INTEGER NOT NULL,
+                                                   version INTEGER NOT NULL DEFAULT 0,
+                                                   file_hash TEXT NOT NULL,
+                                                   UNIQUE(fqn, project_id, version)
             )
             """
         )
@@ -119,10 +119,11 @@ class ChunkDatabase:
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS dynamic_runs (
-                run_id TEXT PRIMARY KEY,
-                project_id TEXT NOT NULL,
-                timestamp TEXT NOT NULL,
-                total_time_ms REAL NOT NULL
+                                                        run_id TEXT PRIMARY KEY,
+                                                        project_id TEXT NOT NULL,
+                                                        timestamp TEXT NOT NULL,
+                                                        total_time_ms REAL NOT NULL,
+                                                        peak_memory_mb REAL DEFAULT 0
             )
             """
         )
@@ -130,19 +131,24 @@ class ChunkDatabase:
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS dynamic_functions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                project_id TEXT NOT NULL,
-                run_id TEXT NOT NULL,
-                fqn TEXT NOT NULL,
-                module_name TEXT NOT NULL,
-                function_name TEXT NOT NULL,
-                file_path TEXT NOT NULL,
-                inclusive_time_ms REAL,
-                exclusive_time_ms REAL,
-                call_count INTEGER,
-                avg_time_ms REAL,
-                fraction_of_total REAL,
-                UNIQUE(project_id, run_id, fqn)
+                                                             id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                             project_id TEXT NOT NULL,
+                                                             run_id TEXT NOT NULL,
+                                                             fqn TEXT NOT NULL,
+                                                             module_name TEXT NOT NULL,
+                                                             function_name TEXT NOT NULL,
+                                                             file_path TEXT NOT NULL,
+                                                             inclusive_time_ms REAL,
+                                                             exclusive_time_ms REAL,
+                                                             call_count INTEGER,
+                                                             avg_time_ms REAL,
+                                                             fraction_of_total REAL,
+
+                -- loop iteration stats
+                                                             loop_iterations_total INTEGER DEFAULT 0,
+                                                             loop_max_depth INTEGER DEFAULT 0,
+
+                                                             UNIQUE(project_id, run_id, fqn)
             )
             """
         )
@@ -156,16 +162,16 @@ class ChunkDatabase:
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS dynamic_line_timings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                project_id TEXT NOT NULL,
-                run_id TEXT NOT NULL,
-                fqn TEXT NOT NULL,
-                file_path TEXT NOT NULL,
-                line_no INTEGER NOT NULL,
-                time_ms REAL NOT NULL,
-                hits INTEGER NOT NULL,
-                is_loop_like INTEGER NOT NULL,
-                preview TEXT
+                                                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                                project_id TEXT NOT NULL,
+                                                                run_id TEXT NOT NULL,
+                                                                fqn TEXT NOT NULL,
+                                                                file_path TEXT NOT NULL,
+                                                                line_no INTEGER NOT NULL,
+                                                                time_ms REAL NOT NULL,
+                                                                hits INTEGER NOT NULL,
+                                                                indentation_level INTEGER NOT NULL DEFAULT 0,
+                                                                preview TEXT
             )
             """
         )
@@ -176,13 +182,13 @@ class ChunkDatabase:
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS dynamic_edges (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                project_id TEXT NOT NULL,
-                run_id TEXT NOT NULL,
-                caller TEXT NOT NULL,
-                callee TEXT NOT NULL,
-                time_ms REAL,
-                count INTEGER
+                                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                         project_id TEXT NOT NULL,
+                                                         run_id TEXT NOT NULL,
+                                                         caller TEXT NOT NULL,
+                                                         callee TEXT NOT NULL,
+                                                         time_ms REAL,
+                                                         count INTEGER
             )
             """
         )
@@ -196,16 +202,16 @@ class ChunkDatabase:
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS dynamic_hotspots (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                project_id TEXT NOT NULL,
-                run_id TEXT NOT NULL,
-                rank INTEGER NOT NULL,
-                fqn TEXT NOT NULL,
-                exclusive_time_ms REAL NOT NULL,
-                fraction_of_total REAL NOT NULL,
-                call_count INTEGER NOT NULL,
-                avg_time_ms REAL NOT NULL,
-                UNIQUE(project_id, run_id, fqn)
+                                                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                            project_id TEXT NOT NULL,
+                                                            run_id TEXT NOT NULL,
+                                                            rank INTEGER NOT NULL,
+                                                            fqn TEXT NOT NULL,
+                                                            exclusive_time_ms REAL NOT NULL,
+                                                            fraction_of_total REAL NOT NULL,
+                                                            call_count INTEGER NOT NULL,
+                                                            avg_time_ms REAL NOT NULL,
+                                                            UNIQUE(project_id, run_id, fqn)
             )
             """
         )
@@ -336,15 +342,26 @@ class ChunkDatabase:
     # Inserts for dynamic profiling
     # ------------------------
     def insert_dynamic_run(
-        self, project_id: str, run_id: str, total_time_ms: float, timestamp: str
+        self,
+        project_id: str,
+        run_id: str,
+        total_time_ms: float,
+        timestamp: str,
+        peak_memory_mb: float = 0.0,
     ):
         cursor = self.conn.cursor()
         cursor.execute(
             """
-            INSERT OR REPLACE INTO dynamic_runs (run_id, project_id, timestamp, total_time_ms)
-            VALUES (?, ?, ?, ?)
+            INSERT OR REPLACE INTO dynamic_runs (run_id, project_id, timestamp, total_time_ms, peak_memory_mb)
+            VALUES (?, ?, ?, ?, ?)
             """,
-            (run_id, project_id, timestamp, float(total_time_ms)),
+            (
+                run_id,
+                project_id,
+                timestamp,
+                float(total_time_ms),
+                float(peak_memory_mb),
+            ),
         )
         self.conn.commit()
 
@@ -749,8 +766,6 @@ class ChunkDatabase:
     def close(self):
         self.conn.close()
 
-
-
     def execute_sql(self, sql_string: str):
         """
         Generic SQL execution function.
@@ -765,7 +780,11 @@ class ChunkDatabase:
         cursor.execute(sql_string)
 
         # Get column names
-        columns = [description[0] for description in cursor.description] if cursor.description else []
+        columns = (
+            [description[0] for description in cursor.description]
+            if cursor.description
+            else []
+        )
 
         # Fetch all results
         rows = cursor.fetchall()
@@ -784,3 +803,168 @@ class ChunkDatabase:
 
         # Multiple rows - return list of dicts
         return [dict(zip(columns, row)) for row in rows]
+
+    def update_dynamic_function_extras(
+        self, project_id: str, run_id: str, fqn: str, extras: Dict[str, Any]
+    ):
+        if not extras:
+            return
+        keys = []
+        vals = []
+        for k, v in extras.items():
+            keys.append(f"{k} = ?")
+            vals.append(v)
+        vals.extend([project_id, run_id, fqn])
+        sql = f"""
+            UPDATE dynamic_functions
+            SET {", ".join(keys)}
+            WHERE project_id = ? AND run_id = ? AND fqn = ?
+        """
+        cursor = self.conn.cursor()
+        cursor.execute(sql, tuple(vals))
+        self.conn.commit()
+
+    def get_functions_by_file_map(
+        self, project_id: str
+    ) -> Dict[str, List[Dict[str, Any]]]:
+        """Get a mapping of file paths to functions with normalized paths"""
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            SELECT fqn, file_path, start_line, end_line
+            FROM functions
+            WHERE project_id = ? AND version = (
+                SELECT MAX(version) FROM functions f2
+                WHERE f2.fqn = functions.fqn AND f2.project_id = functions.project_id
+            )
+            """,
+            (project_id,),
+        )
+
+        mapping: Dict[str, List[Dict[str, Any]]] = {}
+
+        for r in cursor.fetchall():
+            d = dict(r)
+            original_path = d["file_path"]
+
+            # Try multiple path normalizations to increase matching chances
+            paths_to_try = []
+
+            # 1. Resolved absolute path
+            try:
+                resolved_path = str(Path(original_path).resolve())
+                paths_to_try.append(resolved_path)
+            except Exception:
+                pass
+
+            # 2. Original path as stored
+            paths_to_try.append(original_path)
+
+            # 3. Absolute path without resolution (preserves symlinks)
+            try:
+                abs_path = str(Path(original_path).absolute())
+                if abs_path not in paths_to_try:
+                    paths_to_try.append(abs_path)
+            except Exception:
+                pass
+
+            # Add to mapping under all possible paths
+            for path in paths_to_try:
+                if path:
+                    mapping.setdefault(path, []).append(
+                        {
+                            "fqn": d["fqn"],
+                            "file_path": path,
+                            "start_line": d["start_line"],
+                            "end_line": d["end_line"],
+                        }
+                    )
+
+        # Sort intervals per file for faster lookup
+        for fp in mapping:
+            mapping[fp].sort(key=lambda x: (x["start_line"], x["end_line"]))
+
+        # Log for debugging
+        import logging
+
+        logging.debug(
+            f"File map created with {len(mapping)} unique paths for {project_id}"
+        )
+        if mapping and logging.getLogger().isEnabledFor(logging.DEBUG):
+            sample_paths = list(mapping.keys())[:3]
+            logging.debug(f"Sample paths in map: {sample_paths}")
+
+        return mapping
+
+    def get_loop_line_aggregates(
+        self, project_id: str, run_id: str
+    ) -> List[Dict[str, Any]]:
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            SELECT
+                fqn,
+                SUM(CASE WHEN is_loop_like = 1 THEN hits ELSE 0 END) AS total_hits,
+                SUM(CASE WHEN is_loop_like = 1 THEN time_ms ELSE 0 END) AS total_time_ms,
+                SUM(CASE WHEN is_loop_like = 1 THEN 1 ELSE 0 END) AS loop_lines
+            FROM dynamic_line_timings
+            WHERE project_id = ? AND run_id = ?
+            GROUP BY fqn
+            """,
+            (project_id, run_id),
+        )
+        return [dict(r) for r in cursor.fetchall()]
+
+    def get_loop_iteration_aggregates(
+        self, project_id: str, run_id: str
+    ) -> List[Dict[str, Any]]:
+        """Get loop iteration counts and max depth per function"""
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            SELECT
+                fqn,
+                SUM(hits) AS total_hits,
+                MAX(indentation_level) AS max_depth,
+                COUNT(*) AS total_lines
+            FROM dynamic_line_timings
+            WHERE project_id = ? AND run_id = ? AND indentation_level > 0
+            GROUP BY fqn
+            """,
+            (project_id, run_id),
+        )
+        return [dict(r) for r in cursor.fetchall()]
+
+    def bulk_insert_line_timings(
+        self,
+        project_id: str,
+        run_id: str,
+        fqn: str,
+        file_path: str,
+        timings: List[Dict[str, Any]],
+    ):
+        cursor = self.conn.cursor()
+        rows = []
+        for t in timings:
+            rows.append(
+                (
+                    project_id,
+                    run_id,
+                    fqn,
+                    file_path,
+                    int(t.get("line", 0) or 0),
+                    float(t.get("time_ms", 0.0) or 0.0),
+                    int(t.get("hits", 0) or 0),
+                    int(t.get("indentation_level", 0) or 0),
+                    t.get("preview", None),
+                )
+            )
+        cursor.executemany(
+            """
+            INSERT INTO dynamic_line_timings (
+                project_id, run_id, fqn, file_path, line_no, time_ms, hits, indentation_level, preview
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            rows,
+        )
+        self.conn.commit()

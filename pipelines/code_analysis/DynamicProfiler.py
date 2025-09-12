@@ -45,7 +45,7 @@ class DynamicProfiler:
     """Profiles Python projects and writes raw data to DB:
     - dynamic_runs
     - dynamic_functions
-    - dynamic_line_timings (for top-K)
+    - dynamic_line_timings (for loop tracking)
     - dynamic_edges (dynamic call graph)
     """
 
@@ -55,6 +55,8 @@ class DynamicProfiler:
     CPROF_END = "<<<PEARL_CPROFILE_JSON_END>>>"
     LINE_START = "<<<PEARL_LINEPROF_JSON_START>>>"
     LINE_END = "<<<PEARL_LINEPROF_JSON_END>>>"
+    MEM_START = "<<<PEARL_MEMORY_JSON_START>>>"
+    MEM_END = "<<<PEARL_MEMORY_JSON_END>>>"
 
     def __init__(self, project: "Project", db: "ChunkDatabase"):
         self.project = project
@@ -157,6 +159,28 @@ class DynamicProfiler:
             )
             fm.avg_time_ms = fm.exclusive_time_ms / max(1, fm.call_count)
 
+        # 3) Simple peak memory tracking
+        mem_code = self._build_memory_wrapper_code(
+            entry_type=info["type"],
+            target=info["target"],
+            argv0=info["argv0"],
+            args=info["args"],
+        )
+        mem_res = self.project.run_with_profiling(mem_code)
+        peak_memory_mb = 0.0
+        if mem_res.returncode == 0:
+            mem_json_str = self._extract_json_block(
+                mem_res.stdout, self.MEM_START, self.MEM_END
+            )
+            if mem_json_str:
+                mem_payload = json.loads(mem_json_str)
+                peak_memory_mb = float(mem_payload.get("peak_memory_mb", 0.0))
+                logging.info(f"Peak memory usage: {peak_memory_mb:.2f}MB")
+            else:
+                logging.warning("Failed to parse memory JSON output")
+        else:
+            logging.warning("Memory profiling failed")
+
         # Persist run and functions
         run_id = f"{self.project_id}-{int(time.time())}"
         run = ProfilingRun(
@@ -171,6 +195,7 @@ class DynamicProfiler:
             run_id=run_id,
             total_time_ms=total_time_ms,
             timestamp=run.timestamp,
+            peak_memory_mb=peak_memory_mb,
         )
 
         for fqn, fm in func_metrics.items():
@@ -201,19 +226,35 @@ class DynamicProfiler:
                 },
             )
 
-        # 3) Line profile top-K functions (based on exclusive time)
-        top_targets = self._select_top_targets_for_line_profiling(
-            func_metrics, top_k=top_k_for_lines, frac_threshold=0.05
+        # 4) Line profile for loop tracking - profile ALL functions that were executed
+        all_targets = []
+        for fqn, fm in func_metrics.items():
+            if fm.call_count > 0:  # Only profile functions that were actually called
+                module, func = self._split_module_func_simple(fqn)
+                if module and func and self._valid_identifier_chain(func):
+                    all_targets.append({"module": module, "func": func})
+
+        # Line profile in batches to avoid command line too long
+        batch_size = 20
+        logging.info(
+            f"Line profiling {len(all_targets)} functions in batches of {batch_size}"
         )
-        if top_targets:
+
+        for i in range(0, len(all_targets), batch_size):
+            batch = all_targets[i : i + batch_size]
+            logging.debug(
+                f"Line profiling batch {i//batch_size + 1}: {len(batch)} functions"
+            )
+
             lp_code = self._build_line_profiler_wrapper_code(
                 entry_type=info["type"],
                 target=info["target"],
                 argv0=info["argv0"],
                 args=info["args"],
-                targets=top_targets,
+                targets=batch,
             )
             lp_res = self.project.run_with_profiling(lp_code)
+
             if lp_res.returncode == 0:
                 lp_json_str = self._extract_json_block(
                     lp_res.stdout, self.LINE_START, self.LINE_END
@@ -223,13 +264,13 @@ class DynamicProfiler:
                     self._persist_line_timings(run_id, lp_payload)
                 else:
                     logging.warning(
-                        "Failed to parse line_profiler JSON output (markers not found)"
+                        f"Failed to parse line_profiler JSON for batch {i//batch_size + 1}"
                     )
-                    logging.debug(f"stdout:\n{lp_res.stdout}")
             else:
-                logging.warning("line_profiler wrapper failed")
-                logging.warning(f"stdout:\n{lp_res.stdout}")
-                logging.warning(f"stderr:\n{lp_res.stderr}")
+                logging.warning(f"line_profiler failed for batch {i//batch_size + 1}")
+
+        # After all line profiling is done, calculate loop stats
+        self._apply_loop_stats_to_db(run_id)
 
         self.last_run = run
         return run
@@ -405,34 +446,6 @@ class DynamicProfiler:
 
         return func_metrics
 
-    def _select_top_targets_for_line_profiling(
-        self,
-        func_metrics: Dict[str, FunctionMetrics],
-        top_k: int = 10,
-        frac_threshold: float = 0.05,
-    ) -> List[Dict[str, str]]:
-        """Pick hot functions that contribute significantly to runtime."""
-        top = sorted(
-            func_metrics.values(), key=lambda x: x.exclusive_time_ms, reverse=True
-        )
-        targets: List[Dict[str, str]] = []
-        for fm in top:
-            if fm.fraction_of_total >= frac_threshold or len(targets) < top_k:
-                module, func = self._split_module_func_simple(fm.fqn)
-                if module and func and self._valid_identifier_chain(func):
-                    targets.append({"module": module, "func": func})
-            if len(targets) >= top_k:
-                break
-        # Deduplicate
-        seen = set()
-        uniq = []
-        for t in targets:
-            key = (t["module"], t["func"])
-            if key not in seen:
-                uniq.append(t)
-                seen.add(key)
-        return uniq[:top_k]
-
     def _valid_identifier_chain(self, name: str) -> bool:
         try:
             return all(part.isidentifier() for part in name.split(".") if part)
@@ -540,6 +553,53 @@ class DynamicProfiler:
         """
         return textwrap.dedent(code)
 
+    def _build_memory_wrapper_code(
+        self, entry_type: str, target: str, argv0: str, args: List[str]
+    ) -> str:
+        code = f"""
+        import sys, runpy, time, json, tracemalloc, gc
+        ENTRY_TYPE = {repr(entry_type)}
+        ENTRY_TARGET = {repr(target)}
+        ENTRY_ARGS = {repr(list(args or []))}
+        ARGV0 = {repr(argv0)}
+        START = {repr(self.MEM_START)}
+        END = {repr(self.MEM_END)}
+
+        sys.argv = [ARGV0] + list(ENTRY_ARGS)
+
+        # Force garbage collection before starting
+        gc.collect()
+
+        # Start tracemalloc
+        tracemalloc.start()
+
+        t0 = time.perf_counter()
+        try:
+            if ENTRY_TYPE == "script":
+                runpy.run_path(ENTRY_TARGET, run_name="__main__")
+            else:
+                runpy.run_module(ENTRY_TARGET, run_name="__main__")
+        finally:
+            t1 = time.perf_counter()
+
+            # Get peak memory
+            current, peak = tracemalloc.get_traced_memory()
+            peak_mb = peak / (1024 * 1024)
+
+            # Stop tracemalloc
+            tracemalloc.stop()
+
+            payload = {{
+                "peak_memory_mb": peak_mb,
+                "total_time_sec": (t1 - t0)
+            }}
+
+            print(START, flush=True)
+            print(json.dumps(payload), flush=True)
+            print(END, flush=True)
+        """
+        return textwrap.dedent(code)
+
     def _build_line_profiler_wrapper_code(
         self,
         entry_type: str,
@@ -549,93 +609,293 @@ class DynamicProfiler:
         targets: List[Dict[str, str]],
     ) -> str:
         targets_payload = [{"module": t["module"], "func": t["func"]} for t in targets]
+        project_dir = str(self.project.directory.resolve())
         code = f"""
-        import sys, runpy, time, json, importlib, inspect
-        from line_profiler import LineProfiler
+    import sys, runpy, time, json, importlib, inspect, ast
+    from line_profiler import LineProfiler
 
-        ENTRY_TYPE = {repr(entry_type)}
-        ENTRY_TARGET = {repr(target)}
-        ENTRY_ARGS = {repr(list(args or []))}
-        ARGV0 = {repr(argv0)}
-        TARGET_FUNCS = {json.dumps(targets_payload)}
-        START = {repr(self.LINE_START)}
-        END = {repr(self.LINE_END)}
+    ENTRY_TYPE = {repr(entry_type)}
+    ENTRY_TARGET = {repr(target)}
+    ENTRY_ARGS = {repr(list(args or []))}
+    ARGV0 = {repr(argv0)}
+    TARGET_FUNCS = {json.dumps(targets_payload)}
+    PROJECT_DIR = {repr(project_dir)}
+    START = {repr(self.LINE_START)}
+    END = {repr(self.LINE_END)}
 
-        sys.argv = [ARGV0] + list(ENTRY_ARGS)
+    # Add project directory to Python path so modules can be imported
+    if PROJECT_DIR not in sys.path:
+        sys.path.insert(0, PROJECT_DIR)
 
-        lp = LineProfiler()
+    sys.argv = [ARGV0] + list(ENTRY_ARGS)
 
-        def add_target(module_name, func_chain):
+    lp = LineProfiler()
+    debug_info = []
+
+    # Map various key formats to function info
+    func_info_map = {{}}
+
+    def detect_loop_lines(file_path):
+        \"\"\"Detect which lines contain loop constructs\"\"\"
+        loop_header_lines = set()  # Only the for/while lines themselves
+        loop_body_lines = {{}}  # line -> loop_depth (for context)
+
+        try:
+            with open(file_path, 'r') as f:
+                source = f.read()
+                lines = source.split('\\n')
+
+            # Parse AST to find loop constructs
+            tree = ast.parse(source)
+
+            class LoopVisitor(ast.NodeVisitor):
+                def __init__(self):
+                    self.loop_stack = []  # Track nesting depth
+
+                def visit_For(self, node):
+                    # For loops - mark the header line
+                    loop_header_lines.add(node.lineno)
+                    self.loop_stack.append(node.lineno)
+
+                    # Mark all lines in the loop body with depth (for context only)
+                    for stmt in ast.walk(node):
+                        if hasattr(stmt, 'lineno'):
+                            loop_body_lines[stmt.lineno] = len(self.loop_stack)
+
+                    self.generic_visit(node)
+                    self.loop_stack.pop()
+
+                def visit_While(self, node):
+                    # While loops - mark the header line
+                    loop_header_lines.add(node.lineno)
+                    self.loop_stack.append(node.lineno)
+
+                    # Mark all lines in the loop body with depth (for context only)
+                    for stmt in ast.walk(node):
+                        if hasattr(stmt, 'lineno'):
+                            loop_body_lines[stmt.lineno] = len(self.loop_stack)
+
+                    self.generic_visit(node)
+                    self.loop_stack.pop()
+
+                def visit_ListComp(self, node):
+                    # List comprehensions - the whole line is the loop
+                    loop_header_lines.add(node.lineno)
+                    loop_body_lines[node.lineno] = len(self.loop_stack) + 1
+                    self.generic_visit(node)
+
+                def visit_DictComp(self, node):
+                    # Dict comprehensions
+                    loop_header_lines.add(node.lineno)
+                    loop_body_lines[node.lineno] = len(self.loop_stack) + 1
+                    self.generic_visit(node)
+
+                def visit_SetComp(self, node):
+                    # Set comprehensions
+                    loop_header_lines.add(node.lineno)
+                    loop_body_lines[node.lineno] = len(self.loop_stack) + 1
+                    self.generic_visit(node)
+
+            visitor = LoopVisitor()
+            visitor.visit(tree)
+
+            # Also detect with regex for edge cases AST might miss
+            for i, line in enumerate(lines, 1):
+                stripped = line.strip()
+                if (stripped.startswith('for ') or 
+                    stripped.startswith('while ') or
+                    (' for ' in line and any(bracket in line for bracket in ['[', '(', '{{']))):
+                    loop_header_lines.add(i)
+
+            return loop_header_lines, loop_body_lines
+
+        except Exception as e:
+            debug_info.append(f"Error detecting loops in {{file_path}}: {{e}}")
+            return set(), {{}}
+
+    def add_target(module_name, func_chain):
+        try:
+            debug_info.append(f"Attempting to import module: {{module_name}}")
+            mod = importlib.import_module(module_name)
+            debug_info.append(f"Successfully imported {{module_name}}")
+
+            obj = mod
+            for attr in func_chain.split("."):
+                debug_info.append(f"Getting attribute: {{attr}}")
+                obj = getattr(obj, attr)
+
+            if inspect.isfunction(obj) or inspect.ismethod(obj):
+                # Get the actual function object
+                func_obj = obj if inspect.isfunction(obj) else obj.__func__
+
+                # Add to line profiler
+                lp.add_function(func_obj)
+
+                # Get function info
+                try:
+                    file_path = inspect.getfile(func_obj)
+                    func_name = func_obj.__name__
+                    first_line = func_obj.__code__.co_firstlineno
+
+                    # Create the key that LineProfiler will use
+                    lp_key = (file_path, first_line, func_name)
+
+                    # Detect loops in this file
+                    loop_header_lines, loop_body_lines = detect_loop_lines(file_path)
+
+                    # Store mapping
+                    func_info_map[lp_key] = {{
+                        'file_path': file_path,
+                        'func_name': func_name,
+                        'module_name': module_name,
+                        'func_chain': func_chain,
+                        'first_line': first_line,
+                        'loop_header_lines': loop_header_lines,
+                        'loop_body_lines': loop_body_lines
+                    }}
+
+                    debug_info.append(f"Added function {{module_name}}.{{func_chain}} ({{func_name}}) from {{file_path}} line {{first_line}}")
+                    debug_info.append(f"  Detected {{len(loop_header_lines)}} loop header lines: {{sorted(list(loop_header_lines))[:5]}}")
+                    return True, module_name, func_chain
+                except Exception as e:
+                    debug_info.append(f"Could not get file for {{module_name}}.{{func_chain}}: {{e}}")
+                    return False, module_name, func_chain
+
+            debug_info.append(f"Failed to add {{module_name}}.{{func_chain}} - not function/method (type: {{type(obj)}})")
+            return False, module_name, func_chain
+        except Exception as e:
+            debug_info.append(f"Exception adding {{module_name}}.{{func_chain}}: {{e}}")
+            return False, module_name, func_chain
+
+    added = []
+    for spec in TARGET_FUNCS:
+        ok, m, f = add_target(spec["module"], spec["func"])
+        if ok:
+            added.append({{"module": m, "func": f}})
+
+    debug_info.append(f"Successfully added {{len(added)}} functions to line profiler")
+
+    t0 = time.perf_counter()
+    globs = dict(runpy=runpy, ENTRY_TYPE=ENTRY_TYPE, ENTRY_TARGET=ENTRY_TARGET)
+    code_str = "runpy.run_path(ENTRY_TARGET, run_name='__main__')" if ENTRY_TYPE == "script" else "runpy.run_module(ENTRY_TARGET, run_name='__main__')"
+    lp.runctx(code_str, globs, {{}})
+    t1 = time.perf_counter()
+
+    stats = lp.get_stats()
+    unit = getattr(stats, "unit", 1.0) or 1.0
+    out_funcs = []
+
+    debug_info.append(f"LineProfiler found {{len(stats.timings)}} functions with timing data")
+
+    # Build a file cache for reading source lines
+    file_cache = {{}}
+
+    def get_src_line(fp, n):
+        if fp in file_cache:
+            lines_local = file_cache[fp]
+        else:
             try:
-                mod = importlib.import_module(module_name)
-                obj = mod
-                for attr in func_chain.split("."):
-                    obj = getattr(obj, attr)
-                if inspect.isfunction(obj):
-                    lp.add_function(obj)
-                    return True, module_name, func_chain
-                if inspect.ismethod(obj):
-                    lp.add_function(obj.__func__)
-                    return True, module_name, func_chain
-                return False, module_name, func_chain
-            except Exception:
-                return False, module_name, func_chain
+                with open(fp, "r") as fh:
+                    lines_local = fh.readlines()
+            except Exception as e:
+                debug_info.append(f"Could not read file {{fp}}: {{e}}")
+                lines_local = []
+            file_cache[fp] = lines_local
+        if 1 <= n <= len(lines_local):
+            return lines_local[n-1].rstrip()
+        return ""
 
-        added = []
-        for spec in TARGET_FUNCS:
-            ok, m, f = add_target(spec["module"], spec["func"])
-            if ok:
-                added.append({{"module": m, "func": f}})
+    for key, timings in stats.timings.items():
+        if isinstance(key, tuple) and len(key) == 3:
+            file_path, first_line, func_name = key
 
-        t0 = time.perf_counter()
-        globs = dict(runpy=runpy, ENTRY_TYPE=ENTRY_TYPE, ENTRY_TARGET=ENTRY_TARGET)
-        code_str = "runpy.run_path(ENTRY_TARGET, run_name='__main__')" if ENTRY_TYPE == "script" else "runpy.run_module(ENTRY_TARGET, run_name='__main__')"
-        lp.runctx(code_str, globs, {{}})
-        t1 = time.perf_counter()
+            # Get additional info from our mapping
+            info = func_info_map.get(key, {{}})
+            loop_header_lines = info.get('loop_header_lines', set())
+            loop_body_lines = info.get('loop_body_lines', {{}})
 
-        stats = lp.get_stats()
-        unit = getattr(stats, "unit", 1.0) or 1.0
-        out_funcs = []
-        for code_obj, timings in stats.timings.items():
-            file_path = getattr(code_obj, "co_filename", "<unknown>")
-            func_name = getattr(code_obj, "co_name", "<unknown>")
-            # Build source line cache
-            file_cache = {{}}
-            def get_src_line(fp, n):
-                if fp in file_cache:
-                    lines_local = file_cache[fp]
-                else:
-                    try:
-                        with open(fp, "r") as fh:
-                            lines_local = fh.readlines()
-                    except Exception:
-                        lines_local = []
-                    file_cache[fp] = lines_local
-                if 1 <= n <= len(lines_local):
-                    return lines_local[n-1].rstrip()
-                return ""
-            lines = []
-            for lineno, nhits, t in timings:
-                time_ms = float(t) * float(unit) * 1000.0
-                src_line = get_src_line(file_path, lineno)
-                is_loop_like = ("for " in src_line) or ("while " in src_line) or ("range(" in src_line)
-                lines.append({{"line": int(lineno), "time_ms": time_ms, "hits": int(nhits), "preview": src_line[:200], "is_loop_like": bool(is_loop_like)}})
+        else:
+            debug_info.append(f"Unexpected key format: {{key}}")
+            file_path = "<unknown>"
+            func_name = "<unknown>"
+            loop_header_lines = set()
+            loop_body_lines = {{}}
+
+        debug_info.append(f"Processing function '{{func_name}}' from '{{file_path}}' with {{len(timings)}} lines")
+        debug_info.append(f"  Loop header lines detected: {{sorted(list(loop_header_lines))}}")
+
+        lines = []
+        loop_iterations = 0
+        max_loop_depth = 0
+        header_hits = []
+
+        for lineno, nhits, t in timings:
+            time_ms = float(t) * float(unit) * 1000.0
+            src_line = get_src_line(file_path, lineno)
+
+            # Check if this line is a loop header (for/while statement)
+            is_loop_header = lineno in loop_header_lines
+            # Check if this line is anywhere in a loop body (for depth calculation)
+            loop_depth = loop_body_lines.get(lineno, 0)
+
+            if is_loop_header:
+                # Only count hits on actual loop headers
+                loop_iterations += nhits
+                max_loop_depth = max(max_loop_depth, loop_depth)
+                header_hits.append((lineno, nhits, src_line[:50]))
+
+            lines.append({{
+                "line": int(lineno), 
+                "time_ms": time_ms, 
+                "hits": int(nhits), 
+                "indentation_level": 0,
+                "preview": src_line[:100],
+                "is_loop_header": is_loop_header,
+                "loop_depth": loop_depth
+            }})
+
+        debug_info.append(f"  {{func_name}}: {{loop_iterations}} loop iterations, max loop depth: {{max_loop_depth}}")
+
+        # Log loop header hits for verification
+        if header_hits:
+            debug_info.append(f"  Loop header hits:")
+            for lineno, nhits, preview in header_hits:
+                debug_info.append(f"    Line {{lineno}}: {{nhits}} hits, '{{preview}}'")
+        else:
+            debug_info.append(f"  No loop headers detected for this function")
+
+        if lines:
             lines.sort(key=lambda x: x["time_ms"], reverse=True)
             out_funcs.append({{
                 "file_path": file_path,
                 "function": func_name,
-                "timings": lines[:20],
+                "timings": lines,
+                "loop_iterations": loop_iterations,
+                "max_loop_depth": max_loop_depth
             }})
 
-        payload = {{"functions": out_funcs, "profiled_functions": added, "total_time_sec": (t1 - t0)}}
-        print(START, flush=True)
-        print(json.dumps(payload), flush=True)
-        print(END, flush=True)
-        """
+    payload = {{
+        "functions": out_funcs, 
+        "profiled_functions": added, 
+        "total_time_sec": (t1 - t0),
+        "debug_info": debug_info
+    }}
+    print(START, flush=True)
+    print(json.dumps(payload), flush=True)
+    print(END, flush=True)
+    """
         return textwrap.dedent(code)
 
     def _persist_line_timings(self, run_id: str, lp_payload: Dict[str, Any]) -> None:
         """Persist line timings for each profiled function."""
+
+        # Log debug info if present
+        debug_info = lp_payload.get("debug_info", [])
+        if debug_info:
+            logging.info("Line profiler debug info:")
+            for msg in debug_info:
+                logging.info(f"  {msg}")
+
         funcs = lp_payload.get("functions", [])
         for f in funcs:
             file_path = f.get("file_path", "")
@@ -643,10 +903,144 @@ class DynamicProfiler:
             module = self._file_to_module(file_path)
             fqn = f"{module}.{func_name}"
             timings = f.get("timings", [])
-            self.db.bulk_insert_line_timings(
-                project_id=self.project_id,
-                run_id=run_id,
-                fqn=fqn,
-                file_path=file_path,
-                timings=timings,
-            )
+
+            # Get loop stats directly from the line profiler results
+            loop_iterations = f.get("loop_iterations", 0)
+            max_loop_depth = f.get("max_loop_depth", 0)
+
+            # Store loop stats immediately
+            if loop_iterations > 0 or max_loop_depth > 0:
+                self.db.update_dynamic_function_extras(
+                    self.project_id,
+                    run_id,
+                    fqn,
+                    extras={
+                        "loop_iterations_total": loop_iterations,
+                        "loop_max_depth": max_loop_depth,
+                    },
+                )
+                logging.debug(
+                    f"Updated loop stats for {fqn}: {loop_iterations} iterations, depth {max_loop_depth}"
+                )
+
+            # Store line timings (optional, for detailed analysis)
+            if timings:
+                self.db.bulk_insert_line_timings(
+                    project_id=self.project_id,
+                    run_id=run_id,
+                    fqn=fqn,
+                    file_path=file_path,
+                    timings=timings,
+                )
+
+    def _apply_loop_stats_to_db(self, run_id: str) -> None:
+        """Calculate and store loop iteration statistics from line profiler data"""
+        # This method is now mostly handled by _persist_line_timings
+        # But we can add a summary log here
+
+        # Get final loop stats from database
+        cursor = self.db.conn.cursor()
+        cursor.execute(
+            """
+            SELECT fqn, loop_iterations_total, loop_max_depth
+            FROM dynamic_functions
+            WHERE project_id = ? AND run_id = ? AND loop_iterations_total > 0
+            """,
+            (self.project_id, run_id),
+        )
+
+        results = cursor.fetchall()
+        functions_with_loops = len(results)
+        total_iterations_all = sum(row[1] for row in results)
+
+        logging.info(
+            f"Final loop stats: {functions_with_loops} functions with loops, {total_iterations_all} total iterations"
+        )
+
+        if results:
+            logging.info("Functions with loops:")
+            for fqn, iterations, depth in results:
+                logging.info(f"  {fqn}: {iterations} iterations, max depth {depth}")
+
+    def detect_loop_lines(file_path):
+        """Detect which lines contain loop constructs"""
+        loop_header_lines = set()  # Only the for/while lines themselves
+        loop_body_lines = {}  # line -> loop_depth (for context)
+
+        try:
+            with open(file_path, "r") as f:
+                source = f.read()
+                lines = source.split("\n")
+
+            # Parse AST to find loop constructs
+            tree = ast.parse(source)
+
+            class LoopVisitor(ast.NodeVisitor):
+                def __init__(self):
+                    self.loop_stack = []  # Track nesting depth
+
+                def visit_For(self, node):
+                    # For loops - mark the header line
+                    loop_header_lines.add(node.lineno)
+                    self.loop_stack.append(node.lineno)
+
+                    # Mark all lines in the loop body with depth (for context only)
+                    for stmt in ast.walk(node):
+                        if hasattr(stmt, "lineno"):
+                            loop_body_lines[stmt.lineno] = len(self.loop_stack)
+
+                    self.generic_visit(node)
+                    self.loop_stack.pop()
+
+                def visit_While(self, node):
+                    # While loops - mark the header line
+                    loop_header_lines.add(node.lineno)
+                    self.loop_stack.append(node.lineno)
+
+                    # Mark all lines in the loop body with depth (for context only)
+                    for stmt in ast.walk(node):
+                        if hasattr(stmt, "lineno"):
+                            loop_body_lines[stmt.lineno] = len(self.loop_stack)
+
+                    self.generic_visit(node)
+                    self.loop_stack.pop()
+
+                def visit_ListComp(self, node):
+                    # List comprehensions - the whole line is the loop
+                    loop_header_lines.add(node.lineno)
+                    loop_body_lines[node.lineno] = len(self.loop_stack) + 1
+                    self.generic_visit(node)
+
+                def visit_DictComp(self, node):
+                    # Dict comprehensions
+                    loop_header_lines.add(node.lineno)
+                    loop_body_lines[node.lineno] = len(self.loop_stack) + 1
+                    self.generic_visit(node)
+
+                def visit_SetComp(self, node):
+                    # Set comprehensions
+                    loop_header_lines.add(node.lineno)
+                    loop_body_lines[node.lineno] = len(self.loop_stack) + 1
+                    self.generic_visit(node)
+
+            visitor = LoopVisitor()
+            visitor.visit(tree)
+
+            # Also detect with regex for edge cases AST might miss
+            for i, line in enumerate(lines, 1):
+                stripped = line.strip()
+                if (
+                    stripped.startswith("for ")
+                    or stripped.startswith("while ")
+                    or (
+                        " for " in line
+                        and any(bracket in line for bracket in ["[", "(", "{"])
+                    )
+                ):
+                    loop_header_lines.add(i)
+
+            return loop_header_lines, loop_body_lines
+
+        except Exception as e:
+            debug_info.append(f"Error detecting loops in {file_path}: {e}")
+            return set(), {}

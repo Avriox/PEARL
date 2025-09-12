@@ -1,0 +1,1 @@
+Might be interesting to investiagte category specific prompts vs general prompts. 
