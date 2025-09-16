@@ -31,6 +31,8 @@ class CodeAnalysisPipeline:
         logging.info(f"Found {len(directories)} directories")
 
         for directory in directories:
+            if directory != Path("test-projects/python-sortedcontainers-master"):
+                continue
             try:
                 project = Project(directory)
                 self.projects.append(project)
@@ -82,8 +84,10 @@ class CodeAnalysisPipeline:
             logging.info(f"Dynamically analyzing project: {project_name}")
             profiler = DynamicProfiler(project, self.db)
 
+            run_config = project.config.get("run", {})
+            args = run_config.get("default_args") if run_config else None
             # Profile (writes to DB)
-            run = profiler.profile_function_timing(args=None, warmup_runs=2)
+            run = profiler.profile_function_timing(args=args, warmup_runs=2)
 
             print(
                 f"\nProfiling run: {run.run_id} | total_time_ms={run.total_time_ms:.2f}"

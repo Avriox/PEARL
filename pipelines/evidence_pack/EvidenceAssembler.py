@@ -233,7 +233,7 @@ def format_hot_paths_for_llm(hot_paths: List[Dict]) -> str:
 
 def assemble_evidence_pack(project: Project, db_path: Path = Path("chunks.db")):
     logging.info(
-        f'=== Assembling EvidencePack for Project: {project.config["project"]["name"]} ==='
+        f'=== Assembling EvidencePack for Project: {project.config["project"]["id"]} ==='
     )
 
     db = ChunkDatabase(db_path)
@@ -253,18 +253,19 @@ def assemble_evidence_pack(project: Project, db_path: Path = Path("chunks.db")):
 
     # Get general metrics
     total_runtime = db.execute_sql(
-        f"SELECT total_time_ms FROM dynamic_runs WHERE project_id = '{project.config["project"]["id"]}'"
+        f"SELECT total_time_ms FROM dynamic_runs WHERE project_id = '{project.config['project']['id']}'"
     )
     # TODO they need version numbers!!
     total_n_functions = db.execute_sql(
-        f"SELECT COUNT(*) FROM functions WHERE project_id = '{project.config["project"]["id"]}'"
+        f"SELECT COUNT(*) FROM functions WHERE project_id = '{project.config['project']['id']}'"
     )
 
     # Get function specific metricd
 
     all_functions_with_metrics_raw = db.execute_sql(
         f"""SELECT 
-            f.function_name, 
+            f.function_name,
+            f.fqn, 
             f.parameters, 
             f.return_annotation, 
             f.decorators, 
@@ -292,7 +293,7 @@ def assemble_evidence_pack(project: Project, db_path: Path = Path("chunks.db")):
             json.loads(function["decorators"]) if function["decorators"] else []
         )
 
-        all_functions_with_metrics[function["function_name"]] = {
+        all_functions_with_metrics[function["fqn"]] = {
             "parameters": parameters,  # Now a list instead of a JSON string
             "return_annotation": function["return_annotation"],
             "decorators": decorators,  # Now a list instead of a JSON string
@@ -312,11 +313,11 @@ def assemble_evidence_pack(project: Project, db_path: Path = Path("chunks.db")):
         }
 
     peak_memory_mb = db.execute_sql(
-        f"SELECT peak_memory_mb FROM dynamic_runs WHERE project_id ='{project.config["project"]["id"]}' AND run_id = '{run_id}'"
+        f"SELECT peak_memory_mb FROM dynamic_runs WHERE project_id ='{project.config['project']['id']}' AND run_id = '{run_id}'"
     )
 
     evidence_string = f"""
-== Project Info for Project: {project.config["project"]["name"]} ==
+== Project Info for Project: {project.config["project"]["id"]} ==
 Total Project Runtime: {total_runtime:.2f}ms;
 Peak Memory Usage: {peak_memory_mb:.2f}MB;
 Total Number of Functions: {total_n_functions};
@@ -331,4 +332,4 @@ Hottest Execution Paths:
 {format_hot_paths_for_llm(hot_paths)}
     """
 
-    print(evidence_string)
+    return evidence_string

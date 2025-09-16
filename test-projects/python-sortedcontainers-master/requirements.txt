@@ -1,0 +1,16 @@
+bintrees
+coverage
+doc8
+gj
+matplotlib
+pylint<2.6
+pytest
+pytest-cov
+rstcheck
+scipy
+skiplistcollections
+sphinx
+tox
+treap
+twine
+wheel

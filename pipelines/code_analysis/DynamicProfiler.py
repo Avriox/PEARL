@@ -464,8 +464,10 @@ class DynamicProfiler:
     # Wrapper builders
     # --------------------
     def _build_pyinstrument_wrapper_code(
-        self, entry_type: str, target: str, argv0: str, args: List[str]
-    ) -> str:
+                self, entry_type: str, target: str, argv0: str, args: List[str]
+        ) -> str:
+        project_dir = str(self.project.directory.resolve())
+
         code = f"""
         import sys, runpy, time, json
         from pyinstrument import Profiler
@@ -473,6 +475,11 @@ class DynamicProfiler:
             from pyinstrument.renderers.jsonrenderer import JSONRenderer
         except Exception:
             from pyinstrument.renderers import JSONRenderer
+
+        # Add project directory to path for local modules
+        PROJECT_DIR = {repr(project_dir)}
+        if PROJECT_DIR not in sys.path:
+            sys.path.insert(0, PROJECT_DIR)
 
         ENTRY_TYPE = {repr(entry_type)}
         ENTRY_TARGET = {repr(target)}
@@ -504,10 +511,18 @@ class DynamicProfiler:
         return textwrap.dedent(code)
 
     def _build_cprofile_wrapper_code(
-        self, entry_type: str, target: str, argv0: str, args: List[str]
+            self, entry_type: str, target: str, argv0: str, args: List[str]
     ) -> str:
+        project_dir = str(self.project.directory.resolve())
+
         code = f"""
         import sys, runpy, time, json, cProfile, pstats
+        
+        # Add project directory to path for local modules
+        PROJECT_DIR = {repr(project_dir)}
+        if PROJECT_DIR not in sys.path:
+            sys.path.insert(0, PROJECT_DIR)
+        
         ENTRY_TYPE = {repr(entry_type)}
         ENTRY_TARGET = {repr(target)}
         ENTRY_ARGS = {repr(list(args or []))}
@@ -554,10 +569,18 @@ class DynamicProfiler:
         return textwrap.dedent(code)
 
     def _build_memory_wrapper_code(
-        self, entry_type: str, target: str, argv0: str, args: List[str]
+            self, entry_type: str, target: str, argv0: str, args: List[str]
     ) -> str:
+        project_dir = str(self.project.directory.resolve())
+
         code = f"""
         import sys, runpy, time, json, tracemalloc, gc
+        
+        # Add project directory to path for local modules
+        PROJECT_DIR = {repr(project_dir)}
+        if PROJECT_DIR not in sys.path:
+            sys.path.insert(0, PROJECT_DIR)
+        
         ENTRY_TYPE = {repr(entry_type)}
         ENTRY_TARGET = {repr(target)}
         ENTRY_ARGS = {repr(list(args or []))}
@@ -601,15 +624,16 @@ class DynamicProfiler:
         return textwrap.dedent(code)
 
     def _build_line_profiler_wrapper_code(
-        self,
-        entry_type: str,
-        target: str,
-        argv0: str,
-        args: List[str],
-        targets: List[Dict[str, str]],
+            self,
+            entry_type: str,
+            target: str,
+            argv0: str,
+            args: List[str],
+            targets: List[Dict[str, str]],
     ) -> str:
         targets_payload = [{"module": t["module"], "func": t["func"]} for t in targets]
         project_dir = str(self.project.directory.resolve())
+
         code = f"""
     import sys, runpy, time, json, importlib, inspect, ast
     from line_profiler import LineProfiler

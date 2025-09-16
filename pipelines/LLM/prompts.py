@@ -15,7 +15,7 @@ Your job:
 """
 
 
-def triage_user_prompt(evidence_pack: str) -> str:
+def get_user_prompt(evidence_pack: str) -> str:
     return f"""
 You will receive an evidence pack with:
 - Project summary
@@ -39,14 +39,12 @@ Evidence Pack:
 {evidence_pack}
 """
 
-
-def inspection_user_prompt(evidence_pack: str, code_bundle: Dict[str, str]) -> str:
+def get_source_code_prompt( code_bundle: Dict[str, str]) -> str:
     code_section = "\n\n".join(
         f"FQN: {fqn}\n--- CODE START ---\n{src}\n--- CODE END ---"
         for fqn, src in code_bundle.items()
     )
-    return f"""
-You are now given the source for specific functions you requested.
+    return f"""You are now given the source for specific functions you requested.
 
 Task (inspection stage):
 1) Based on metrics and this code, return bottleneck findings (list).
@@ -68,9 +66,5 @@ Task (inspection stage):
   ]
 }}
 
-Evidence Pack (for reference):
-{evidence_pack}
-
 Requested Function Sources:
-{code_section}
-"""
+{code_section}"""

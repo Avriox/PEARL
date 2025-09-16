@@ -1,0 +1,22 @@
+schema_version: "1.0"
+
+project:
+  id: "deepdiff"
+
+
+entrypoint:
+  type: "script"             # "script" | "module" | "callable"
+  script: "main.py"
+  module: null               # e.g., "pkg.module"
+  callable: null             # e.g., "pkg.module:main"
+  working_dir: "."
+  python_opts: [ ]            # e.g., ["-X", "faulthandler"]
+  env: { }
+
+dependencies:
+  requirements_files:
+    - "requirements.txt"
+
+run:
+  default_args: [ "--n", "200", "--seed", "42" ]
+  timeout_seconds: 60
