@@ -3,6 +3,7 @@ import ast
 import hashlib
 import json
 import logging
+from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any, Set
 from dataclasses import dataclass, asdict, field
@@ -110,6 +111,193 @@ class ModuleChunk:
     global_variables: List[Dict] = field(default_factory=list)
 
 
+import ast
+from pathlib import Path
+from collections import defaultdict
+
+
+class FQNResolver:
+    def __init__(self, db, project_id: str, project_root: Path):
+        self.db = db
+        self.project_id = project_id
+        self.root = Path(project_root).resolve()
+        self.by_file = defaultdict(list)
+        self._ast_cache = {}
+
+        rows = db.execute_sql(
+            f"""
+            SELECT fqn, module_name, function_name, class_name, file_path, start_line, end_line
+            FROM functions
+            WHERE project_id = '{project_id}'
+        """
+        )
+        for r in rows:
+            rel = str(Path(r["file_path"]).as_posix())
+            self.by_file[rel].append(r)
+
+    def rel_to_project(self, path: str) -> str:
+        p = Path(path)
+        try:
+            return str(p.resolve().relative_to(self.root).as_posix())
+        except Exception:
+            return str(Path(path).as_posix())
+
+    def module_from_rel(self, rel: str) -> str:
+        return ".".join(Path(rel).with_suffix("").parts)
+
+    def guess_rel_from_module(self, module: str) -> str:
+        return (module or "").replace(".", "/") + ".py"
+
+    def resolve(
+        self, file_path: str, lineno: int, fallback_module: str, funcname: str
+    ) -> str:
+        if not file_path:
+            # no file — best effort
+            return f"{fallback_module}.{funcname}".strip(".")
+
+        rel_proj = self.rel_to_project(file_path)
+        candidates = []
+        # Try: exact project-relative match
+        if rel_proj in self.by_file:
+            candidates = self.by_file[rel_proj]
+        else:
+            # Try: module-based guess (e.g., for site-packages)
+            rel_guess = self.guess_rel_from_module(fallback_module)
+            candidates = self.by_file.get(rel_guess, [])
+
+            # Try: suffix match (last N components) if still missing
+            if not candidates:
+                suffix = "/".join(Path(rel_proj).parts[-3:])  # last 3 components
+                for k, rows in self.by_file.items():
+                    if k.endswith(suffix):
+                        candidates = rows
+                        break
+
+        for c in candidates:
+            if c["start_line"] <= lineno <= c["end_line"]:
+                return c["fqn"]
+
+        # AST fallback: parse the file and determine Class.func
+        try:
+            resolved = self._resolve_by_ast(
+                file_path, lineno, fallback_module, funcname
+            )
+            if resolved:
+                return resolved
+        except Exception:
+            pass
+
+        # Ultimate fallback
+        module = fallback_module or self.module_from_rel(rel_proj)
+        return f"{module}.{funcname}".strip(".")
+
+    def _resolve_by_ast(
+        self, file_path: str, lineno: int, fallback_module: str, funcname: str
+    ) -> str | None:
+        p = Path(file_path)
+        if p not in self._ast_cache:
+            try:
+                src = p.read_text(encoding="utf-8")
+                self._ast_cache[p] = (src, ast.parse(src))
+            except Exception:
+                return None
+        src, tree = self._ast_cache[p]
+
+        # Walk to find the smallest FunctionDef/AsyncFunctionDef containing lineno
+        best = None  # (depth, class_name, func_name, start, end)
+        class_stack = []
+
+        class NodeVisitor(ast.NodeVisitor):
+            def generic_visit(self, node):
+                nonlocal best
+                if isinstance(node, ast.ClassDef):
+                    class_stack.append(node.name)
+                    super().generic_visit(node)
+                    class_stack.pop()
+                elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    start = node.lineno
+                    end = getattr(node, "end_lineno", node.lineno)
+                    if start <= lineno <= end:
+                        depth = len(class_stack)
+                        cand = (
+                            depth,
+                            class_stack[-1] if class_stack else None,
+                            node.name,
+                            start,
+                            end,
+                        )
+                        if best is None or cand[0] >= best[0]:
+                            best = cand
+                    super().generic_visit(node)
+                else:
+                    super().generic_visit(node)
+
+        NodeVisitor().visit(tree)
+
+        module = fallback_module or self.module_from_rel(self.rel_to_project(file_path))
+        if best:
+            _, cls, fn, *_ = best
+            if cls:
+                return f"{module}.{cls}.{fn}"
+            return f"{module}.{fn}"
+        return None
+
+
+def _apply_cprofile_to_metrics(self, func_metrics_from_pyi, cp_payload):
+    # Build metrics keyed by (file, line, funcname) to avoid collapsing same-named methods
+    metrics = {}
+
+    # Example record fields – adjust to your actual payload
+    # cp_payload["functions"] -> list of dicts with filename, lineno, funcname, ncalls, tottime_ms, cumtime_ms
+    for rec in cp_payload.get("functions", []):
+        filename = rec["filename"]
+        lineno = int(rec["lineno"])
+        funcname = rec["funcname"]
+        tottime = float(rec.get("tottime_ms", 0.0))
+        cumtime = float(rec.get("cumtime_ms", 0.0))
+        ncalls = int(rec.get("ncalls", 0))
+
+        key = (filename, lineno, funcname)
+
+        if key not in metrics:
+            fm = FunctionMetrics(
+                fqn="",  # resolved later
+                inclusive_time_ms=cumtime,
+                exclusive_time_ms=tottime,
+                call_count=ncalls,
+                avg_time_ms=0.0,
+                fraction_of_total=0.0,
+                file_path=filename,
+                module_name=self._module_from_path(filename),  # best-effort
+                function_name=funcname,
+                first_lineno=lineno,
+            )
+            metrics[key] = fm
+        else:
+            fm = metrics[key]
+            fm.inclusive_time_ms += cumtime
+            fm.exclusive_time_ms += tottime
+            fm.call_count += ncalls
+
+    # Return as a dict keyed by a temp string so caller stays unchanged
+    out = {}
+    for (filename, lineno, funcname), fm in metrics.items():
+        temp_key = f"{fm.module_name}.{funcname}@L{lineno}"
+        fm.fqn = temp_key
+        out[temp_key] = fm
+    return out
+
+
+def _module_from_path(self, path: str) -> str:
+    from pathlib import Path
+
+    try:
+        rel = Path(path).resolve().relative_to(self.project.directory.resolve())
+        return ".".join(Path(rel).with_suffix("").parts)
+    except Exception:
+        return ".".join(Path(path).with_suffix("").parts)
+
+
 class CodeAnalyzer:
     """Unified code analysis: parsing, chunking, and static analysis"""
 
@@ -200,45 +388,41 @@ class CodeAnalyzer:
         class_name: Optional[str],
         module_tree: ast.AST,
     ) -> FunctionChunk:
-        """Process function and analyze it in one go"""
-
-        # Build FQN
         func_name = node.name
-        if class_name:
-            fqn = f"{module_fqn}.{class_name}.{func_name}"
-            is_method = True
-        else:
-            fqn = f"{module_fqn}.{func_name}"
-            is_method = False
+        # Fully resolved FQN: module.Class.func or module.func
+        fqn = (
+            f"{module_fqn}.{class_name}.{func_name}"
+            if class_name
+            else f"{module_fqn}.{func_name}"
+        )
+        is_method = class_name is not None
 
-        # Extract basic info
         decorators = [astor.to_source(d).strip() for d in node.decorator_list]
         docstring = ast.get_docstring(node)
         parameters = [arg.arg for arg in node.args.args]
 
-        # Get return annotation
         return_annotation = None
         if node.returns:
             return_annotation = astor.to_source(node.returns).strip()
 
-        # Build signature
         signature = f"{func_name}({', '.join(parameters)})"
         if return_annotation:
             signature += f" -> {return_annotation}"
 
-        # Extract source code
         source_lines = source.split("\n")
         func_source = "\n".join(source_lines[node.lineno - 1 : node.end_lineno])
 
-        # Perform static analysis on this function's AST
-        static_features = self._analyze_function_ast(node, func_source, module_fqn)
+        # Pass class_name so we normalize self/cls/super calls
+        static_features = self._analyze_function_ast(
+            node, func_source, module_fqn, class_name
+        )
 
-        # Check for special decorators
         is_staticmethod = any("staticmethod" in d for d in decorators)
         is_classmethod = any("classmethod" in d for d in decorators)
         is_property = any("property" in d for d in decorators)
 
         return FunctionChunk(
+            chunk_type="function",
             fqn=fqn,
             project_id=self.project_id,
             file_path=str(file_path),
@@ -275,33 +459,26 @@ class CodeAnalyzer:
         class_name = node.name
         fqn = f"{module_fqn}.{class_name}"
 
-        # Extract class info
         decorators = [astor.to_source(d).strip() for d in node.decorator_list]
         base_classes = [astor.to_source(b).strip() for b in node.bases]
         docstring = ast.get_docstring(node)
 
-        # Extract class attributes and methods
         methods = []
         method_chunks = []
         class_attributes = []
 
         for item in node.body:
             if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                method_fqn = f"{fqn}.{item.name}"
-                methods.append(method_fqn)
-
-                # Process method
                 method_chunk = self._process_function(
                     item, source, file_path, module_fqn, class_name, module_tree
                 )
+                methods.append(method_chunk.fqn)  # fully resolved now
                 method_chunks.append(method_chunk)
-
             elif isinstance(item, ast.Assign):
                 for target in item.targets:
                     if isinstance(target, ast.Name):
                         class_attributes.append(target.id)
 
-        # Get class source
         source_lines = source.split("\n")
         class_source = "\n".join(source_lines[node.lineno - 1 : node.end_lineno])
 
@@ -324,7 +501,11 @@ class CodeAnalyzer:
         return class_chunk, method_chunks
 
     def _analyze_function_ast(
-        self, node: ast.AST, source_code: str, module_fqn: str
+        self,
+        node: ast.AST,
+        source_code: str,
+        module_fqn: str,
+        class_name: Optional[str] = None,
     ) -> StaticFeatures:
         """Analyze a function's AST node for static features"""
 
@@ -378,7 +559,7 @@ class CodeAnalyzer:
         features.concurrency_primitives = concurrency["primitives"]
 
         # Extract calls
-        calls = self._extract_calls(node, module_fqn)
+        calls = self._extract_calls(node, module_fqn, class_name)
         features.calls_made = calls["direct_calls"]
         features.call_count = calls["count"]
 
@@ -528,19 +709,52 @@ class CodeAnalyzer:
         result["primitives"] = list(set(result["primitives"]))
         return result
 
-    def _extract_calls(self, node: ast.AST, module_fqn: str) -> Dict:
-        """Extract function calls"""
+    def _extract_calls(
+        self, node: ast.AST, module_fqn: str, class_name: Optional[str] = None
+    ) -> Dict:
+        """Extract function calls; normalize to fully resolved FQNs when possible."""
         direct_calls = []
+
+        def is_super_call(x: ast.AST) -> bool:
+            return (
+                isinstance(x, ast.Call)
+                and isinstance(x.func, ast.Name)
+                and x.func.id == "super"
+            )
 
         for n in ast.walk(node):
             if isinstance(n, ast.Call):
-                if isinstance(n.func, ast.Name):
-                    direct_calls.append(f"{module_fqn}.{n.func.id}")
-                elif isinstance(n.func, ast.Attribute):
-                    if isinstance(n.func.value, ast.Name):
-                        direct_calls.append(f"{n.func.value.id}.{n.func.attr}")
+                f = n.func
+                try:
+                    if isinstance(f, ast.Name):
+                        # Unqualified call: assume module-level function
+                        direct_calls.append(f"{module_fqn}.{f.id}")
+                    elif isinstance(f, ast.Attribute):
+                        base = f.value
+                        if isinstance(base, ast.Name) and base.id in ("self", "cls"):
+                            if class_name:
+                                direct_calls.append(
+                                    f"{module_fqn}.{class_name}.{f.attr}"
+                                )
+                            else:
+                                direct_calls.append(f"{module_fqn}.{f.attr}")
+                        elif isinstance(base, ast.Call) and is_super_call(base):
+                            if class_name:
+                                direct_calls.append(
+                                    f"{module_fqn}.{class_name}.{f.attr}"
+                                )
+                            else:
+                                direct_calls.append(f"{module_fqn}.{f.attr}")
+                        elif isinstance(base, ast.Name):
+                            # External/module alias like np.sum or requests.get
+                            direct_calls.append(f"{base.id}.{f.attr}")
+                        else:
+                            # Fallback textual representation
+                            direct_calls.append(astor.to_source(f).strip())
+                except Exception:
+                    pass
 
-        return {"direct_calls": list(set(direct_calls)), "count": len(direct_calls)}
+        return {"direct_calls": sorted(set(direct_calls)), "count": len(direct_calls)}
 
     def _estimate_cognitive_complexity(self, node: ast.AST) -> int:
         """Estimate cognitive complexity"""

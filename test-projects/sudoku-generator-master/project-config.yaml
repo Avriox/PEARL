@@ -1,0 +1,22 @@
+schema_version: "1.0"
+
+project:
+  id: "sudoku-generator"
+
+
+entrypoint:
+  type: "script"             # "script" | "module" | "callable"
+  script: "sudoku_generator.py"
+  module: null               # e.g., "pkg.module"
+  callable: null             # e.g., "pkg.module:main"
+  working_dir: "."
+  python_opts: [ ]            # e.g., ["-X", "faulthandler"]
+  env: { }
+
+dependencies:
+  requirements_files:
+    - "requirements.txt"
+
+run:
+  default_args: [ "base.txt", "extreme" ]
+  timeout_seconds: 60

@@ -1,233 +1,333 @@
 import json
 import logging
+from collections import defaultdict
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Tuple, Optional
 
 from pipelines.code_analysis import Project, ChunkDatabase
 
 
-def get_call_tree_from_edges(db: ChunkDatabase, project_id: str, run_id: str) -> Dict:
-    """Build a call tree from dynamic edges, pruning by edge time and child inclusive time."""
-    # Total runtime (for thresholding)
-    total_rows = db.execute_sql(
-        f"""
-        SELECT total_time_ms
-        FROM dynamic_runs
-        WHERE project_id = '{project_id}' AND run_id = '{run_id}'
-        LIMIT 1
-        """
-    )
-    total_ms = float(total_rows) if total_rows else 0.0
+def _parse_fqn(fqn: str):
+    """Return (module, class_name|None, func_name) from a fully resolved FQN."""
+    if not fqn:
+        return "", None, ""
+    parts = fqn.split(".")
+    if parts[-1] == "<module>":
+        return ".".join(parts[:-1]), None, "<module>"
+    if len(parts) >= 3 and parts[-2] and parts[-2][0].isupper():
+        return ".".join(parts[:-2]), parts[-2], parts[-1]
+    return ".".join(parts[:-1]), None, parts[-1]
 
-    # Dynamic function metrics
-    functions = db.execute_sql(
+
+def _is_noise_fqn(fqn: str) -> bool:
+    if not fqn:
+        return True
+    if fqn == "[self]":
+        return True
+    if fqn.startswith("<built-in>"):
+        return True
+    if fqn.startswith("<frozen "):
+        return True
+    return False
+
+
+def _edge_label(parent_fqn: str, child_fqn: str, project_prefix: str) -> str:
+    """Friendly label for child under parent."""
+    _, parent_cls, _ = _parse_fqn(parent_fqn)
+    child_mod, child_cls, child_func = _parse_fqn(child_fqn)
+
+    if child_func == "<module>":
+        return "<module>"
+
+    # Inside project, method → method: show self.method
+    if parent_cls and child_cls and child_mod.startswith(project_prefix):
+        return f"self.{child_func}"
+
+    if child_cls:
+        return f"{child_cls}.{child_func}"
+    return child_func
+
+
+def _node_label(fqn: str) -> str:
+    """Label for the node itself."""
+    _, cls, func = _parse_fqn(fqn)
+    return f"{cls}.{func}" if cls else func
+
+
+def get_full_project_call_forest(
+    db: ChunkDatabase,
+    project_id: str,
+    run_id: str,
+    project_prefix: Optional[str] = None,
+    include_external: bool = False,  # keep False to show only your package
+    max_roots: int = 50,  # just a safety; set high, forest is otherwise “full”
+    max_depth: Optional[int] = None,  # None == unlimited
+) -> List[Dict]:
+    """
+    Build a full execution forest from dynamic edges:
+      - Roots are in-project functions called from outside the project (best signal of entry).
+        If none, fall back to in-project nodes with no in-project parents.
+      - Only includes nodes reachable from these roots.
+      - Filters noise endpoints like [self], <built-in>, <frozen ...>.
+      - Each node: {fqn, exclusive_ms, inclusive_ms, fraction, calls, children[, recursion]}.
+    """
+    project_prefix = project_prefix or project_id
+    in_pkg = lambda f: f.startswith(project_prefix + ".")
+
+    # Load metrics
+    rows = db.execute_sql(
         f"""
         SELECT fqn, exclusive_time_ms, inclusive_time_ms, call_count, fraction_of_total
         FROM dynamic_functions
         WHERE project_id = '{project_id}' AND run_id = '{run_id}'
-        """
+    """
     )
-    if not functions:
-        return None
-    func_metrics = {f["fqn"]: f for f in functions}
+    if not rows:
+        return []
+    func = {r["fqn"]: r for r in rows}
 
-    # Dynamic edges (with time)
-    edges = db.execute_sql(
+    # Load edges
+    raw_edges = db.execute_sql(
         f"""
         SELECT caller, callee, time_ms, count
         FROM dynamic_edges
         WHERE project_id = '{project_id}' AND run_id = '{run_id}'
-        """
+    """
     )
 
-    # Build adjacency with edge weights
-    from collections import defaultdict
+    # Filter and build adjacency
+    children = defaultdict(list)  # parent -> [(child, edge_ms, count)]
+    parents = defaultdict(list)  # child  -> [parent]
+    nodes = set(func.keys())
 
-    children = defaultdict(list)  # caller -> [(callee, edge_ms)]
-    all_callees = set()
-    for e in edges:
-        caller = e["caller"]
-        callee = e["callee"]
-        edge_ms = float(e.get("time_ms", 0.0) or 0.0)
-        children[caller].append((callee, edge_ms))
-        all_callees.add(callee)
+    for e in raw_edges:
+        a, b = e["caller"], e["callee"]
+        if _is_noise_fqn(a) or _is_noise_fqn(b):
+            continue
+        if a not in func or b not in func:
+            continue
 
-    # Entry points = functions that are not called by any other function
-    all_funcs = set(func_metrics.keys())
-    entry_points = list(all_funcs - all_callees)
+        if not include_external:
+            if not (in_pkg(a) and in_pkg(b)):
+                continue
 
-    # Fallback: pick top inclusive-time function if no clean entry point is found
-    if not entry_points:
-        entry_points = [
-            max(all_funcs, key=lambda f: func_metrics[f]["inclusive_time_ms"])
+        w = float(e.get("time_ms", 0.0) or 0.0)
+        c = int(e.get("count", 0) or 0)
+        children[a].append((b, w, c))
+        parents[b].append(a)
+
+    # Entry root choice:
+    # Preferred: in-project callees that were called from outside project.
+    called_from_outside = set()
+    if not include_external:
+        for e in raw_edges:
+            a, b = e["caller"], e["callee"]
+            if _is_noise_fqn(a) or _is_noise_fqn(b):
+                continue
+            if b in func and in_pkg(b) and (a not in func or not in_pkg(a)):
+                called_from_outside.add(b)
+
+    roots = [n for n in called_from_outside if n in func]
+    # Fallback: in-project nodes with no in-project parents
+    if not roots:
+        in_pkg_nodes = {n for n in nodes if in_pkg(n)}
+        roots = [
+            n for n in in_pkg_nodes if not any(in_pkg(p) for p in parents.get(n, []))
         ]
 
-    # Choose the main entry (highest inclusive time)
-    main_entry = max(
-        entry_points, key=lambda f: func_metrics.get(f, {}).get("inclusive_time_ms", 0)
-    )
+    # Last fallback: hottest in-project nodes
+    if not roots:
+        in_pkg_nodes = [n for n in nodes if in_pkg(n)]
+        roots = sorted(
+            in_pkg_nodes, key=lambda n: func[n]["inclusive_time_ms"], reverse=True
+        )[:max_roots]
 
-    # Thresholds for pruning
-    edge_min_frac_total = 0.01  # keep child if edge contributes >=1% of total runtime
-    child_incl_min_frac_total = 0.01  # or child’s inclusive time >=1% of total runtime
-    max_children = 3
-    max_depth = 4
+    # Sort children deterministically (edge time desc, then child inclusive desc)
+    for p in children:
+        children[p].sort(
+            key=lambda t: (t[1], func[t[0]]["inclusive_time_ms"]), reverse=True
+        )
 
-    def build_subtree(fqn: str, visited: set, depth: int = 0) -> Dict:
-        if depth >= max_depth or fqn in visited or fqn not in func_metrics:
-            return None
-        visited = set(visited)
-        visited.add(fqn)
-
-        m = func_metrics[fqn]
-
-        # Consider children significant if edge time is big, or child’s inclusive time is big
-        candidates = []
-        for child_fqn, edge_ms in children.get(fqn, []):
-            if child_fqn not in func_metrics:
+    # Limit forest to nodes reachable from selected roots
+    reachable = set()
+    for r in roots:
+        stack = [r]
+        seen = set()
+        while stack:
+            u = stack.pop()
+            if u in seen:
                 continue
-            edge_frac = (edge_ms / total_ms) if total_ms > 0 else 0.0
-            child_incl = float(func_metrics[child_fqn]["inclusive_time_ms"])
-            child_incl_frac = (child_incl / total_ms) if total_ms > 0 else 0.0
+            seen.add(u)
+            reachable.add(u)
+            for v, _, _ in children.get(u, []):
+                if v not in seen:
+                    stack.append(v)
 
-            if (
-                edge_frac >= edge_min_frac_total
-                or child_incl_frac >= child_incl_min_frac_total
-            ):
-                child_tree = build_subtree(child_fqn, visited, depth + 1)
-                if child_tree:
-                    candidates.append((child_tree, edge_ms))
+    roots = [r for r in roots if r in reachable]
+    roots.sort(key=lambda n: func[n]["inclusive_time_ms"], reverse=True)
+    roots = roots[:max_roots]
 
-        # Sort children by edge time descending and keep top K
-        candidates.sort(key=lambda t: t[1], reverse=True)
-        child_trees = [t[0] for t in candidates[:max_children]]
+    # DFS with recursion detection and optional max_depth
+    def build_tree(root: str) -> Dict:
+        def dfs(u: str, onstack: set, depth: int) -> Dict:
+            if max_depth is not None and depth > max_depth:
+                return {
+                    "fqn": u,
+                    "exclusive_ms": float(func[u]["exclusive_time_ms"]),
+                    "inclusive_ms": float(func[u]["inclusive_time_ms"]),
+                    "fraction": float(func[u]["fraction_of_total"]),
+                    "calls": int(func[u]["call_count"]),
+                    "children": [],
+                }
+            if u in onstack:  # recursion
+                return {
+                    "fqn": u,
+                    "exclusive_ms": float(func[u]["exclusive_time_ms"]),
+                    "inclusive_ms": float(func[u]["inclusive_time_ms"]),
+                    "fraction": float(func[u]["fraction_of_total"]),
+                    "calls": int(func[u]["call_count"]),
+                    "children": [],
+                    "recursion": True,
+                }
+            onstack = set(onstack)
+            onstack.add(u)
+            node = {
+                "fqn": u,
+                "exclusive_ms": float(func[u]["exclusive_time_ms"]),
+                "inclusive_ms": float(func[u]["inclusive_time_ms"]),
+                "fraction": float(func[u]["fraction_of_total"]),
+                "calls": int(func[u]["call_count"]),
+                "children": [],
+            }
+            for v, _, _ in children.get(u, []):
+                if v in reachable:
+                    node["children"].append(dfs(v, onstack, depth + 1))
+            return node
 
-        return {
-            "name": fqn.split(".")[-1],
-            "fqn": fqn,
-            "exclusive_ms": m["exclusive_time_ms"],
-            "inclusive_ms": m["inclusive_time_ms"],
-            "fraction": m[
-                "fraction_of_total"
-            ],  # exclusive fraction; that’s fine for display
-            "calls": m["call_count"],
-            "children": child_trees,
-        }
+        return dfs(root, set(), 0)
 
-    return build_subtree(main_entry, set())
+    forest = [build_tree(r) for r in roots]
+    return forest
 
 
-def format_tree_for_llm(tree: Dict, indent: int = 0) -> str:
-    """Format call tree in a readable way for LLM"""
-    if not tree:
+def format_full_forest(forest: List[Dict], indent: int = 0) -> str:
+    """
+    Print each node as its FQN to keep identity crystal clear.
+    """
+    if not forest:
         return ""
 
-    lines = []
-    prefix = "  " * indent
+    lines: List[str] = []
 
-    # Indicators for significance
-    # if tree["fraction"] > 0.10:
-    #     indicator = "🔥"  # >10% of runtime
-    # elif tree["fraction"] > 0.05:
-    #     indicator = "⚠️"  # >5% of runtime
-    # else:
-    #     indicator = "→"
+    def fmt(node: Dict, depth: int):
+        fqn = node["fqn"]
+        excl = node["exclusive_ms"]
+        incl = node["inclusive_ms"]
+        frac = node["fraction"]
+        calls = node["calls"]
+        rec = node.get("recursion", False)
+        prefix = "  " * depth
+        suffix = " ↻" if rec else ""
+        lines.append(
+            f"{prefix}→ {fqn} [{excl:.1f}/{incl:.1f}ms] ({frac*100:.1f}%, {calls} calls){suffix}"
+        )
+        if not rec:
+            for ch in node.get("children", []):
+                fmt(ch, depth + 1)
 
-    indicator = "→"
+    for tree in forest:
+        fmt(tree, indent)
+        lines.append("")  # blank line between roots
 
-    # Format: indicator name [exclusive/inclusive ms] (X% of total, N calls)
-    line = f"{prefix}{indicator} {tree['name']} [{tree['exclusive_ms']:.1f}/{tree['inclusive_ms']:.1f}ms] ({tree['fraction']*100:.1f}%, {tree['calls']} calls)"
-    lines.append(line)
-
-    # Add children
-    for child in tree.get("children", []):
-        lines.append(format_tree_for_llm(child, indent + 1))
-
-    return "\n".join(lines)
+    return "\n".join(lines).rstrip()
 
 
 def get_hot_paths(
-    db: ChunkDatabase, project_id: str, run_id: str, top_n: int = 5
+    db: ChunkDatabase,
+    project_id: str,
+    run_id: str,
+    top_n: int = 5,
+    project_prefix: str | None = None,
 ) -> List[Dict]:
-    """Get the hottest execution paths"""
-    # Get top expensive functions
+    project_prefix = project_prefix or project_id
+
     bottlenecks = db.execute_sql(
         f"""
-                                 SELECT fqn, exclusive_time_ms, fraction_of_total
-                                 FROM dynamic_functions
-                                 WHERE project_id = '{project_id}' AND run_id = '{run_id}'
-                                 ORDER BY exclusive_time_ms DESC
-                                 LIMIT {top_n*2}
-                                 """
+        SELECT fqn, exclusive_time_ms, fraction_of_total
+        FROM dynamic_functions
+        WHERE project_id = '{project_id}' AND run_id = '{run_id}'
+        ORDER BY exclusive_time_ms DESC
+        LIMIT {top_n*3}
+    """
     )
 
-    # Get edges to build paths
     edges = db.execute_sql(
         f"""
-                           SELECT caller, callee
-                           FROM dynamic_edges
-                           WHERE project_id = '{project_id}' AND run_id = '{run_id}'
-                           """
+        SELECT caller, callee, time_ms
+        FROM dynamic_edges
+        WHERE project_id = '{project_id}' AND run_id = '{run_id}'
+    """
     )
 
-    # Build parent map
-    from collections import defaultdict
-
     parents = defaultdict(list)
-    for edge in edges:
-        parents[edge["callee"]].append(edge["caller"])
+    for e in edges:
+        c, d = e["caller"], e["callee"]
+        if _is_noise_fqn(c) or _is_noise_fqn(d):
+            continue
+        parents[d].append((c, float(e.get("time_ms", 0.0) or 0.0)))
 
     hot_paths = []
-    for bottleneck in bottlenecks[:top_n]:
-        # Build path from entry to this bottleneck
-        path = []
-        current = bottleneck["fqn"]
-        visited = set()
+    for b in bottlenecks:
+        fqn = b["fqn"]
+        if _is_noise_fqn(fqn):
+            continue
 
-        while current and current not in visited:
-            visited.add(current)
-            path.append(current)
-            # Get parent with highest inclusive time
-            if current in parents:
-                current = parents[current][0] if parents[current] else None
-            else:
-                current = None
+        # Walk up picking the strongest incoming edge each step
+        path = [fqn]
+        seen = set(path)
+        cur = fqn
+        while cur in parents and parents[cur]:
+            # prefer parents inside project
+            in_pkg = [
+                (p, w) for (p, w) in parents[cur] if p.startswith(project_prefix + ".")
+            ]
+            plist = in_pkg if in_pkg else parents[cur]
+            p = max(plist, key=lambda t: t[1])[0]
+            if p in seen:
+                break
+            path.append(p)
+            seen.add(p)
+            cur = p
 
-        path.reverse()  # Start from entry point
-
-        if len(path) > 1:  # Only include actual paths
+        path.reverse()
+        if len(path) > 1:
             hot_paths.append(
                 {
                     "path": path,
-                    "bottleneck_ms": bottleneck["exclusive_time_ms"],
-                    "bottleneck_fraction": bottleneck["fraction_of_total"],
+                    "bottleneck_ms": float(b["exclusive_time_ms"]),
+                    "bottleneck_fraction": float(b["fraction_of_total"]),
                 }
             )
+        if len(hot_paths) >= top_n:
+            break
 
     return hot_paths
 
 
-def format_hot_paths_for_llm(hot_paths: List[Dict]) -> str:
-    """Format hot paths for LLM understanding"""
+def format_hot_paths_for_llm(hot_paths: List[Dict], project_prefix: str) -> str:
     lines = []
-
-    for i, path_info in enumerate(hot_paths, 1):
-        path = path_info["path"]
-        bottleneck_ms = path_info["bottleneck_ms"]
-        bottleneck_frac = path_info["bottleneck_fraction"]
-
+    for i, info in enumerate(hot_paths, 1):
+        path = info["path"]
         lines.append(
-            f"\nHot Path #{i} ({bottleneck_frac*100:.1f}% of runtime, {bottleneck_ms:.1f}ms)"
+            f"\nHot Path #{i} ({info['bottleneck_fraction']*100:.1f}% of runtime, {info['bottleneck_ms']:.1f}ms)"
         )
-
-        # Show call chain
         for j, fqn in enumerate(path):
-            func_name = fqn.split(".")[-1]
+            parent = path[j - 1] if j > 0 else None
+            label = _edge_label(parent or "", fqn, project_prefix)
             if j == len(path) - 1:
-                lines.append(f"  \t └─> {func_name} ")  # ← BOTTLENECK
+                lines.append(f"  \t └─> {label}")
             else:
-                lines.append(f"  → {func_name}")
-
+                lines.append(f"  → {label}")
     return "\n".join(lines)
 
 
@@ -235,50 +335,66 @@ def assemble_evidence_pack(project: Project, db_path: Path = Path("chunks.db")):
     logging.info(
         f'=== Assembling EvidencePack for Project: {project.config["project"]["id"]} ==='
     )
-
     db = ChunkDatabase(db_path)
 
-    # Get the call tree
-
-    latest_run = db.execute_sql(
-        f"""SELECT run_id FROM dynamic_runs 
-            WHERE project_id = '{project.config["project"]["id"]}' 
-            ORDER BY timestamp DESC LIMIT 1"""
+    # latest run id
+    run_id = db.execute_sql(
+        f"""
+        SELECT run_id
+        FROM dynamic_runs
+        WHERE project_id = '{project.config["project"]["id"]}'
+        ORDER BY timestamp DESC LIMIT 1
+    """
     )
-    run_id = latest_run
+    if not run_id:
+        return "No runs found."
 
-    # Add call tree and hot paths to your existing evidence_string
-    call_tree = get_call_tree_from_edges(db, project.config["project"]["id"], run_id)
-    hot_paths = get_hot_paths(db, project.config["project"]["id"], run_id, top_n=1)
+    project_prefix = project.config["project"]["id"]
 
-    # Get general metrics
-    total_runtime = db.execute_sql(
-        f"SELECT total_time_ms FROM dynamic_runs WHERE project_id = '{project.config['project']['id']}'"
+    forest = get_full_project_call_forest(
+        db,
+        project_id=project_prefix,
+        run_id=run_id,
+        project_prefix=project_prefix,
+        include_external=False,  # only your package
+        max_roots=50,  # large but finite
+        max_depth=None,  # unlimited
     )
-    # TODO they need version numbers!!
-    total_n_functions = db.execute_sql(
-        f"SELECT COUNT(*) FROM functions WHERE project_id = '{project.config['project']['id']}'"
+
+    call_tree_text = format_full_forest(forest)
+
+    # Hottest paths (optional, unchanged or adopt the same filtering)
+    hot_paths = get_hot_paths(
+        db, project_prefix, run_id, top_n=3, project_prefix=project_prefix
     )
+    hot_paths_text = format_hot_paths_for_llm(hot_paths, project_prefix)
 
-    # Get function specific metricd
+    # Totals
+    row = db.execute_sql(
+        f"""
+        SELECT total_time_ms, peak_memory_mb
+        FROM dynamic_runs
+        WHERE project_id = '{project_prefix}' AND run_id = '{run_id}'
+    """
+    )
+    total_runtime = float(row["total_time_ms"]) if row else 0.0
+    peak_memory_mb = float(row["peak_memory_mb"]) if row else 0.0
 
+    count = db.execute_sql(
+        f"SELECT COUNT(*) AS n FROM functions WHERE project_id = '{project_prefix}'"
+    )
+    total_n_functions = count if count else 0
+
+    # Function stats (your existing join)
     all_functions_with_metrics_raw = db.execute_sql(
-        f"""SELECT 
-            f.function_name,
-            f.fqn, 
-            f.parameters, 
-            f.return_annotation, 
-            f.decorators, 
-            f.docstring, 
-            f.static_features, 
-            df.inclusive_time_ms, 
-            df.exclusive_time_ms, 
-            df.call_count, 
-            df.fraction_of_total,
-            df.loop_iterations_total
-             FROM functions f
-            JOIN dynamic_functions df ON f.fqn = df.fqn
-            WHERE f.project_id ='{project.config["project"]["id"]}'"""
+        f"""
+        SELECT 
+            f.function_name, f.fqn, f.parameters, f.return_annotation, f.decorators, f.docstring, f.static_features,
+            df.inclusive_time_ms, df.exclusive_time_ms, df.call_count, df.fraction_of_total, df.loop_iterations_total
+        FROM functions f
+        JOIN dynamic_functions df ON f.fqn = df.fqn
+        WHERE f.project_id = '{project_prefix}' AND df.run_id = '{run_id}'
+    """
     )
 
     all_functions_with_metrics = {}
@@ -317,19 +433,18 @@ def assemble_evidence_pack(project: Project, db_path: Path = Path("chunks.db")):
     )
 
     evidence_string = f"""
-== Project Info for Project: {project.config["project"]["id"]} ==
-Total Project Runtime: {total_runtime:.2f}ms;
-Peak Memory Usage: {peak_memory_mb:.2f}MB;
-Total Number of Functions: {total_n_functions};
+    == Project Info for Project: {project_prefix} ==
+    Total Project Runtime: {total_runtime:.2f}ms;
+    Peak Memory Usage: {peak_memory_mb:.2f}MB;
+    Total Number of Functions: {total_n_functions};
 
-All Functions with Statistics:
-{json.dumps(all_functions_with_metrics, indent=2)} 
-    
-Call Tree: 
-{format_tree_for_llm(call_tree)}
+    All Functions with Statistics:
+    {json.dumps(all_functions_with_metrics, indent=2)} 
 
-Hottest Execution Paths: 
-{format_hot_paths_for_llm(hot_paths)}
-    """
+    Call Tree:
+    {call_tree_text}
 
+    Hottest Execution Paths:
+    {hot_paths_text}
+        """
     return evidence_string

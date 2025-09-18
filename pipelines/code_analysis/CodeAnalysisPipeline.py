@@ -9,6 +9,9 @@ from .CodeAnalyzer import CodeAnalyzer
 from .ChunkDatabase import ChunkDatabase
 from .HotspotAnalyzer import HotspotAnalyzer
 
+from pathlib import Path
+from collections import defaultdict
+
 
 class CodeAnalysisPipeline:
     def __init__(self, db_path: Path = Path("chunks.db")):
@@ -31,7 +34,7 @@ class CodeAnalysisPipeline:
         logging.info(f"Found {len(directories)} directories")
 
         for directory in directories:
-            if directory != Path("test-projects/python-sortedcontainers-master"):
+            if directory != Path("test-projects/textdistance-master"):
                 continue
             try:
                 project = Project(directory)

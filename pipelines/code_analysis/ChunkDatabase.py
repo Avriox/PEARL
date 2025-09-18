@@ -27,6 +27,8 @@ class ChunkDatabase:
                                                      fqn TEXT NOT NULL,  -- fully qualified name
                                                      project_id TEXT NOT NULL,
                                                      function_name TEXT NOT NULL,
+                                                     module_name TEXT,
+                                                     class_name TEXT,
                                                      source_code TEXT NOT NULL,
                                                      signature TEXT NOT NULL,
                                                      parameters TEXT,  -- JSON array

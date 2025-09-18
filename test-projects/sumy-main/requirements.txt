@@ -1,0 +1,4 @@
+pycountry
+requests
+numpy
+nltk
