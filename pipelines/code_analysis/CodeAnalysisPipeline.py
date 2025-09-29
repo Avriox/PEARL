@@ -34,7 +34,7 @@ class CodeAnalysisPipeline:
         logging.info(f"Found {len(directories)} directories")
 
         for directory in directories:
-            if directory != Path("test-projects/textdistance-master"):
+            if directory != Path("test-projects/deepdiff-master"):
                 continue
             try:
                 project = Project(directory)
