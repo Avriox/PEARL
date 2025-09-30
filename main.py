@@ -30,7 +30,7 @@ def main() -> None:
 
     projects = ca_pipe.get_projects()
     for project in projects:
-        embedding_pipe.score_project(project)
+        print(embedding_pipe.score_project(project))
     #     ea = assemble_evidence_pack(project, db_path)
     #
     #     print(ea)

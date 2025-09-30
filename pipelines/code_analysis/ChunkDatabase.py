@@ -50,6 +50,7 @@ class ChunkDatabase:
                                                      ast_hash TEXT NOT NULL,
                                                      called_functions TEXT,  -- JSON array
                                                      static_features TEXT,  -- JSON of StaticFeatures
+                                                     is_slow BOOLEAN DEFAULT FALSE,
                                                      UNIQUE(fqn, project_id, version)
             )
             """
@@ -241,8 +242,8 @@ class ChunkDatabase:
                 parameters, return_annotation, decorators, docstring,
                 is_async, is_method, is_staticmethod, is_classmethod, is_property,
                 parent_class_fqn, module_fqn, file_path, start_line, end_line,
-                line_count, version, ast_hash, called_functions, static_features
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                line_count, version, ast_hash, called_functions, static_features, is_slow
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 chunk.fqn,
@@ -269,6 +270,7 @@ class ChunkDatabase:
                 chunk.ast_hash,
                 json.dumps(chunk.called_functions),
                 features_json,
+                chunk.is_slow
             ),
         )
         self.conn.commit()
