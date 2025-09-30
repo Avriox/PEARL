@@ -4,6 +4,7 @@ from pipelines import CodeAnalysisPipeline
 import logging
 
 from pipelines.LLM.llm import LLMClient
+from pipelines.embedding.embeddingPipeline import EmbeddingPipeline
 from pipelines.evidence_pack.EvidenceAssembler import assemble_evidence_pack
 
 
@@ -25,8 +26,11 @@ def main() -> None:
     ca_pipe.run_dynamic_analysis()
     ca_pipe.close()
 
-    # projects = ca_pipe.get_projects()
-    # for project in projects:
+    embedding_pipe = EmbeddingPipeline(db_path)
+
+    projects = ca_pipe.get_projects()
+    for project in projects:
+        embedding_pipe.score_project(project)
     #     ea = assemble_evidence_pack(project, db_path)
     #
     #     print(ea)

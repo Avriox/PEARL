@@ -1,0 +1,22 @@
+[
+  {
+    "c0": "selection_sorter.timed_call",
+    "c1": "/Users/jakobgoldmann/Documents/Uni/fhwn/PEARL/test-projects/01-selection-sorter/selection_sorter.py",
+    "c2": "def timed_call(fn: Callable, *args, **kwargs) -> Tuple[object, float]:\n    \"\"\"Run fn(*args, **kwargs) and return (result, elapsed_seconds).\"\"\"\n    start = time.perf_counter()\n    result = fn(*args, **kwargs)\n    elapsed = time.perf_counter() - start\n    return result, elapsed"
+  },
+  {
+    "c0": "selection_sorter.generate_numbers",
+    "c1": "/Users/jakobgoldmann/Documents/Uni/fhwn/PEARL/test-projects/01-selection-sorter/selection_sorter.py",
+    "c2": "def generate_numbers(n: int, seed: Optional[int] = None) -> List[int]:\n    \"\"\"Generate n random ints.\"\"\"\n    rng = random.Random(seed)\n    return [rng.randint(0, 10_000) for _ in range(n)]"
+  },
+  {
+    "c0": "selection_sorter.main",
+    "c1": "/Users/jakobgoldmann/Documents/Uni/fhwn/PEARL/test-projects/01-selection-sorter/selection_sorter.py",
+    "c2": "def main() -> None:\n    parser = argparse.ArgumentParser(\n        description=\"Selection sort with an intentional O(n^2) performance issue.\"\n    )\n    parser.add_argument(\n        \"--n\",\n        type=int,\n        default=1000,\n        help=\"Number of random integers to sort (default: 1000)\",\n    )\n    parser.add_argument(\n        \"--seed\", type=int, default=42, help=\"Random seed (default: 42)\"\n    )\n    args = parser.parse_args()\n\n    data = generate_numbers(args.n, seed=args.seed)\n    sorted_data, dt = timed_call(selection_sort, data)\n\n    print(\n        f\"Sorted {len(data)} numbers in {dt:.4f}s using selection sort (intentionally O(n^2)).\"\n    )\n    preview = \", \".join(map(str, sorted_data[:10]))\n    print(f\"Preview of first 10 sorted numbers: [{preview}]\")"
+  },
+  {
+    "c0": "selection_sorter.selection_sort",
+    "c1": "/Users/jakobgoldmann/Documents/Uni/fhwn/PEARL/test-projects/01-selection-sorter/selection_sorter.py",
+    "c2": "def selection_sort(nums: List[int]) -> List[int]:\n    \"\"\"\n    Intentionally inefficient O(n^2) selection sort.\n    A faster alternative would be the built-in sorted() (Timsort, O(n log n) average).\n    \"\"\"\n    arr = nums[:]  # work on a copy\n    for i in range(len(arr)):\n        min_idx = i\n        for j in range(i + 1, len(arr)):\n            if arr[j] < arr[min_idx]:\n                min_idx = j\n        arr[i], arr[min_idx] = arr[min_idx], arr[i]\n    return arr"
+  }
+]

@@ -30,11 +30,11 @@ entrypoint:
   module: null               # e.g., "pkg.module"
   callable: null             # e.g., "pkg.module:main"
   working_dir: "."
-  python_opts: []            # e.g., ["-X", "faulthandler"]
-  env: {}
+  python_opts: [ ]            # e.g., ["-X", "faulthandler"]
+  env: { }
 
 run:
-  default_args: ["--n", "200", "--seed", "42"]
+  default_args: [ "--n", "2000", "--seed", "42" ]
   timeout_seconds: 60
 
 notes:

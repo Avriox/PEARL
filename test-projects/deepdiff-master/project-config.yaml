@@ -19,4 +19,4 @@ dependencies:
 
 run:
   default_args: [ "--n", "200", "--seed", "42" ]
-  timeout_seconds: 60
+  timeout_seconds: 5000

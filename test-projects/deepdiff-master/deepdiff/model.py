@@ -3,8 +3,16 @@ from collections.abc import Mapping
 from copy import copy
 from typing import Any, Dict, List, Optional, Set, Union, Literal, Type, TYPE_CHECKING
 from deepdiff.helper import (
-    RemapDict, strings, notpresent, get_type, numpy_numbers, np, literal_eval_extended,
-    dict_, SetOrdered)
+    RemapDict,
+    strings,
+    notpresent,
+    get_type,
+    numpy_numbers,
+    np,
+    literal_eval_extended,
+    dict_,
+    SetOrdered,
+)
 from deepdiff.path import stringify_element
 
 if TYPE_CHECKING:
@@ -12,8 +20,8 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-FORCE_DEFAULT: Literal['fake'] = 'fake'
-UP_DOWN: Dict[str, str] = {'up': 'down', 'down': 'up'}
+FORCE_DEFAULT: Literal["fake"] = "fake"
+UP_DOWN: Dict[str, str] = {"up": "down", "down": "up"}
 
 REPORT_KEYS: Set[str] = {
     "type_changes",
@@ -66,27 +74,31 @@ class TreeResult(ResultDict):
 
         This function should only be run on the Tree Result.
         """
-        iterable_item_added = self.get('iterable_item_added')
-        iterable_item_removed = self.get('iterable_item_removed')
+        iterable_item_added = self.get("iterable_item_added")
+        iterable_item_removed = self.get("iterable_item_removed")
         if iterable_item_added is not None and iterable_item_removed is not None:
             added_paths = {i.path(): i for i in iterable_item_added}
             removed_paths = {i.path(): i for i in iterable_item_removed}
             mutual_paths = set(added_paths) & set(removed_paths)
 
-            if mutual_paths and 'values_changed' not in self or self['values_changed'] is None:
-                self['values_changed'] = SetOrdered()
+            if (
+                mutual_paths
+                and "values_changed" not in self
+                or self["values_changed"] is None
+            ):
+                self["values_changed"] = SetOrdered()
             for path in mutual_paths:
                 level_before = removed_paths[path]
                 iterable_item_removed.remove(level_before)
                 level_after = added_paths[path]
                 iterable_item_added.remove(level_after)
                 level_before.t2 = level_after.t2
-                self['values_changed'].add(level_before)  # type: ignore
-                level_before.report_type = 'values_changed'
-        if 'iterable_item_removed' in self and not iterable_item_removed:
-            del self['iterable_item_removed']
-        if 'iterable_item_added' in self and not iterable_item_added:
-            del self['iterable_item_added']
+                self["values_changed"].add(level_before)  # type: ignore
+                level_before.report_type = "values_changed"
+        if "iterable_item_removed" in self and not iterable_item_removed:
+            del self["iterable_item_removed"]
+        if "iterable_item_added" in self and not iterable_item_added:
+            del self["iterable_item_added"]
 
     def __getitem__(self, item: str) -> SetOrdered:
         if item not in self:
@@ -110,24 +122,28 @@ class TreeResult(ResultDict):
 class TextResult(ResultDict):
     ADD_QUOTES_TO_STRINGS: bool = True
 
-    def __init__(self, tree_results: Optional['TreeResult'] = None, verbose_level: int = 1) -> None:
+    def __init__(
+        self, tree_results: Optional["TreeResult"] = None, verbose_level: int = 1
+    ) -> None:
         self.verbose_level = verbose_level
         # TODO: centralize keys
-        self.update({
-            "type_changes": dict_(),
-            "dictionary_item_added": self.__set_or_dict(),
-            "dictionary_item_removed": self.__set_or_dict(),
-            "values_changed": dict_(),
-            "unprocessed": [],
-            "iterable_item_added": dict_(),
-            "iterable_item_removed": dict_(),
-            "iterable_item_moved": dict_(),
-            "attribute_added": self.__set_or_dict(),
-            "attribute_removed": self.__set_or_dict(),
-            "set_item_removed": SetOrdered(),
-            "set_item_added": SetOrdered(),
-            "repetition_change": dict_()
-        })
+        self.update(
+            {
+                "type_changes": dict_(),
+                "dictionary_item_added": self.__set_or_dict(),
+                "dictionary_item_removed": self.__set_or_dict(),
+                "values_changed": dict_(),
+                "unprocessed": [],
+                "iterable_item_added": dict_(),
+                "iterable_item_removed": dict_(),
+                "iterable_item_moved": dict_(),
+                "attribute_added": self.__set_or_dict(),
+                "attribute_removed": self.__set_or_dict(),
+                "set_item_removed": SetOrdered(),
+                "set_item_added": SetOrdered(),
+                "repetition_change": dict_(),
+            }
+        )
 
         if tree_results:
             self._from_tree_results(tree_results)
@@ -135,31 +151,36 @@ class TextResult(ResultDict):
     def __set_or_dict(self) -> Union[Dict[str, Any], SetOrdered]:
         return {} if self.verbose_level >= 2 else SetOrdered()
 
-    def _from_tree_results(self, tree: 'TreeResult') -> None:
+    def _from_tree_results(self, tree: "TreeResult") -> None:
         """
         Populate this object by parsing an existing reference-style result dictionary.
         :param tree: A TreeResult
         :return:
         """
         self._from_tree_type_changes(tree)
-        self._from_tree_default(tree, 'dictionary_item_added')
-        self._from_tree_default(tree, 'dictionary_item_removed')
+        self._from_tree_default(tree, "dictionary_item_added")
+        self._from_tree_default(tree, "dictionary_item_removed")
         self._from_tree_value_changed(tree)
         self._from_tree_unprocessed(tree)
-        self._from_tree_default(tree, 'iterable_item_added')
-        self._from_tree_default(tree, 'iterable_item_removed')
+        self._from_tree_default(tree, "iterable_item_added")
+        self._from_tree_default(tree, "iterable_item_removed")
         self._from_tree_iterable_item_moved(tree)
-        self._from_tree_default(tree, 'attribute_added')
-        self._from_tree_default(tree, 'attribute_removed')
+        self._from_tree_default(tree, "attribute_added")
+        self._from_tree_default(tree, "attribute_removed")
         self._from_tree_set_item_removed(tree)
         self._from_tree_set_item_added(tree)
         self._from_tree_repetition_change(tree)
         self._from_tree_deep_distance(tree)
         self._from_tree_custom_results(tree)
 
-    def _from_tree_default(self, tree: 'TreeResult', report_type: str, ignore_if_in_iterable_opcodes: bool = False) -> None:
+    def _from_tree_default(
+        self,
+        tree: "TreeResult",
+        report_type: str,
+        ignore_if_in_iterable_opcodes: bool = False,
+    ) -> None:
         if report_type in tree:
-                
+
             for change in tree[report_type]:  # report each change
                 # When we convert from diff to delta result, we care more about opcodes than iterable_item_added or removed
                 if (
@@ -187,12 +208,13 @@ class TextResult(ResultDict):
                     report.append(change.path(force=FORCE_DEFAULT))
                 else:  # pragma: no cover
                     # should never happen
-                    raise TypeError("Cannot handle {} report container type.".
-                                    format(report))
+                    raise TypeError(
+                        "Cannot handle {} report container type.".format(report)
+                    )
 
     def _from_tree_type_changes(self, tree):
-        if 'type_changes' in tree:
-            for change in tree['type_changes']:
+        if "type_changes" in tree:
+            for change in tree["type_changes"]:
                 path = change.path(force=FORCE_DEFAULT)
                 if type(change.t1) is type:
                     include_values = False
@@ -202,53 +224,63 @@ class TextResult(ResultDict):
                     include_values = True
                     old_type = get_type(change.t1)
                     new_type = get_type(change.t2)
-                remap_dict = RemapDict({
-                    'old_type': old_type,
-                    'new_type': new_type,
-                })
+                remap_dict = RemapDict(
+                    {
+                        "old_type": old_type,
+                        "new_type": new_type,
+                    }
+                )
                 if self.verbose_level > 1:
                     new_path = change.path(use_t2=True, force=FORCE_DEFAULT)
                     if path != new_path:
-                        remap_dict['new_path'] = new_path
-                self['type_changes'][path] = remap_dict
+                        remap_dict["new_path"] = new_path
+                self["type_changes"][path] = remap_dict
                 if self.verbose_level and include_values:
                     remap_dict.update(old_value=change.t1, new_value=change.t2)
 
     def _from_tree_value_changed(self, tree):
-        if 'values_changed' in tree and self.verbose_level > 0:
-            for change in tree['values_changed']:
+        if "values_changed" in tree and self.verbose_level > 0:
+            for change in tree["values_changed"]:
                 path = change.path(force=FORCE_DEFAULT)
-                the_changed = {'new_value': change.t2, 'old_value': change.t1}
+                the_changed = {"new_value": change.t2, "old_value": change.t1}
                 if self.verbose_level > 1:
                     new_path = change.path(use_t2=True, force=FORCE_DEFAULT)
                     if path != new_path:
-                        the_changed['new_path'] = new_path
-                self['values_changed'][path] = the_changed
-                if 'diff' in change.additional:
-                    the_changed.update({'diff': change.additional['diff']})
+                        the_changed["new_path"] = new_path
+                self["values_changed"][path] = the_changed
+                if "diff" in change.additional:
+                    the_changed.update({"diff": change.additional["diff"]})
 
     def _from_tree_iterable_item_moved(self, tree):
-        if 'iterable_item_moved' in tree and self.verbose_level > 1:
+        if "iterable_item_moved" in tree and self.verbose_level > 1:
 
-            for change in tree['iterable_item_moved']:
-                the_changed = {'new_path': change.path(use_t2=True, reporting_move=True), 'value': change.t2}
-                self['iterable_item_moved'][change.path(
-                    force=FORCE_DEFAULT, use_t2=False, reporting_move=True)] = the_changed
+            for change in tree["iterable_item_moved"]:
+                the_changed = {
+                    "new_path": change.path(use_t2=True, reporting_move=True),
+                    "value": change.t2,
+                }
+                self["iterable_item_moved"][
+                    change.path(force=FORCE_DEFAULT, use_t2=False, reporting_move=True)
+                ] = the_changed
 
     def _from_tree_unprocessed(self, tree):
-        if 'unprocessed' in tree:
-            for change in tree['unprocessed']:
-                self['unprocessed'].append("{}: {} and {}".format(change.path(
-                    force=FORCE_DEFAULT), change.t1, change.t2))
+        if "unprocessed" in tree:
+            for change in tree["unprocessed"]:
+                self["unprocessed"].append(
+                    "{}: {} and {}".format(
+                        change.path(force=FORCE_DEFAULT), change.t1, change.t2
+                    )
+                )
 
     def _from_tree_set_item_added_or_removed(self, tree, key):
         if key in tree:
             set_item_info = self[key]
             is_dict = isinstance(set_item_info, Mapping)
             for change in tree[key]:
-                path = change.up.path(
+                path = (
+                    change.up.path()
                 )  # we want't the set's path, the added item is not directly accessible
-                item = change.t2 if key == 'set_item_added' else change.t1
+                item = change.t2 if key == "set_item_added" else change.t1
                 if self.ADD_QUOTES_TO_STRINGS and isinstance(item, strings):
                     item = "'%s'" % item
                 if is_dict:
@@ -260,23 +292,23 @@ class TextResult(ResultDict):
                     # this syntax is rather peculiar, but it's DeepDiff 2.x compatible)
 
     def _from_tree_set_item_added(self, tree):
-        self._from_tree_set_item_added_or_removed(tree, key='set_item_added')
+        self._from_tree_set_item_added_or_removed(tree, key="set_item_added")
 
     def _from_tree_set_item_removed(self, tree):
-        self._from_tree_set_item_added_or_removed(tree, key='set_item_removed')
+        self._from_tree_set_item_added_or_removed(tree, key="set_item_removed")
 
     def _from_tree_repetition_change(self, tree):
-        if 'repetition_change' in tree:
-            for change in tree['repetition_change']:
+        if "repetition_change" in tree:
+            for change in tree["repetition_change"]:
                 path = change.path(force=FORCE_DEFAULT)
-                self['repetition_change'][path] = RemapDict(
-                    change.additional['repetition']
+                self["repetition_change"][path] = RemapDict(
+                    change.additional["repetition"]
                 )
-                self['repetition_change'][path]['value'] = change.t1
+                self["repetition_change"][path]["value"] = change.t1
 
     def _from_tree_deep_distance(self, tree):
-        if 'deep_distance' in tree:
-            self['deep_distance'] = tree['deep_distance']
+        if "deep_distance" in tree:
+            self["deep_distance"] = tree["deep_distance"]
 
     def _from_tree_custom_results(self, tree):
         for k, _level_list in tree.items():
@@ -293,34 +325,43 @@ class TextResult(ResultDict):
                 # _level_list is a list of DiffLevel
                 _custom_dict = {}
                 for _level in _level_list:
-                    _custom_dict[_level.path(
-                        force=FORCE_DEFAULT)] = _level.additional.get(CUSTOM_FIELD, {})
+                    _custom_dict[_level.path(force=FORCE_DEFAULT)] = (
+                        _level.additional.get(CUSTOM_FIELD, {})
+                    )
                 self[k] = _custom_dict
 
 
 class DeltaResult(TextResult):
     ADD_QUOTES_TO_STRINGS: bool = False
 
-    def __init__(self, tree_results: Optional['TreeResult'] = None, ignore_order: Optional[bool] = None, always_include_values: bool = False, _iterable_opcodes: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(
+        self,
+        tree_results: Optional["TreeResult"] = None,
+        ignore_order: Optional[bool] = None,
+        always_include_values: bool = False,
+        _iterable_opcodes: Optional[Dict[str, Any]] = None,
+    ) -> None:
         self.ignore_order = ignore_order
         self.always_include_values = always_include_values
 
-        self.update({
-            "type_changes": dict_(),
-            "dictionary_item_added": dict_(),
-            "dictionary_item_removed": dict_(),
-            "values_changed": dict_(),
-            "iterable_item_added": dict_(),
-            "iterable_item_removed": dict_(),
-            "iterable_item_moved": dict_(),
-            "attribute_added": dict_(),
-            "attribute_removed": dict_(),
-            "set_item_removed": dict_(),
-            "set_item_added": dict_(),
-            "iterable_items_added_at_indexes": dict_(),
-            "iterable_items_removed_at_indexes": dict_(),
-            "_iterable_opcodes": _iterable_opcodes or {},
-        })
+        self.update(
+            {
+                "type_changes": dict_(),
+                "dictionary_item_added": dict_(),
+                "dictionary_item_removed": dict_(),
+                "values_changed": dict_(),
+                "iterable_item_added": dict_(),
+                "iterable_item_removed": dict_(),
+                "iterable_item_moved": dict_(),
+                "attribute_added": dict_(),
+                "attribute_removed": dict_(),
+                "set_item_removed": dict_(),
+                "set_item_added": dict_(),
+                "iterable_items_added_at_indexes": dict_(),
+                "iterable_items_removed_at_indexes": dict_(),
+                "_iterable_opcodes": _iterable_opcodes or {},
+            }
+        )
 
         if tree_results:
             self._from_tree_results(tree_results)
@@ -332,25 +373,37 @@ class DeltaResult(TextResult):
         :return:
         """
         self._from_tree_type_changes(tree)
-        self._from_tree_default(tree, 'dictionary_item_added')
-        self._from_tree_default(tree, 'dictionary_item_removed')
+        self._from_tree_default(tree, "dictionary_item_added")
+        self._from_tree_default(tree, "dictionary_item_removed")
         self._from_tree_value_changed(tree)
         if self.ignore_order:
             self._from_tree_iterable_item_added_or_removed(
-                tree, 'iterable_item_added', delta_report_key='iterable_items_added_at_indexes')
+                tree,
+                "iterable_item_added",
+                delta_report_key="iterable_items_added_at_indexes",
+            )
             self._from_tree_iterable_item_added_or_removed(
-                tree, 'iterable_item_removed', delta_report_key='iterable_items_removed_at_indexes')
+                tree,
+                "iterable_item_removed",
+                delta_report_key="iterable_items_removed_at_indexes",
+            )
         else:
-            self._from_tree_default(tree, 'iterable_item_added', ignore_if_in_iterable_opcodes=True)
-            self._from_tree_default(tree, 'iterable_item_removed', ignore_if_in_iterable_opcodes=True)
+            self._from_tree_default(
+                tree, "iterable_item_added", ignore_if_in_iterable_opcodes=True
+            )
+            self._from_tree_default(
+                tree, "iterable_item_removed", ignore_if_in_iterable_opcodes=True
+            )
             self._from_tree_iterable_item_moved(tree)
-        self._from_tree_default(tree, 'attribute_added')
-        self._from_tree_default(tree, 'attribute_removed')
+        self._from_tree_default(tree, "attribute_added")
+        self._from_tree_default(tree, "attribute_removed")
         self._from_tree_set_item_removed(tree)
         self._from_tree_set_item_added(tree)
         self._from_tree_repetition_change(tree)
 
-    def _from_tree_iterable_item_added_or_removed(self, tree, report_type, delta_report_key):
+    def _from_tree_iterable_item_added_or_removed(
+        self, tree, report_type, delta_report_key
+    ):
         if report_type in tree:
             for change in tree[report_type]:  # report each change
                 # determine change direction (added or removed)
@@ -366,12 +419,14 @@ class DeltaResult(TextResult):
                 try:
                     iterable_items_added_at_indexes = self[delta_report_key][path]
                 except KeyError:
-                    iterable_items_added_at_indexes = self[delta_report_key][path] = dict_()
+                    iterable_items_added_at_indexes = self[delta_report_key][path] = (
+                        dict_()
+                    )
                 iterable_items_added_at_indexes[param] = item
 
     def _from_tree_type_changes(self, tree):
-        if 'type_changes' in tree:
-            for change in tree['type_changes']:
+        if "type_changes" in tree:
+            for change in tree["type_changes"]:
                 include_values = None
                 if type(change.t1) is type:
                     include_values = False
@@ -395,25 +450,27 @@ class DeltaResult(TextResult):
 
                 path = change.path(force=FORCE_DEFAULT)
                 new_path = change.path(use_t2=True, force=FORCE_DEFAULT)
-                remap_dict = RemapDict({
-                    'old_type': old_type,
-                    'new_type': new_type,
-                })
+                remap_dict = RemapDict(
+                    {
+                        "old_type": old_type,
+                        "new_type": new_type,
+                    }
+                )
                 if path != new_path:
-                    remap_dict['new_path'] = new_path
-                self['type_changes'][path] = remap_dict
+                    remap_dict["new_path"] = new_path
+                self["type_changes"][path] = remap_dict
                 if include_values or self.always_include_values:
                     remap_dict.update(old_value=change.t1, new_value=change.t2)
 
     def _from_tree_value_changed(self, tree):
-        if 'values_changed' in tree:
-            for change in tree['values_changed']:
+        if "values_changed" in tree:
+            for change in tree["values_changed"]:
                 path = change.path(force=FORCE_DEFAULT)
                 new_path = change.path(use_t2=True, force=FORCE_DEFAULT)
-                the_changed = {'new_value': change.t2, 'old_value': change.t1}
+                the_changed = {"new_value": change.t2, "old_value": change.t1}
                 if path != new_path:
-                    the_changed['new_path'] = new_path
-                self['values_changed'][path] = the_changed
+                    the_changed["new_path"] = new_path
+                self["values_changed"][path] = the_changed
                 # If we ever want to store the difflib results instead of the new_value
                 # these lines need to be uncommented and the Delta object needs to be able
                 # to use them.
@@ -421,27 +478,36 @@ class DeltaResult(TextResult):
                 #     the_changed.update({'diff': change.additional['diff']})
 
     def _from_tree_repetition_change(self, tree):
-        if 'repetition_change' in tree:
-            for change in tree['repetition_change']:
+        if "repetition_change" in tree:
+            for change in tree["repetition_change"]:
                 path, _, _ = change.path(get_parent_too=True)
-                repetition = RemapDict(change.additional['repetition'])
+                repetition = RemapDict(change.additional["repetition"])
                 value = change.t1
                 try:
-                    iterable_items_added_at_indexes = self['iterable_items_added_at_indexes'][path]
+                    iterable_items_added_at_indexes = self[
+                        "iterable_items_added_at_indexes"
+                    ][path]
                 except KeyError:
-                    iterable_items_added_at_indexes = self['iterable_items_added_at_indexes'][path] = dict_()
-                for index in repetition['new_indexes']:
+                    iterable_items_added_at_indexes = self[
+                        "iterable_items_added_at_indexes"
+                    ][path] = dict_()
+                for index in repetition["new_indexes"]:
                     iterable_items_added_at_indexes[index] = value
 
     def _from_tree_iterable_item_moved(self, tree):
-        if 'iterable_item_moved' in tree:
-            for change in tree['iterable_item_moved']:
+        if "iterable_item_moved" in tree:
+            for change in tree["iterable_item_moved"]:
                 if (
-                    change.up.path(force=FORCE_DEFAULT, reporting_move=True) not in self["_iterable_opcodes"]
+                    change.up.path(force=FORCE_DEFAULT, reporting_move=True)
+                    not in self["_iterable_opcodes"]
                 ):
-                    the_changed = {'new_path': change.path(use_t2=True, reporting_move=True), 'value': change.t2}
-                    self['iterable_item_moved'][change.path(
-                        force=FORCE_DEFAULT, reporting_move=True)] = the_changed
+                    the_changed = {
+                        "new_path": change.path(use_t2=True, reporting_move=True),
+                        "value": change.t2,
+                    }
+                    self["iterable_item_moved"][
+                        change.path(force=FORCE_DEFAULT, reporting_move=True)
+                    ] = the_changed
 
 
 class DiffLevel:
@@ -524,16 +590,18 @@ class DiffLevel:
 
     """
 
-    def __init__(self,
-                 t1: Any,
-                 t2: Any,
-                 down: Optional['DiffLevel'] = None,
-                 up: Optional['DiffLevel'] = None,
-                 report_type: Optional[str] = None,
-                 child_rel1: Optional['ChildRelationship'] = None,
-                 child_rel2: Optional['ChildRelationship'] = None,
-                 additional: Optional[Dict[str, Any]] = None,
-                 verbose_level: int = 1) -> None:
+    def __init__(
+        self,
+        t1: Any,
+        t2: Any,
+        down: Optional["DiffLevel"] = None,
+        up: Optional["DiffLevel"] = None,
+        report_type: Optional[str] = None,
+        child_rel1: Optional["ChildRelationship"] = None,
+        child_rel2: Optional["ChildRelationship"] = None,
+        additional: Optional[Dict[str, Any]] = None,
+        verbose_level: int = 1,
+    ) -> None:
         """
         :param child_rel1: Either:
                             - An existing ChildRelationship object describing the "down" relationship for t1; or
@@ -619,9 +687,11 @@ class DiffLevel:
 
     @property
     def repetition(self) -> Dict[str, Any]:
-        return self.additional['repetition']
+        return self.additional["repetition"]
 
-    def auto_generate_child_rel(self, klass: Type['ChildRelationship'], param: Any, param2: Optional[Any] = None) -> None:
+    def auto_generate_child_rel(
+        self, klass: Type["ChildRelationship"], param: Any, param2: Optional[Any] = None
+    ) -> None:
         """
         Auto-populate self.child_rel1 and self.child_rel2.
         This requires self.down to be another valid DiffLevel object.
@@ -632,13 +702,18 @@ class DiffLevel:
         """
         if self.down.t1 is not notpresent:  # type: ignore
             self.t1_child_rel = ChildRelationship.create(
-                klass=klass, parent=self.t1, child=self.down.t1, param=param)  # type: ignore
+                klass=klass, parent=self.t1, child=self.down.t1, param=param
+            )  # type: ignore
         if self.down.t2 is not notpresent:  # type: ignore
             self.t2_child_rel = ChildRelationship.create(
-                klass=klass, parent=self.t2, child=self.down.t2, param=param if param2 is None else param2)  # type: ignore
+                klass=klass,
+                parent=self.t2,
+                child=self.down.t2,
+                param=param if param2 is None else param2,
+            )  # type: ignore
 
     @property
-    def all_up(self) -> 'DiffLevel':
+    def all_up(self) -> "DiffLevel":
         """
         Get the root object of this comparison.
         (This is a convenient wrapper for following the up attribute as often as you can.)
@@ -650,7 +725,7 @@ class DiffLevel:
         return level
 
     @property
-    def all_down(self) -> 'DiffLevel':
+    def all_down(self) -> "DiffLevel":
         """
         Get the leaf object of this comparison.
         (This is a convenient wrapper for following the down attribute as often as you can.)
@@ -673,16 +748,26 @@ class DiffLevel:
         then get_root_key should return 'X'
         """
         root_level = self.all_up
-        if(use_t2):
+        if use_t2:
             next_rel = root_level.t2_child_rel
         else:
-            next_rel = root_level.t1_child_rel or root_level.t2_child_rel  # next relationship object to get a formatted param from
+            next_rel = (
+                root_level.t1_child_rel or root_level.t2_child_rel
+            )  # next relationship object to get a formatted param from
 
         if next_rel:
             return next_rel.param
         return notpresent
 
-    def path(self, root: str = "root", force: Optional[str] = None, get_parent_too: bool = False, use_t2: bool = False, output_format: Literal['str', 'list'] = 'str', reporting_move: bool = False) -> Any:
+    def path(
+        self,
+        root: str = "root",
+        force: Optional[str] = None,
+        get_parent_too: bool = False,
+        use_t2: bool = False,
+        output_format: Literal["str", "list"] = "str",
+        reporting_move: bool = False,
+    ) -> Any:
         """
         A python syntax string describing how to descend to this level, assuming the top level object is called root.
         Returns None if the path is not representable as a string.
@@ -718,11 +803,15 @@ class DiffLevel:
             cached = self._path[cache_key]
             if get_parent_too:
                 parent, param, result = cached
-                return (self._format_result(root, parent), param, self._format_result(root, result))
+                return (
+                    self._format_result(root, parent),
+                    param,
+                    self._format_result(root, result),
+                )
             else:
                 return self._format_result(root, cached)
 
-        if output_format == 'str':
+        if output_format == "str":
             result = parent = param = ""
         else:
             result = []
@@ -744,14 +833,16 @@ class DiffLevel:
             if level_use_t2:
                 next_rel = level.t2_child_rel or level.t1_child_rel
             else:
-                next_rel = level.t1_child_rel or level.t2_child_rel  # next relationship object to get a formatted param from
+                next_rel = (
+                    level.t1_child_rel or level.t2_child_rel
+                )  # next relationship object to get a formatted param from
 
             # t1 and t2 both are empty
             if next_rel is None:
                 break
 
             # Build path for this level
-            if output_format == 'str':
+            if output_format == "str":
                 item = next_rel.get_param_repr(force)
                 if item:
                     parent = result
@@ -761,30 +852,228 @@ class DiffLevel:
                     # it seems this path is not representable as a string
                     result = None
                     break
-            elif output_format == 'list':
+            elif output_format == "list":
                 result.append(next_rel.param)  # type: ignore
 
             # Prepare processing next level
             level = level.down
 
-        if output_format == 'str':
+        if output_format == "str":
             if get_parent_too:
                 self._path[cache_key] = (parent, param, result)  # type: ignore
                 output = (self._format_result(root, parent), param, self._format_result(root, result))  # type: ignore
             else:
                 self._path[cache_key] = result
-                output = self._format_result(root, result) if isinstance(result, (str, type(None))) else None
+                output = (
+                    self._format_result(root, result)
+                    if isinstance(result, (str, type(None)))
+                    else None
+                )
         else:
             output = result
         return output
 
-    def create_deeper(self,
-                      new_t1: Any,
-                      new_t2: Any,
-                      child_relationship_class: Type['ChildRelationship'],
-                      child_relationship_param: Optional[Any] = None,
-                      child_relationship_param2: Optional[Any] = None,
-                      report_type: Optional[str] = None) -> 'DiffLevel':
+    # Slow Version
+    # def path(
+    #     self,
+    #     root: str = "root",
+    #     force: Optional[str] = None,
+    #     get_parent_too: bool = False,
+    #     use_t2: bool = False,
+    #     output_format: Literal["str", "list"] = "str",
+    #     reporting_move: bool = False,
+    # ) -> Any:
+    #     # Recreating cache key every time even when not needed
+    #     cache_key_parts = []
+    #     cache_key_parts.append(str(force))
+    #     cache_key_parts.append(str(get_parent_too))
+    #     cache_key_parts.append(str(use_t2))
+    #     cache_key_parts.append(str(output_format))
+    #     cache_key = "".join(cache_key_parts)
+    #
+    #     # Not checking cache first
+    #     if output_format == "str":
+    #         result = parent = param = ""
+    #     else:
+    #         result = []
+    #
+    #     level = self.all_up
+    #
+    #     while level and level is not self:
+    #         if level.additional.get("moved") and not reporting_move:
+    #             level_use_t2 = not use_t2
+    #         else:
+    #             level_use_t2 = use_t2
+    #
+    #         if level_use_t2:
+    #             next_rel = level.t2_child_rel or level.t1_child_rel
+    #         else:
+    #             next_rel = level.t1_child_rel or level.t2_child_rel
+    #
+    #         if next_rel is None:
+    #             break
+    #
+    #         if output_format == "str":
+    #             item = next_rel.get_param_repr(force)
+    #             if item:
+    #                 parent = result
+    #                 param = next_rel.param
+    #                 result = result + item  # String concatenation instead of using list
+    #             else:
+    #                 result = None
+    #                 break
+    #         elif output_format == "list":
+    #             result.append(next_rel.param)
+    #
+    #         level = level.down
+    #
+    #     # Only checking cache at the end
+    #     if cache_key in self._path:
+    #         cached = self._path[cache_key]
+    #         if get_parent_too:
+    #             parent, param, result = cached
+    #             return (
+    #                 self._format_result(root, parent),
+    #                 param,
+    #                 self._format_result(root, result),
+    #             )
+    #         else:
+    #             return self._format_result(root, cached)
+    #
+    #     if output_format == "str":
+    #         if get_parent_too:
+    #             self._path[cache_key] = (parent, param, result)
+    #             output = (
+    #                 self._format_result(root, parent),
+    #                 param,
+    #                 self._format_result(root, result),
+    #             )
+    #         else:
+    #             self._path[cache_key] = result
+    #             output = (
+    #                 self._format_result(root, result)
+    #                 if isinstance(result, (str, type(None)))
+    #                 else None
+    #             )
+    #     else:
+    #         output = result
+    #     return output
+
+    # Slow Version Path2
+    # def path(
+    #     self,
+    #     root: str = "root",
+    #     force: Optional[str] = None,
+    #     get_parent_too: bool = False,
+    #     use_t2: bool = False,
+    #     output_format: Literal["str", "list"] = "str",
+    #     reporting_move: bool = False,
+    # ) -> Any:
+    #     """
+    #     A python syntax string describing how to descend to this level, assuming the top level object is called root.
+    #     Returns None if the path is not representable as a string.
+    #     This might be the case for example if there are sets involved (because then there's not path at all) or because
+    #     custom objects used as dictionary keys (then there is a path but it's not representable).
+    #     Example: root['ingredients'][0]
+    #     Note: We will follow the left side of the comparison branch, i.e. using the t1's to build the path.
+    #     Using t1 or t2 should make no difference at all, except for the last step of a child-added/removed relationship.
+    #     If it does in any other case, your comparison path is corrupt.
+    #
+    #     Parameters
+    #
+    #     :param root: The result string shall start with this var name
+    #     :param force: Bends the meaning of "no string representation".
+    #     If None:
+    #     Will strictly return Python-parsable expressions. The result those yield will compare
+    #     equal to the objects in question.
+    #     If 'yes':
+    #     Will return a path including '(unrepresentable)' in place of non string-representable parts.
+    #     If 'fake':
+    #     Will try to produce an output optimized for readability.
+    #     This will pretend all iterables are subscriptable, for example.
+    #     :param output_format: The format of the output. The options are 'str' which is the default and produces a
+    #     string representation of the path or 'list' to produce a list of keys and attributes
+    #     that produce the path.
+    #
+    #     :param reporting_move: This should be set to true if and only if we are reporting on iterable_item_moved.
+    #     All other cases should leave this set to False.
+    #     """
+    #
+    #     # Inefficient recursive rebuild without proper caching
+    #     def recursive_path(level, current_result):
+    #         if not level or level is self:
+    #             return current_result
+    #         if level.additional.get("moved") and not reporting_move:
+    #             level_use_t2 = not use_t2
+    #         else:
+    #             level_use_t2 = use_t2
+    #
+    #         if level_use_t2:
+    #             next_rel = level.t2_child_rel or level.t1_child_rel
+    #         else:
+    #             next_rel = level.t1_child_rel or level.t2_child_rel
+    #
+    #         if next_rel is None:
+    #             return None
+    #
+    #         if output_format == "str":
+    #             item = next_rel.get_param_repr(force)
+    #             if item:
+    #                 return recursive_path(level.down, current_result + item)
+    #             else:
+    #                 return None
+    #         elif output_format == "list":
+    #             return recursive_path(level.down, current_result + [next_rel.param])
+    #
+    #     cache_key = "{}{}{}{}".format(force, get_parent_too, use_t2, output_format)
+    #     if cache_key in self._path:
+    #         cached = self._path[cache_key]
+    #         if get_parent_too:
+    #             parent, param, result = cached
+    #             return (
+    #                 self._format_result(root, parent),
+    #                 param,
+    #                 self._format_result(root, result),
+    #             )
+    #         else:
+    #             return self._format_result(root, cached)
+    #
+    #     level = self.all_up
+    #     if output_format == "str":
+    #         result = recursive_path(level, "")
+    #         parent = recursive_path(level, "")  # redundant call
+    #         param = ""  # simplified
+    #     else:
+    #         result = recursive_path(level, [])
+    #
+    #     if output_format == "str":
+    #         if get_parent_too:
+    #             self._path[cache_key] = (parent, param, result)
+    #             output = (
+    #                 self._format_result(root, parent),
+    #                 param,
+    #                 self._format_result(root, result),
+    #             )
+    #         else:
+    #             self._path[cache_key] = result
+    #             output = (
+    #                 self._format_result(root, result)
+    #                 if isinstance(result, (str, type(None)))
+    #                 else None
+    #             )
+    #     else:
+    #         output = result
+    #     return output
+
+    def create_deeper(
+        self,
+        new_t1: Any,
+        new_t2: Any,
+        child_relationship_class: Type["ChildRelationship"],
+        child_relationship_param: Optional[Any] = None,
+        child_relationship_param2: Optional[Any] = None,
+        report_type: Optional[str] = None,
+    ) -> "DiffLevel":
         """
         Start a new comparison level and correctly link it to this one.
         :rtype: DiffLevel
@@ -792,19 +1081,30 @@ class DiffLevel:
         """
         level = self.all_down
         result = DiffLevel(
-            new_t1, new_t2, down=None, up=level, report_type=report_type, verbose_level=self.verbose_level)
+            new_t1,
+            new_t2,
+            down=None,
+            up=level,
+            report_type=report_type,
+            verbose_level=self.verbose_level,
+        )
         level.down = result
         level.auto_generate_child_rel(
-            klass=child_relationship_class, param=child_relationship_param, param2=child_relationship_param2)
+            klass=child_relationship_class,
+            param=child_relationship_param,
+            param2=child_relationship_param2,
+        )
         return result
 
-    def branch_deeper(self,
-                      new_t1: Any,
-                      new_t2: Any,
-                      child_relationship_class: Type['ChildRelationship'],
-                      child_relationship_param: Optional[Any] = None,
-                      child_relationship_param2: Optional[Any] = None,
-                      report_type: Optional[str] = None) -> 'DiffLevel':
+    def branch_deeper(
+        self,
+        new_t1: Any,
+        new_t2: Any,
+        child_relationship_class: Type["ChildRelationship"],
+        child_relationship_param: Optional[Any] = None,
+        child_relationship_param2: Optional[Any] = None,
+        report_type: Optional[str] = None,
+    ) -> "DiffLevel":
         """
         Branch this comparison: Do not touch this comparison line, but create a new one with exactly the same content,
         just one level deeper.
@@ -812,10 +1112,16 @@ class DiffLevel:
         :return: New level in new comparison line
         """
         branch = self.copy()
-        return branch.create_deeper(new_t1, new_t2, child_relationship_class,
-                                    child_relationship_param, child_relationship_param2, report_type)
+        return branch.create_deeper(
+            new_t1,
+            new_t2,
+            child_relationship_class,
+            child_relationship_param,
+            child_relationship_param2,
+            report_type,
+        )
 
-    def copy(self) -> 'DiffLevel':
+    def copy(self) -> "DiffLevel":
         """
         Get a deep copy of this comparision line.
         :return: The leaf ("downmost") object of the copy.
@@ -826,7 +1132,9 @@ class DiffLevel:
         while orig is not None:
             result.additional = copy(orig.additional)
 
-            if orig.down is not None:  # copy and create references to the following level
+            if (
+                orig.down is not None
+            ):  # copy and create references to the following level
                 # copy following level
                 result.down = copy(orig.down)
 
@@ -835,13 +1143,15 @@ class DiffLevel:
                         klass=orig.t1_child_rel.__class__,
                         parent=result.t1,
                         child=result.down.t1,
-                        param=orig.t1_child_rel.param)
+                        param=orig.t1_child_rel.param,
+                    )
                 if orig.t2_child_rel is not None:
                     result.t2_child_rel = ChildRelationship.create(
                         klass=orig.t2_child_rel.__class__,
                         parent=result.t2,
                         child=result.down.t2,
-                        param=orig.t2_child_rel.param)
+                        param=orig.t2_child_rel.param,
+                    )
 
             # descend to next level
             orig = orig.down
@@ -866,7 +1176,12 @@ class ChildRelationship:
     quote_str: Optional[str] = None
 
     @staticmethod
-    def create(klass: Type['ChildRelationship'], parent: Any, child: Any, param: Optional[Any] = None) -> 'ChildRelationship':
+    def create(
+        klass: Type["ChildRelationship"],
+        parent: Any,
+        child: Any,
+        param: Optional[Any] = None,
+    ) -> "ChildRelationship":
         if not issubclass(klass, ChildRelationship):
             raise TypeError
         return klass(parent, child, param)
@@ -928,8 +1243,8 @@ class ChildRelationship:
         if isinstance(param, strings):
             result = stringify_element(param, quote_str=self.quote_str)
         elif isinstance(param, tuple):  # Currently only for numpy ndarrays
-            result = ']['.join(map(repr, param))
-        elif hasattr(param, '__dataclass_fields__'):
+            result = "][".join(map(repr, param))
+        elif hasattr(param, "__dataclass_fields__"):
             attrs_to_values = [f"{key}={value}" for key, value in [(i, getattr(param, i)) for i in param.__dataclass_fields__]]  # type: ignore
             result = f"{param.__class__.__name__}({','.join(attrs_to_values)})"
         else:
@@ -942,15 +1257,70 @@ class ChildRelationship:
                 logger.error(
                     f'stringify_param was not able to get a proper repr for "{param}". '
                     "This object will be reported as None. Add instructions for this object to DeepDiff's "
-                    f"helper.literal_eval_extended to make it work properly: {err}")
+                    f"helper.literal_eval_extended to make it work properly: {err}"
+                )
                 result = None
             else:
                 result = candidate if resurrected == param else None
 
         if result:
-            result = ':' if self.param_repr_format is None else self.param_repr_format.format(result)
+            result = (
+                ":"
+                if self.param_repr_format is None
+                else self.param_repr_format.format(result)
+            )
 
         return result
+
+    # Slow Version
+    # def stringify_param(self, force: Optional[str] = None) -> Optional[str]:
+    #     param = self.param
+    #     if isinstance(param, strings):
+    #         # Multiple passes over the string
+    #         for _ in range(3):
+    #             result = stringify_element(param, quote_str=self.quote_str)
+    #     elif isinstance(param, tuple):
+    #         # Creating intermediate lists and strings
+    #         temp_list = []
+    #         for item in param:
+    #             temp_list.append(repr(item))
+    #         result = "][".join(temp_list)
+    #     elif hasattr(param, "__dataclass_fields__"):
+    #         attrs_list = []
+    #         for field in param.__dataclass_fields__:
+    #             value = getattr(param, field)
+    #             attrs_list.append(f"{field}={value}")
+    #         attrs_str = ",".join(attrs_list)
+    #         result = f"{param.__class__.__name__}({attrs_str})"
+    #     else:
+    #         candidate = repr(param)
+    #         # Try multiple times unnecessarily
+    #         for attempt in range(5):
+    #             try:
+    #                 resurrected = literal_eval_extended(candidate)
+    #                 if resurrected == param:
+    #                     result = candidate
+    #                     break
+    #                 else:
+    #                     result = None
+    #             except (SyntaxError, ValueError) as err:
+    #                 if attempt == 4:
+    #                     logger.error(
+    #                         f'stringify_param was not able to get a proper repr for "{param}". '
+    #                         "This object will be reported as None. Add instructions for this object to DeepDiff's "
+    #                         f"helper.literal_eval_extended to make it work properly: {err}"
+    #                     )
+    #                     result = None
+    #
+    #     if result:
+    #         if self.param_repr_format is None:
+    #             result = ":"
+    #         else:
+    #             # String formatting done multiple times
+    #             for _ in range(2):
+    #                 result = self.param_repr_format.format(result)
+    #
+    #     return result
 
 
 class DictRelationship(ChildRelationship):
@@ -981,9 +1351,9 @@ class NonSubscriptableIterableRelationship(InaccessibleRelationship):
     param_repr_format: Optional[str] = "[{}]"
 
     def get_param_repr(self, force: Optional[str] = None) -> Optional[str]:
-        if force == 'yes':
+        if force == "yes":
             result = "(unrepresentable)"
-        elif force == 'fake' and self.param:
+        elif force == "fake" and self.param:
             result = self.stringify_param()
         else:
             result = None

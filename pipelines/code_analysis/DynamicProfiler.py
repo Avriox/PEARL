@@ -1,3 +1,4 @@
+import ast
 import json
 import logging
 import time
@@ -74,7 +75,7 @@ class DynamicProfiler:
                 pass
 
     def profile_function_timing(
-        self, args=None, warmup_runs=2, top_k_for_lines=10
+        self, args=None, warmup_runs=2, profiled_runs=10, top_k_for_lines=10
     ) -> ProfilingRun:
         logging.info(f"Starting function timing profiling for {self.project_id}")
 
@@ -85,155 +86,222 @@ class DynamicProfiler:
 
         info = self.project.build_entrypoint_info(args=args)
 
-        # 1) pyinstrument (structure + edges)
-        pyi_code = self._build_pyinstrument_wrapper_code(
-            entry_type=info["type"],
-            target=info["target"],
-            argv0=info["argv0"],
-            args=info["args"],
-        )
-        pyi_res = self.project.run_with_profiling(pyi_code)
-        if pyi_res.returncode != 0:
-            ...
-        pyi_json_str = self._extract_json_block(
-            pyi_res.stdout, self.PYI_START, self.PYI_END
-        )
-        pyi_payload = json.loads(pyi_json_str)
-        session_json = pyi_payload.get("session", {})
-        pyi_total_ms = float(pyi_payload.get("total_time_sec", 0.0)) * 1000.0
-        func_metrics_from_pyi, edges = self._aggregate_pyinstrument(
-            session_json
-        )  # now edges have file/line
+        # Storage for multiple runs
+        all_func_metrics = []  # List of dicts of FunctionMetrics
+        all_edges = []  # List of edge dicts
+        all_total_times = []
+        all_peak_memories = []
+        all_line_profiles = []  # List of line profiling results
 
-        # 2) cProfile (accurate timings, keyed by (file, line, func))
-        cp_code = self._build_cprofile_wrapper_code(
-            entry_type=info["type"],
-            target=info["target"],
-            argv0=info["argv0"],
-            args=info["args"],
-        )
-        cp_res = self.project.run_with_profiling(cp_code)
-        if cp_res.returncode != 0:
-            ...
-        cp_json_str = self._extract_json_block(
-            cp_res.stdout, self.CPROF_START, self.CPROF_END
-        )
-        cp_payload = json.loads(cp_json_str)
-        cp_total_ms = float(cp_payload.get("total_time_sec", 0.0)) * 1000.0
+        # Run multiple profiled runs
+        for run_num in range(profiled_runs):
+            logging.info(f"Profiled run {run_num+1}/{profiled_runs}")
 
-        # Merge cProfile
-        func_metrics = self._apply_cprofile_to_metrics(
-            func_metrics_from_pyi, cp_payload
-        )
-
-        total_time_ms = (
-            cp_total_ms
-            if cp_total_ms > 0
-            else (pyi_total_ms if pyi_total_ms > 0 else 0.0)
-        )
-
-        # Resolve to fully qualified FQNs
-        resolver = FQNResolver(self.db, self.project_id, self.project.directory)
-
-        # a) Resolve function metrics
-        resolved_func_metrics = {}
-        temp_to_resolved = {}
-        for temp_key, fm in func_metrics.items():
-            resolved_fqn = resolver.resolve(
-                file_path=fm.file_path,
-                lineno=int(fm.first_lineno or 0),
-                fallback_module=fm.module_name,
-                funcname=fm.function_name,
+            # 1) pyinstrument (structure + edges)
+            pyi_code = self._build_pyinstrument_wrapper_code(
+                entry_type=info["type"],
+                target=info["target"],
+                argv0=info["argv0"],
+                args=info["args"],
             )
-            temp_to_resolved[temp_key] = resolved_fqn
+            pyi_res = self.project.run_with_profiling(pyi_code)
+            if pyi_res.returncode != 0:
+                logging.warning(f"Pyinstrument failed on run {run_num+1}")
+                continue
 
-            if resolved_fqn not in resolved_func_metrics:
-                fm.fqn = resolved_fqn
-                fm.module_name = ".".join(resolved_fqn.split(".")[:-1])
-                fm.function_name = resolved_fqn.split(".")[-1]
-                resolved_func_metrics[resolved_fqn] = fm
-            else:
-                acc = resolved_func_metrics[resolved_fqn]
-                acc.inclusive_time_ms += fm.inclusive_time_ms
-                acc.exclusive_time_ms += fm.exclusive_time_ms
-                acc.call_count += fm.call_count
-
-        # Normalize
-        for fm in resolved_func_metrics.values():
-            fm.fraction_of_total = (
-                (fm.exclusive_time_ms / total_time_ms) if total_time_ms > 0 else 0.0
+            pyi_json_str = self._extract_json_block(
+                pyi_res.stdout, self.PYI_START, self.PYI_END
             )
-            fm.avg_time_ms = fm.exclusive_time_ms / max(1, fm.call_count)
+            pyi_payload = json.loads(pyi_json_str)
+            session_json = pyi_payload.get("session", {})
+            pyi_total_ms = float(pyi_payload.get("total_time_sec", 0.0)) * 1000.0
+            func_metrics_from_pyi, edges = self._aggregate_pyinstrument(session_json)
 
-        # b) Resolve edges
-        resolved_edges = {}
-        for (caller_temp, callee_temp), data in edges.items():
-            cf = data.get("caller_file")
-            cl = int(data.get("caller_line", 0) or 0)
-            tf = data.get("callee_file")
-            tl = int(data.get("callee_line", 0) or 0)
-
-            caller_module_guess = (
-                resolver.module_from_rel(resolver.rel_to_project(cf)) if cf else ""
+            # 2) cProfile (accurate timings)
+            cp_code = self._build_cprofile_wrapper_code(
+                entry_type=info["type"],
+                target=info["target"],
+                argv0=info["argv0"],
+                args=info["args"],
             )
-            callee_module_guess = (
-                resolver.module_from_rel(resolver.rel_to_project(tf)) if tf else ""
+            cp_res = self.project.run_with_profiling(cp_code)
+            if cp_res.returncode != 0:
+                logging.warning(f"cProfile failed on run {run_num+1}")
+                continue
+
+            cp_json_str = self._extract_json_block(
+                cp_res.stdout, self.CPROF_START, self.CPROF_END
+            )
+            cp_payload = json.loads(cp_json_str)
+            cp_total_ms = float(cp_payload.get("total_time_sec", 0.0)) * 1000.0
+
+            # Merge cProfile
+            func_metrics = self._apply_cprofile_to_metrics(
+                func_metrics_from_pyi, cp_payload
             )
 
-            caller_resolved = resolver.resolve(
-                cf, cl, caller_module_guess, caller_temp.split("@L")[0].split(".")[-1]
+            total_time_ms = (
+                cp_total_ms
+                if cp_total_ms > 0
+                else (pyi_total_ms if pyi_total_ms > 0 else 0.0)
             )
-            callee_resolved = resolver.resolve(
-                tf, tl, callee_module_guess, callee_temp.split("@L")[0].split(".")[-1]
+            all_total_times.append(total_time_ms)
+
+            # Resolve to fully qualified FQNs
+            resolver = FQNResolver(self.db, self.project_id, self.project.directory)
+
+            # a) Resolve function metrics
+            resolved_func_metrics = {}
+            temp_to_resolved = {}
+            for temp_key, fm in func_metrics.items():
+                resolved_fqn = resolver.resolve(
+                    file_path=fm.file_path,
+                    lineno=int(fm.first_lineno or 0),
+                    fallback_module=fm.module_name,
+                    funcname=fm.function_name,
+                )
+                temp_to_resolved[temp_key] = resolved_fqn
+
+                if resolved_fqn not in resolved_func_metrics:
+                    fm.fqn = resolved_fqn
+                    fm.module_name = ".".join(resolved_fqn.split(".")[:-1])
+                    fm.function_name = resolved_fqn.split(".")[-1]
+                    resolved_func_metrics[resolved_fqn] = fm
+                else:
+                    acc = resolved_func_metrics[resolved_fqn]
+                    acc.inclusive_time_ms += fm.inclusive_time_ms
+                    acc.exclusive_time_ms += fm.exclusive_time_ms
+                    acc.call_count += fm.call_count
+
+            # Normalize
+            for fm in resolved_func_metrics.values():
+                fm.fraction_of_total = (
+                    (fm.exclusive_time_ms / total_time_ms) if total_time_ms > 0 else 0.0
+                )
+                fm.avg_time_ms = fm.exclusive_time_ms / max(1, fm.call_count)
+
+            all_func_metrics.append(resolved_func_metrics)
+
+            # b) Resolve edges
+            resolved_edges = {}
+            for (caller_temp, callee_temp), data in edges.items():
+                cf = data.get("caller_file")
+                cl = int(data.get("caller_line", 0) or 0)
+                tf = data.get("callee_file")
+                tl = int(data.get("callee_line", 0) or 0)
+
+                caller_module_guess = (
+                    resolver.module_from_rel(resolver.rel_to_project(cf)) if cf else ""
+                )
+                callee_module_guess = (
+                    resolver.module_from_rel(resolver.rel_to_project(tf)) if tf else ""
+                )
+
+                caller_resolved = resolver.resolve(
+                    cf,
+                    cl,
+                    caller_module_guess,
+                    caller_temp.split("@L")[0].split(".")[-1],
+                )
+                callee_resolved = resolver.resolve(
+                    tf,
+                    tl,
+                    callee_module_guess,
+                    callee_temp.split("@L")[0].split(".")[-1],
+                )
+
+                key = (caller_resolved, callee_resolved)
+                e = resolved_edges.setdefault(key, {"time_ms": 0.0, "count": 0})
+                e["time_ms"] += float(data.get("time_ms", 0.0) or 0.0)
+                e["count"] += int(data.get("count", 0) or 0)
+
+            all_edges.append(resolved_edges)
+
+            # 3) Memory profiling
+            mem_code = self._build_memory_wrapper_code(
+                entry_type=info["type"],
+                target=info["target"],
+                argv0=info["argv0"],
+                args=info["args"],
             )
+            mem_res = self.project.run_with_profiling(mem_code)
+            peak_memory_mb = 0.0
+            if mem_res.returncode == 0:
+                mem_json_str = self._extract_json_block(
+                    mem_res.stdout, self.MEM_START, self.MEM_END
+                )
+                if mem_json_str:
+                    mem_payload = json.loads(mem_json_str)
+                    peak_memory_mb = float(mem_payload.get("peak_memory_mb", 0.0))
+            all_peak_memories.append(peak_memory_mb)
 
-            key = (caller_resolved, callee_resolved)
-            e = resolved_edges.setdefault(key, {"time_ms": 0.0, "count": 0})
-            e["time_ms"] += float(data.get("time_ms", 0.0) or 0.0)
-            e["count"] += int(data.get("count", 0) or 0)
+            # 4) Line profiling (collect for averaging later)
+            all_targets = []
+            for fqn, fm in resolved_func_metrics.items():
+                if fm.call_count > 0:
+                    module, func = self._split_module_func_simple(fqn)
+                    if module and func and self._valid_identifier_chain(func):
+                        all_targets.append({"module": module, "func": func})
 
-        # 3) Memory profiling (unchanged)
-        mem_code = self._build_memory_wrapper_code(
-            entry_type=info["type"],
-            target=info["target"],
-            argv0=info["argv0"],
-            args=info["args"],
+            if all_targets[:top_k_for_lines]:
+                lp_code = self._build_line_profiler_wrapper_code(
+                    entry_type=info["type"],
+                    target=info["target"],
+                    argv0=info["argv0"],
+                    args=info["args"],
+                    targets=all_targets[:top_k_for_lines],
+                )
+                lp_res = self.project.run_with_profiling(lp_code)
+                if lp_res.returncode == 0:
+                    lp_json_str = self._extract_json_block(
+                        lp_res.stdout, self.LINE_START, self.LINE_END
+                    )
+                    if lp_json_str:
+                        lp_payload = json.loads(lp_json_str)
+                        all_line_profiles.append(lp_payload)
+
+        # Average all metrics
+        avg_total_time_ms = (
+            sum(all_total_times) / len(all_total_times) if all_total_times else 0.0
         )
-        mem_res = self.project.run_with_profiling(mem_code)
-        peak_memory_mb = 0.0
-        if mem_res.returncode == 0:
-            mem_json_str = self._extract_json_block(
-                mem_res.stdout, self.MEM_START, self.MEM_END
-            )
-            if mem_json_str:
-                mem_payload = json.loads(mem_json_str)
-                peak_memory_mb = float(mem_payload.get("peak_memory_mb", 0.0))
+        avg_peak_memory_mb = (
+            sum(all_peak_memories) / len(all_peak_memories)
+            if all_peak_memories
+            else 0.0
+        )
 
-        # Persist run and resolved metrics
+        # Average function metrics
+        averaged_func_metrics = self._average_function_metrics(all_func_metrics)
+
+        # Average edges
+        averaged_edges = self._average_edges(all_edges)
+
+        # Create run and persist averaged results
         run_id = f"{self.project_id}-{int(time.time())}"
         run = ProfilingRun(
             run_id=run_id,
             project_id=self.project_id,
             timestamp=datetime.utcnow().isoformat(),
-            total_time_ms=total_time_ms,
-            function_metrics=resolved_func_metrics,
+            total_time_ms=avg_total_time_ms,
+            function_metrics=averaged_func_metrics,
         )
+
         self.db.insert_dynamic_run(
             project_id=self.project_id,
             run_id=run_id,
-            total_time_ms=total_time_ms,
+            total_time_ms=avg_total_time_ms,
             timestamp=run.timestamp,
-            peak_memory_mb=peak_memory_mb,
+            peak_memory_mb=avg_peak_memory_mb,
         )
 
-        for fqn, fm in resolved_func_metrics.items():
+        for fqn, fm in averaged_func_metrics.items():
             self.db.insert_dynamic_function_metric(
                 project_id=self.project_id,
                 run_id=run_id,
-                fqn=fqn,  # fully resolved
+                fqn=fqn,
                 module_name=fm.module_name,
                 function_name=fm.function_name,
-                file_path=resolver.rel_to_project(fm.file_path) if fm.file_path else "",
+                file_path=fm.file_path,
                 inclusive_time_ms=fm.inclusive_time_ms,
                 exclusive_time_ms=fm.exclusive_time_ms,
                 call_count=fm.call_count,
@@ -241,7 +309,7 @@ class DynamicProfiler:
                 fraction_of_total=fm.fraction_of_total,
             )
 
-        for (caller, callee), data in resolved_edges.items():
+        for (caller, callee), data in averaged_edges.items():
             self.db.insert_dynamic_edge(
                 project_id=self.project_id,
                 run_id=run_id,
@@ -253,17 +321,10 @@ class DynamicProfiler:
                 },
             )
 
-        # 4) Line profiling targets (module, "Class.method" works if your wrapper resolves attribute chains)
-        all_targets = []
-        for fqn, fm in resolved_func_metrics.items():
-            if fm.call_count > 0:
-                module, func = self._split_module_func_simple(
-                    fqn
-                )  # returns module, "Class.method" or "func"
-                if module and func and self._valid_identifier_chain(func):
-                    all_targets.append({"module": module, "func": func})
-
-        # ... line profiler loop unchanged ...
+        # Average and persist line profiles
+        if all_line_profiles:
+            averaged_line_profile = self._average_line_profiles(all_line_profiles)
+            self._persist_line_timings(run_id, averaged_line_profile)
 
         self._apply_loop_stats_to_db(run_id)
         self.last_run = run
@@ -272,6 +333,185 @@ class DynamicProfiler:
     # --------------------
     # Helpers
     # --------------------
+
+    def _average_function_metrics(
+        self, all_metrics: List[Dict[str, FunctionMetrics]]
+    ) -> Dict[str, FunctionMetrics]:
+        """Average function metrics across multiple runs"""
+        if not all_metrics:
+            return {}
+
+        # Collect all FQNs
+        all_fqns = set()
+        for metrics_dict in all_metrics:
+            all_fqns.update(metrics_dict.keys())
+
+        averaged = {}
+        for fqn in all_fqns:
+            # Collect metrics for this FQN across all runs
+            fqn_metrics = []
+            for metrics_dict in all_metrics:
+                if fqn in metrics_dict:
+                    fqn_metrics.append(metrics_dict[fqn])
+
+            if not fqn_metrics:
+                continue
+
+            # Use first occurrence as template
+            first = fqn_metrics[0]
+            avg_metric = FunctionMetrics(
+                fqn=fqn,
+                inclusive_time_ms=sum(m.inclusive_time_ms for m in fqn_metrics)
+                / len(fqn_metrics),
+                exclusive_time_ms=sum(m.exclusive_time_ms for m in fqn_metrics)
+                / len(fqn_metrics),
+                call_count=int(
+                    sum(m.call_count for m in fqn_metrics) / len(fqn_metrics)
+                ),
+                avg_time_ms=0.0,  # Will calculate below
+                fraction_of_total=sum(m.fraction_of_total for m in fqn_metrics)
+                / len(fqn_metrics),
+                file_path=first.file_path,
+                module_name=first.module_name,
+                function_name=first.function_name,
+                first_lineno=first.first_lineno,
+            )
+
+            # Recalculate avg_time_ms based on averaged values
+            avg_metric.avg_time_ms = avg_metric.exclusive_time_ms / max(
+                1, avg_metric.call_count
+            )
+
+            averaged[fqn] = avg_metric
+
+        return averaged
+
+    def _average_edges(
+        self, all_edges: List[Dict[Tuple[str, str], Dict[str, Any]]]
+    ) -> Dict[Tuple[str, str], Dict[str, Any]]:
+        """Average edge metrics across multiple runs"""
+        if not all_edges:
+            return {}
+
+        # Collect all edge keys
+        all_keys = set()
+        for edges_dict in all_edges:
+            all_keys.update(edges_dict.keys())
+
+        averaged = {}
+        for key in all_keys:
+            # Collect data for this edge across all runs
+            edge_data = []
+            for edges_dict in all_edges:
+                if key in edges_dict:
+                    edge_data.append(edges_dict[key])
+
+            if not edge_data:
+                continue
+
+            averaged[key] = {
+                "time_ms": sum(e["time_ms"] for e in edge_data) / len(edge_data),
+                "count": int(sum(e["count"] for e in edge_data) / len(edge_data)),
+            }
+
+        return averaged
+
+    def _average_line_profiles(
+        self, all_profiles: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Average line profiling data across multiple runs"""
+        if not all_profiles:
+            return {
+                "functions": [],
+                "profiled_functions": [],
+                "total_time_sec": 0.0,
+                "debug_info": [],
+            }
+
+        # Group by function (file_path + function name)
+        func_groups = {}
+
+        for profile in all_profiles:
+            for func in profile.get("functions", []):
+                key = (func.get("file_path", ""), func.get("function", ""))
+                if key not in func_groups:
+                    func_groups[key] = []
+                func_groups[key].append(func)
+
+        averaged_funcs = []
+        for (file_path, function), funcs in func_groups.items():
+            # Average line timings
+            line_groups = {}
+            all_loop_iterations = []
+            all_max_depths = []
+
+            for func in funcs:
+                all_loop_iterations.append(func.get("loop_iterations", 0))
+                all_max_depths.append(func.get("max_loop_depth", 0))
+
+                for timing in func.get("timings", []):
+                    line_no = timing["line"]
+                    if line_no not in line_groups:
+                        line_groups[line_no] = {
+                            "times": [],
+                            "hits": [],
+                            "preview": timing.get("preview", ""),
+                            "is_loop_header": timing.get("is_loop_header", False),
+                            "loop_depth": timing.get("loop_depth", 0),
+                            "indentation_level": timing.get("indentation_level", 0),
+                        }
+                    line_groups[line_no]["times"].append(timing["time_ms"])
+                    line_groups[line_no]["hits"].append(timing["hits"])
+
+            # Build averaged timings
+            averaged_timings = []
+            for line_no, data in line_groups.items():
+                averaged_timings.append(
+                    {
+                        "line": line_no,
+                        "time_ms": sum(data["times"]) / len(data["times"]),
+                        "hits": int(sum(data["hits"]) / len(data["hits"])),
+                        "indentation_level": data["indentation_level"],
+                        "preview": data["preview"],
+                        "is_loop_header": data["is_loop_header"],
+                        "loop_depth": data["loop_depth"],
+                    }
+                )
+
+            averaged_timings.sort(key=lambda x: x["time_ms"], reverse=True)
+
+            averaged_funcs.append(
+                {
+                    "file_path": file_path,
+                    "function": function,
+                    "timings": averaged_timings,
+                    "loop_iterations": (
+                        int(sum(all_loop_iterations) / len(all_loop_iterations))
+                        if all_loop_iterations
+                        else 0
+                    ),
+                    "max_loop_depth": (
+                        int(sum(all_max_depths) / len(all_max_depths))
+                        if all_max_depths
+                        else 0
+                    ),
+                }
+            )
+
+        # Average total time
+        avg_total_time = sum(p.get("total_time_sec", 0.0) for p in all_profiles) / len(
+            all_profiles
+        )
+
+        return {
+            "functions": averaged_funcs,
+            "profiled_functions": (
+                all_profiles[0].get("profiled_functions", []) if all_profiles else []
+            ),
+            "total_time_sec": avg_total_time,
+            "debug_info": ["Averaged across {} runs".format(len(all_profiles))],
+        }
+
     def _extract_json_block(
         self, text: str, start_marker: str, end_marker: str
     ) -> Optional[str]:

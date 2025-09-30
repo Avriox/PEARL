@@ -46,7 +46,6 @@ class Project:
 
         logging.info(f"Loaded project: {self.project_info.get('name', 'Unknown')}")
 
-
     def _setup_venv(self):
         """Create a virtual environment in the project directory."""
         venv_dir = self.venv_config.get("dir", ".venv")
@@ -249,7 +248,7 @@ class Project:
                 env=env,
                 capture_output=True,
                 text=True,
-                timeout=self.run_config.get("timeout_seconds", 60),
+                timeout=self.run_config.get("timeout_seconds", 5000),
             )
             return result
 

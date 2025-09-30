@@ -164,3 +164,4 @@ artifacts/
 */run_logs/
 -
 chunks.db
+extracted_functions.txt

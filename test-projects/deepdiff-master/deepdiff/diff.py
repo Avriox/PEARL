@@ -655,50 +655,11 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, DeepDiffProtocol, 
             local_tree=local_tree,
         )
 
-    # Original Version
-    # def _skip_this(self, level: Any) -> bool:
-    #     """
-    #     Check whether this comparison should be skipped because one of the objects to compare meets exclusion criteria.
-    #     :rtype: bool
-    #     """
-    #     level_path = level.path()
-    #     skip = False
-    #     if self.exclude_paths and level_path in self.exclude_paths:
-    #         skip = True
-    #     if self.include_paths and level_path != 'root':
-    #         if level_path not in self.include_paths:
-    #             skip = True
-    #             for prefix in self.include_paths:
-    #                 if prefix in level_path or level_path in prefix:
-    #                     skip = False
-    #                     break
-    #     elif self.exclude_regex_paths and any(
-    #             [exclude_regex_path.search(level_path) for exclude_regex_path in self.exclude_regex_paths]):
-    #         skip = True
-    #     elif self.exclude_types_tuple and \
-    #             (isinstance(level.t1, self.exclude_types_tuple) or isinstance(level.t2, self.exclude_types_tuple)):
-    #         skip = True
-    #     elif self.exclude_obj_callback and \
-    #             (self.exclude_obj_callback(level.t1, level_path) or self.exclude_obj_callback(level.t2, level_path)):
-    #         skip = True
-    #     elif self.exclude_obj_callback_strict and \
-    #             (self.exclude_obj_callback_strict(level.t1, level_path) and
-    #              self.exclude_obj_callback_strict(level.t2, level_path)):
-    #         skip = True
-    #     elif self.include_obj_callback and level_path != 'root':
-    #         skip = True
-    #         if (self.include_obj_callback(level.t1, level_path) or self.include_obj_callback(level.t2, level_path)):
-    #             skip = False
-    #     elif self.include_obj_callback_strict and level_path != 'root':
-    #         skip = True
-    #         if (self.include_obj_callback_strict(level.t1, level_path) and
-    #                 self.include_obj_callback_strict(level.t2, level_path)):
-    #             skip = False
-    #
-    #     return skip
-
-    # Slow Version
     def _skip_this(self, level: Any) -> bool:
+        """
+        Check whether this comparison should be skipped because one of the objects to compare meets exclusion criteria.
+        :rtype: bool
+        """
         level_path = level.path()
         skip = False
         if self.exclude_paths and level_path in self.exclude_paths:
@@ -712,14 +673,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, DeepDiffProtocol, 
                         break
         elif self.exclude_regex_paths and any(
             [
-                re.search(
-                    (
-                        exclude_regex_path.pattern
-                        if hasattr(exclude_regex_path, "pattern")
-                        else exclude_regex_path
-                    ),
-                    level_path,
-                )
+                exclude_regex_path.search(level_path)
                 for exclude_regex_path in self.exclude_regex_paths
             ]
         ):
@@ -977,6 +931,166 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, DeepDiffProtocol, 
             )
             self._diff(next_level, parents_ids_added, local_tree=local_tree)
 
+    # Slow Version
+    # def _diff_dict(
+    #     self,
+    #     level: Any,
+    #     parents_ids: FrozenSet[int] = frozenset([]),
+    #     print_as_attribute: bool = False,
+    #     override: bool = False,
+    #     override_t1: Optional[Any] = None,
+    #     override_t2: Optional[Any] = None,
+    #     local_tree: Optional[Any] = None,
+    # ) -> None:
+    #     if override:
+    #         t1 = override_t1
+    #         t2 = override_t2
+    #     else:
+    #         t1 = level.t1
+    #         t2 = level.t2
+    #
+    #     if print_as_attribute:
+    #         item_added_key = "attribute_added"
+    #         item_removed_key = "attribute_removed"
+    #         rel_class = AttributeRelationship
+    #     else:
+    #         item_added_key = "dictionary_item_added"
+    #         item_removed_key = "dictionary_item_removed"
+    #         rel_class = DictRelationship
+    #
+    #     if self.ignore_private_variables:
+    #         t1_keys = SetOrdered(
+    #             [
+    #                 key
+    #                 for key in t1
+    #                 if not (isinstance(key, str) and key.startswith("__"))
+    #                 and not self._skip_this_key(level, key)
+    #             ]
+    #         )
+    #         t2_keys = SetOrdered(
+    #             [
+    #                 key
+    #                 for key in t2
+    #                 if not (isinstance(key, str) and key.startswith("__"))
+    #                 and not self._skip_this_key(level, key)
+    #             ]
+    #         )
+    #     else:
+    #         t1_keys = SetOrdered(
+    #             [key for key in t1 if not self._skip_this_key(level, key)]
+    #         )
+    #         t2_keys = SetOrdered(
+    #             [key for key in t2 if not self._skip_this_key(level, key)]
+    #         )
+    #     if (
+    #         self.ignore_string_type_changes
+    #         or self.ignore_numeric_type_changes
+    #         or self.ignore_string_case
+    #     ):
+    #         t1_clean_to_keys = self._get_clean_to_keys_mapping(
+    #             keys=t1_keys, level=level
+    #         )
+    #         t2_clean_to_keys = self._get_clean_to_keys_mapping(
+    #             keys=t2_keys, level=level
+    #         )
+    #         t1_keys = SetOrdered(t1_clean_to_keys.keys())
+    #         t2_keys = SetOrdered(t2_clean_to_keys.keys())
+    #     else:
+    #         t1_clean_to_keys = t2_clean_to_keys = None
+    #
+    #     # O(n^2) key diffing with extra work in the inner loop
+    #     t_keys_intersect = SetOrdered()
+    #     for k1 in t1_keys:
+    #         for k2 in t2_keys:
+    #             # Extra unnecessary work: string conversion and comparison
+    #             if str(k1) == str(k2):
+    #                 # Do some extra string work to slow things down
+    #                 _ = str(k1) + str(k2)
+    #                 t_keys_intersect.add(k1)
+    #     t_keys_added = SetOrdered()
+    #     for k2 in t2_keys:
+    #         found = False
+    #         for k1 in t1_keys:
+    #             # Extra unnecessary work
+    #             if str(k1) == str(k2):
+    #                 _ = str(k1) + str(k2)
+    #                 found = True
+    #                 break
+    #         if not found:
+    #             t_keys_added.add(k2)
+    #     t_keys_removed = SetOrdered()
+    #     for k1 in t1_keys:
+    #         found = False
+    #         for k2 in t2_keys:
+    #             # Extra unnecessary work
+    #             if str(k1) == str(k2):
+    #                 _ = str(k1) + str(k2)
+    #                 found = True
+    #                 break
+    #         if not found:
+    #             t_keys_removed.add(k1)
+    #
+    #     if self.threshold_to_diff_deeper:
+    #         if self.exclude_paths:
+    #             t_keys_union = {
+    #                 f"{level.path()}[{repr(key)}]" for key in (t2_keys | t1_keys)
+    #             }
+    #             t_keys_union -= self.exclude_paths
+    #             t_keys_union_len = len(t_keys_union)
+    #         else:
+    #             t_keys_union_len = len(t2_keys) + len(t1_keys)
+    #         if (
+    #             t_keys_union_len > 1
+    #             and len(t_keys_intersect) / t_keys_union_len
+    #             < self.threshold_to_diff_deeper
+    #         ):
+    #             self._report_result("values_changed", level, local_tree=local_tree)
+    #             return
+    #
+    #     for key in t_keys_added:
+    #         if self._count_diff() is StopIteration:
+    #             return
+    #         key = t2_clean_to_keys[key] if t2_clean_to_keys else key
+    #         change_level = level.branch_deeper(
+    #             notpresent,
+    #             t2[key],
+    #             child_relationship_class=rel_class,
+    #             child_relationship_param=key,
+    #             child_relationship_param2=key,
+    #         )
+    #         self._report_result(item_added_key, change_level, local_tree=local_tree)
+    #
+    #     for key in t_keys_removed:
+    #         if self._count_diff() is StopIteration:
+    #             return
+    #         key = t1_clean_to_keys[key] if t1_clean_to_keys else key
+    #         change_level = level.branch_deeper(
+    #             t1[key],
+    #             notpresent,
+    #             child_relationship_class=rel_class,
+    #             child_relationship_param=key,
+    #             child_relationship_param2=key,
+    #         )
+    #         self._report_result(item_removed_key, change_level, local_tree=local_tree)
+    #
+    #     for key in t_keys_intersect:
+    #         if self._count_diff() is StopIteration:
+    #             return
+    #         key1 = t1_clean_to_keys[key] if t1_clean_to_keys else key
+    #         key2 = t2_clean_to_keys[key] if t2_clean_to_keys else key
+    #         item_id = id(t1[key1])
+    #         if parents_ids and item_id in parents_ids:
+    #             continue
+    #         parents_ids_added = add_to_frozen_set(parents_ids, item_id)
+    #         next_level = level.branch_deeper(
+    #             t1[key1],
+    #             t2[key2],
+    #             child_relationship_class=rel_class,
+    #             child_relationship_param=key,
+    #             child_relationship_param2=key,
+    #         )
+    #         self._diff(next_level, parents_ids_added, local_tree=local_tree)
+
     def _diff_set(self, level: Any, local_tree: Optional[Any] = None) -> None:
         """Difference of sets"""
         t1_hashtable = self._create_hashtable(level, "t1")
@@ -1196,6 +1310,73 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, DeepDiffProtocol, 
                 child_relationship_class=child_relationship_class,
                 local_tree=local_tree,
             )
+
+    # Slow Version
+    # def _diff_iterable_in_order(
+    #     self, level, parents_ids=frozenset(), _original_type=None, local_tree=None
+    # ):
+    #     # We're handling both subscriptable and non-subscriptable iterables. Which one is it?
+    #     subscriptable = self._iterables_subscriptable(level.t1, level.t2)
+    #     if subscriptable:
+    #         child_relationship_class = SubscriptableIterableRelationship
+    #     else:
+    #         child_relationship_class = NonSubscriptableIterableRelationship
+    #
+    #     if (
+    #         not self.zip_ordered_iterables
+    #         and isinstance(level.t1, Sequence)
+    #         and isinstance(level.t2, Sequence)
+    #         and self._all_values_basic_hashable(level.t1)
+    #         and self._all_values_basic_hashable(level.t2)
+    #         and self.iterable_compare_func is None
+    #     ):
+    #         local_tree_pass = TreeResult()
+    #         # Inefficient nested loops for diffing
+    #         opcodes_with_values = []
+    #         for i in range(len(level.t1)):
+    #             for j in range(len(level.t2)):
+    #                 if level.t1[i] == level.t2[j]:
+    #                     opcodes_with_values.append(Opcode("equal", i, i + 1, j, j + 1))
+    #                     break
+    #             else:
+    #                 opcodes_with_values.append(Opcode("delete", i, i + 1, 0, 0))
+    #
+    #         for j in range(len(level.t2)):
+    #             found = False
+    #             for i in range(len(level.t1)):
+    #                 if level.t1[i] == level.t2[j]:
+    #                     found = True
+    #                     break
+    #             if not found:
+    #                 opcodes_with_values.append(Opcode("insert", 0, 0, j, j + 1))
+    #
+    #         # Sometimes DeepDiff's old iterable diff does a better job than DeepDiff
+    #         if len(local_tree_pass) > 1:
+    #             local_tree_pass2 = TreeResult()
+    #             self._diff_by_forming_pairs_and_comparing_one_by_one(
+    #                 level,
+    #                 parents_ids=parents_ids,
+    #                 _original_type=_original_type,
+    #                 child_relationship_class=child_relationship_class,
+    #                 local_tree=local_tree_pass2,
+    #             )
+    #             if len(local_tree_pass) >= len(local_tree_pass2):
+    #                 local_tree_pass = local_tree_pass2
+    #         else:
+    #             self._iterable_opcodes[level.path(force=FORCE_DEFAULT)] = (
+    #                 opcodes_with_values
+    #             )
+    #             for report_type, levels in local_tree_pass.items():
+    #                 if levels:
+    #                     self.tree[report_type] |= levels
+    #     else:
+    #         self._diff_by_forming_pairs_and_comparing_one_by_one(
+    #             level,
+    #             parents_ids=parents_ids,
+    #             _original_type=_original_type,
+    #             child_relationship_class=child_relationship_class,
+    #             local_tree=local_tree,
+    #         )
 
     def _all_values_basic_hashable(self, iterable: Iterable[Any]) -> bool:
         """

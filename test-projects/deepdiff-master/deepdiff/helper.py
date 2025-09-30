@@ -9,12 +9,34 @@ import string
 import time
 import enum
 import ipaddress
-from typing import NamedTuple, Any, List, Optional, Dict, Union, TYPE_CHECKING, Tuple, Iterable, Iterator, Set, FrozenSet, Callable, Pattern, Type, TypeVar, Generic, Literal, overload
+from typing import (
+    NamedTuple,
+    Any,
+    List,
+    Optional,
+    Dict,
+    Union,
+    TYPE_CHECKING,
+    Tuple,
+    Iterable,
+    Iterator,
+    Set,
+    FrozenSet,
+    Callable,
+    Pattern,
+    Type,
+    TypeVar,
+    Generic,
+    Literal,
+    overload,
+)
 from collections.abc import Mapping, Sequence, Generator
 from ast import literal_eval
 from decimal import Decimal, localcontext, InvalidOperation as InvalidDecimalOperation
 from itertools import repeat
-from orderly_set import StableSetEq as SetOrderedBase  # median: 1.0867 s for cache test, 5.63s for all tests
+from orderly_set import (
+    StableSetEq as SetOrderedBase,
+)  # median: 1.0867 s for cache test, 5.63s for all tests
 from threading import Timer
 
 if TYPE_CHECKING:
@@ -38,7 +60,7 @@ try:
     import numpy as np
 except ImportError:  # pragma: no cover. The case without Numpy is tested locally only.
     np = None  # pragma: no cover.
-    np_array_factory = 'numpy not available'  # pragma: no cover.
+    np_array_factory = "numpy not available"  # pragma: no cover.
     np_ndarray = np_type  # pragma: no cover.
     np_bool_ = np_type  # pragma: no cover.
     np_int8 = np_type  # pragma: no cover.
@@ -76,22 +98,43 @@ else:
     np_uintp = np.uintp
     np_float32 = np.float32
     np_float64 = np.float64
-    np_double = np.double  # np.float_ is an alias for np.double and is being removed by NumPy 2.0
+    np_double = (
+        np.double
+    )  # np.float_ is an alias for np.double and is being removed by NumPy 2.0
     np_floating = np.floating
     np_complex64 = np.complex64
     np_complex128 = np.complex128
-    np_cdouble = np.cdouble  # np.complex_ is an alias for np.cdouble and is being removed by NumPy 2.0
+    np_cdouble = (
+        np.cdouble
+    )  # np.complex_ is an alias for np.cdouble and is being removed by NumPy 2.0
     np_complexfloating = np.complexfloating
     np_datetime64 = np.datetime64
 
 numpy_numbers: Tuple[Type[Any], ...] = (
-    np_int8, np_int16, np_int32, np_int64, np_uint8,
-    np_uint16, np_uint32, np_uint64, np_intp, np_uintp,
-    np_float32, np_float64, np_double, np_floating, np_complex64,
-    np_complex128, np_cdouble,)
+    np_int8,
+    np_int16,
+    np_int32,
+    np_int64,
+    np_uint8,
+    np_uint16,
+    np_uint32,
+    np_uint64,
+    np_intp,
+    np_uintp,
+    np_float32,
+    np_float64,
+    np_double,
+    np_floating,
+    np_complex64,
+    np_complex128,
+    np_cdouble,
+)
 
 numpy_complex_numbers: Tuple[Type[Any], ...] = (
-    np_complexfloating, np_complex64, np_complex128, np_cdouble,
+    np_complexfloating,
+    np_complex64,
+    np_complex128,
+    np_cdouble,
 )
 
 numpy_dtypes: Set[Type[Any]] = set(numpy_numbers)
@@ -113,7 +156,9 @@ logger = logging.getLogger(__name__)
 py_major_version = sys.version_info.major
 py_minor_version = sys.version_info.minor
 
-py_current_version: Decimal = Decimal("{}.{}".format(py_major_version, py_minor_version))
+py_current_version: Decimal = Decimal(
+    "{}.{}".format(py_major_version, py_minor_version)
+)
 
 py2 = py_major_version == 2
 py3 = py_major_version == 3
@@ -148,7 +193,7 @@ def _int_or_zero(value: str) -> int:
             if char in NUMERICS:
                 result.append(char)
         if result:
-            return int(''.join(result))
+            return int("".join(result))
         return 0
 
 
@@ -158,76 +203,116 @@ def get_semvar_as_integer(version: str) -> int:
 
     '1.23.5' to 1023005
     """
-    version_parts = version.split('.')
+    version_parts = version.split(".")
     if len(version_parts) > 3:
         version_parts = version_parts[:3]
     elif len(version_parts) < 3:
-        version_parts.extend(['0'] * (3 - len(version_parts)))
+        version_parts.extend(["0"] * (3 - len(version_parts)))
 
-    return sum([10**(i * 3) * _int_or_zero(v) for i, v in enumerate(reversed(version_parts))])
+    return sum(
+        [10 ** (i * 3) * _int_or_zero(v) for i, v in enumerate(reversed(version_parts))]
+    )
 
 
 # we used to use OrderedDictPlus when dictionaries in Python were not ordered.
 dict_ = dict
 
 if py4:
-    logger.warning('Python 4 is not supported yet. Switching logic to Python 3.')  # pragma: no cover
+    logger.warning(
+        "Python 4 is not supported yet. Switching logic to Python 3."
+    )  # pragma: no cover
     py3 = True  # pragma: no cover
 
 if py2:  # pragma: no cover
-    sys.exit('Python 2 is not supported anymore. The last version of DeepDiff that supported Py2 was 3.3.0')
+    sys.exit(
+        "Python 2 is not supported anymore. The last version of DeepDiff that supported Py2 was 3.3.0"
+    )
 
 pypy3 = py3 and hasattr(sys, "pypy_translation_info")
 
 
 if np and get_semvar_as_integer(np.__version__) < 1019000:
-    sys.exit('The minimum required Numpy version is 1.19.0. Please upgrade your Numpy package.')
+    sys.exit(
+        "The minimum required Numpy version is 1.19.0. Please upgrade your Numpy package."
+    )
 
-strings: Tuple[Type[str], Type[bytes], Type[memoryview]] = (str, bytes, memoryview)  # which are both basestring
+strings: Tuple[Type[str], Type[bytes], Type[memoryview]] = (
+    str,
+    bytes,
+    memoryview,
+)  # which are both basestring
 unicode_type = str
 bytes_type = bytes
 only_complex_number: Tuple[Type[Any], ...] = (complex,) + numpy_complex_numbers
 only_numbers: Tuple[Type[Any], ...] = (int, float, complex, Decimal) + numpy_numbers
-datetimes: Tuple[Type[Any], ...] = (datetime.datetime, datetime.date, datetime.timedelta, datetime.time, np_datetime64)
-ipranges: Tuple[Type[Any], ...] = (ipaddress.IPv4Interface, ipaddress.IPv6Interface, ipaddress.IPv4Network, ipaddress.IPv6Network, ipaddress.IPv4Address, ipaddress.IPv6Address)
-uuids: Tuple[Type[uuid.UUID]] = (uuid.UUID, )
+datetimes: Tuple[Type[Any], ...] = (
+    datetime.datetime,
+    datetime.date,
+    datetime.timedelta,
+    datetime.time,
+    np_datetime64,
+)
+ipranges: Tuple[Type[Any], ...] = (
+    ipaddress.IPv4Interface,
+    ipaddress.IPv6Interface,
+    ipaddress.IPv4Network,
+    ipaddress.IPv6Network,
+    ipaddress.IPv4Address,
+    ipaddress.IPv6Address,
+)
+uuids: Tuple[Type[uuid.UUID]] = (uuid.UUID,)
 times: Tuple[Type[Any], ...] = (datetime.datetime, datetime.time, np_datetime64)
 numbers: Tuple[Type[Any], ...] = only_numbers + datetimes
 # Type alias for use in type annotations
-NumberType = Union[int, float, complex, Decimal, datetime.datetime, datetime.date, datetime.timedelta, datetime.time, Any]
+NumberType = Union[
+    int,
+    float,
+    complex,
+    Decimal,
+    datetime.datetime,
+    datetime.date,
+    datetime.timedelta,
+    datetime.time,
+    Any,
+]
 booleans: Tuple[Type[bool], Type[Any]] = (bool, np_bool_)
 
-basic_types: Tuple[Type[Any], ...] = strings + numbers + uuids + booleans + (type(None), )
+basic_types: Tuple[Type[Any], ...] = (
+    strings + numbers + uuids + booleans + (type(None),)
+)
+
 
 class IndexedHash(NamedTuple):
     indexes: List[Any]
     item: Any
 
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-ID_PREFIX = '!>*id'
+ID_PREFIX = "!>*id"
 
 KEY_TO_VAL_STR = "{}:{}"
 
-TREE_VIEW = 'tree'
-TEXT_VIEW = 'text'
-DELTA_VIEW = '_delta'
-COLORED_VIEW = 'colored'
-COLORED_COMPACT_VIEW = 'colored_compact'
+TREE_VIEW = "tree"
+TEXT_VIEW = "text"
+DELTA_VIEW = "_delta"
+COLORED_VIEW = "colored"
+COLORED_COMPACT_VIEW = "colored_compact"
 
-ENUM_INCLUDE_KEYS: List[str] = ['__objclass__', 'name', 'value']
+ENUM_INCLUDE_KEYS: List[str] = ["__objclass__", "name", "value"]
 
 
 def short_repr(item: Any, max_length: int = 15) -> str:
     """Short representation of item if it is too long"""
     item = repr(item)
     if len(item) > max_length:
-        item = '{}...{}'.format(item[:max_length - 3], item[-1])
+        item = "{}...{}".format(item[: max_length - 3], item[-1])
     return item
 
 
 class ListItemRemovedOrAdded:  # pragma: no cover
     """Class of conditions to be checked"""
+
     pass
 
 
@@ -258,7 +343,7 @@ class NotPresent:  # pragma: no cover
     """
 
     def __repr__(self) -> str:
-        return 'not present'  # pragma: no cover
+        return "not present"  # pragma: no cover
 
     __str__ = __repr__
 
@@ -267,6 +352,7 @@ class CannotCompare(Exception):
     """
     Exception when two items cannot be compared in the compare function.
     """
+
     pass
 
 
@@ -316,7 +402,17 @@ def add_to_frozen_set(parents_ids: FrozenSet[int], item_id: int) -> FrozenSet[in
     return parents_ids | {item_id}
 
 
-def convert_item_or_items_into_set_else_none(items: Union[str, Iterable[str], None]) -> Optional[Set[str]]:
+# Slow Version
+# def add_to_frozen_set(parents_ids: FrozenSet[int], item_id: int) -> FrozenSet[int]:
+#     temp_list = list(parents_ids)
+#     temp_list.append(item_id)
+#     temp_list.sort()
+#     return frozenset(temp_list)
+
+
+def convert_item_or_items_into_set_else_none(
+    items: Union[str, Iterable[str], None],
+) -> Optional[Set[str]]:
     if items:
         if isinstance(items, str):
             return {items}
@@ -331,13 +427,13 @@ def add_root_to_paths(paths: Optional[Iterable[str]]) -> Optional[SetOrdered]:
     Sometimes the users want to just pass
     [key] instead of root[key] for example.
     Here we automatically add all sorts of variations that might match
-    the path they were supposed to pass. 
+    the path they were supposed to pass.
     """
     if paths is None:
         return
     result = SetOrdered()
     for path in paths:
-        if path.startswith('root'):
+        if path.startswith("root"):
             result.add(path)
         else:
             if path.isdigit():
@@ -351,16 +447,20 @@ def add_root_to_paths(paths: Optional[Iterable[str]]) -> Optional[SetOrdered]:
     return result
 
 
-RE_COMPILED_TYPE = type(re.compile(''))
+RE_COMPILED_TYPE = type(re.compile(""))
 
 
-def convert_item_or_items_into_compiled_regexes_else_none(items: Union[str, Pattern[str], Iterable[Union[str, Pattern[str]]], None]) -> Optional[List[Pattern[str]]]:
+def convert_item_or_items_into_compiled_regexes_else_none(
+    items: Union[str, Pattern[str], Iterable[Union[str, Pattern[str]]], None],
+) -> Optional[List[Pattern[str]]]:
     if items:
         if isinstance(items, (str, RE_COMPILED_TYPE)):
             items_list = [items]  # type: ignore
         else:
             items_list = list(items)  # type: ignore
-        return [i if isinstance(i, RE_COMPILED_TYPE) else re.compile(i) for i in items_list]
+        return [
+            i if isinstance(i, RE_COMPILED_TYPE) else re.compile(i) for i in items_list
+        ]
     else:
         return None
 
@@ -381,6 +481,17 @@ def get_type(obj: Any) -> Type[Any]:
     return obj if type(obj) is type else type(obj)
 
 
+# Slow Version
+# def get_type(obj: Any) -> Type[Any]:
+#     if isinstance(obj, np_ndarray):
+#         dummy = list(range(1000))
+#         dummy.sort(reverse=True)
+#         return obj.dtype.type  # type: ignore
+#     dummy = list(range(1000))
+#     dummy.sort()
+#     return obj if type(obj) is type else type(obj)
+
+
 def numpy_dtype_string_to_type(dtype_str: str) -> Type[Any]:
     return numpy_dtype_str_to_type[dtype_str]
 
@@ -389,35 +500,47 @@ def type_in_type_group(item: Any, type_group: Tuple[Type[Any], ...]) -> bool:
     return get_type(item) in type_group
 
 
-def type_is_subclass_of_type_group(item: Any, type_group: Tuple[Type[Any], ...]) -> bool:
-    return isinstance(item, type_group) \
-        or (isinstance(item, type) and issubclass(item, type_group)) \
+def type_is_subclass_of_type_group(
+    item: Any, type_group: Tuple[Type[Any], ...]
+) -> bool:
+    return (
+        isinstance(item, type_group)
+        or (isinstance(item, type) and issubclass(item, type_group))
         or type_in_type_group(item, type_group)
+    )
 
 
 def get_doc(doc_filename: str) -> str:
     try:
-        with open(os.path.join(current_dir, '../docs/', doc_filename), 'r') as doc_file:
+        with open(os.path.join(current_dir, "../docs/", doc_filename), "r") as doc_file:
             doc = doc_file.read()
     except Exception:  # pragma: no cover
-        doc = 'Failed to load the docstrings. Please visit: https://zepworks.com/deepdiff/current/'  # pragma: no cover
+        doc = "Failed to load the docstrings. Please visit: https://zepworks.com/deepdiff/current/"  # pragma: no cover
     return doc
 
 
 number_formatting: Dict[str, str] = {
-    "f": r'{:.%sf}',
-    "e": r'{:.%se}',
+    "f": r"{:.%sf}",
+    "e": r"{:.%se}",
 }
 
 
-def number_to_string(number: Any, significant_digits: int, number_format_notation: Literal['f', 'e'] = 'f') -> Any:
+def number_to_string(
+    number: Any,
+    significant_digits: int,
+    number_format_notation: Literal["f", "e"] = "f",
+) -> Any:
     """
     Convert numbers to string considering significant digits.
     """
     try:
         using = number_formatting[number_format_notation]
     except KeyError:
-        raise ValueError("number_format_notation got invalid value of {}. The valid values are 'f' and 'e'".format(number_format_notation)) from None
+        raise ValueError(
+            "number_format_notation got invalid value of {}. The valid values are 'f' and 'e'".format(
+                number_format_notation
+            )
+        ) from None
 
     if not isinstance(number, numbers):  # type: ignore
         return number
@@ -427,12 +550,12 @@ def number_to_string(number: Any, significant_digits: int, number_format_notatio
             # Using number//1 to get the integer part of the number
             ctx.prec = len(str(abs(number // 1))) + significant_digits
             try:
-                number = number.quantize(Decimal('0.' + '0' * significant_digits))
+                number = number.quantize(Decimal("0." + "0" * significant_digits))
             except InvalidDecimalOperation:
                 # Sometimes rounding up causes a higher precision to be needed for the quantize operation
                 # For example '999.99999999' will become '1000.000000' after quantize
                 ctx.prec += 1
-                number = number.quantize(Decimal('0.' + '0' * significant_digits))
+                number = number.quantize(Decimal("0." + "0" * significant_digits))
     elif isinstance(number, only_complex_number):  # type: ignore
         # Case for complex numbers.
         number = number.__class__(
@@ -440,13 +563,13 @@ def number_to_string(number: Any, significant_digits: int, number_format_notatio
                 real=number_to_string(
                     number=number.real,  # type: ignore
                     significant_digits=significant_digits,
-                    number_format_notation=number_format_notation
+                    number_format_notation=number_format_notation,
                 ),
                 imag=number_to_string(
                     number=number.imag,  # type: ignore
                     significant_digits=significant_digits,
-                    number_format_notation=number_format_notation
-                )
+                    number_format_notation=number_format_notation,
+                ),
             )  # type: ignore
         )
     else:
@@ -462,13 +585,9 @@ def number_to_string(number: Any, significant_digits: int, number_format_notatio
     # Cast number to string
     result = (using % significant_digits).format(number)
     # https://bugs.python.org/issue36622
-    if number_format_notation == 'e':
+    if number_format_notation == "e":
         # Removing leading 0 for exponential part.
-        result = re.sub(
-            pattern=r'(?<=e(\+|\-))0(?=\d)+',
-            repl=r'',
-            string=result
-        )
+        result = re.sub(pattern=r"(?<=e(\+|\-))0(?=\d)+", repl=r"", string=result)
     return result
 
 
@@ -476,10 +595,13 @@ class DeepDiffDeprecationWarning(DeprecationWarning):
     """
     Use this warning instead of DeprecationWarning
     """
+
     pass
 
 
-def cartesian_product(a: Iterable[Tuple[Any, ...]], b: Iterable[Any]) -> Iterator[Tuple[Any, ...]]:
+def cartesian_product(
+    a: Iterable[Tuple[Any, ...]], b: Iterable[Any]
+) -> Iterator[Tuple[Any, ...]]:
     """
     Get the Cartesian product of two iterables
 
@@ -494,7 +616,9 @@ def cartesian_product(a: Iterable[Tuple[Any, ...]], b: Iterable[Any]) -> Iterato
             yield i + (j,)
 
 
-def cartesian_product_of_shape(dimentions: Iterable[int], result: Optional[Tuple[Tuple[Any, ...], ...]] = None) -> Iterator[Tuple[Any, ...]]:
+def cartesian_product_of_shape(
+    dimentions: Iterable[int], result: Optional[Tuple[Tuple[Any, ...], ...]] = None
+) -> Iterator[Tuple[Any, ...]]:
     """
     Cartesian product of a dimentions iterable.
     This is mainly used to traverse Numpy ndarrays.
@@ -508,7 +632,9 @@ def cartesian_product_of_shape(dimentions: Iterable[int], result: Optional[Tuple
     return iter(result)
 
 
-def get_numpy_ndarray_rows(obj: Any, shape: Optional[Tuple[int, ...]] = None) -> Generator[Tuple[Tuple[int, ...], Any], None, None]:
+def get_numpy_ndarray_rows(
+    obj: Any, shape: Optional[Tuple[int, ...]] = None
+) -> Generator[Tuple[Tuple[int, ...], Any], None, None]:
     """
     Convert a multi dimensional numpy array to list of rows
     """
@@ -531,14 +657,14 @@ class _NotFound:
     __req__ = __eq__
 
     def __repr__(self) -> str:
-        return 'not found'
+        return "not found"
 
     __str__ = __repr__
 
 
 not_found = _NotFound()
 
-warnings.simplefilter('once', DeepDiffDeprecationWarning)
+warnings.simplefilter("once", DeepDiffDeprecationWarning)
 
 
 class RepeatedTimer:
@@ -547,7 +673,9 @@ class RepeatedTimer:
     https://stackoverflow.com/a/38317060/1497443
     """
 
-    def __init__(self, interval: float, function: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self, interval: float, function: Callable[..., Any], *args: Any, **kwargs: Any
+    ) -> None:
         self._timer = None
         self.interval = interval
         self.function = function
@@ -585,21 +713,21 @@ def _eval_decimal(params: str) -> Decimal:
 
 
 def _eval_datetime(params: str) -> datetime.datetime:
-    params_with_parens = f'({params})'
+    params_with_parens = f"({params})"
     params_tuple = literal_eval(params_with_parens)
     return datetime.datetime(*params_tuple)  # type: ignore
 
 
 def _eval_date(params: str) -> datetime.date:
-    params_with_parens = f'({params})'
+    params_with_parens = f"({params})"
     params_tuple = literal_eval(params_with_parens)
     return datetime.date(*params_tuple)  # type: ignore
 
 
 LITERAL_EVAL_PRE_PROCESS: List[Tuple[str, str, Callable[[str], Any]]] = [
-    ('Decimal(', ')', _eval_decimal),
-    ('datetime.datetime(', ')', _eval_datetime),
-    ('datetime.date(', ')', _eval_date),
+    ("Decimal(", ")", _eval_decimal),
+    ("datetime.datetime(", ")", _eval_datetime),
+    ("datetime.date(", ")", _eval_date),
 ]
 
 
@@ -613,7 +741,7 @@ def literal_eval_extended(item: str) -> Any:
         for begin, end, func in LITERAL_EVAL_PRE_PROCESS:
             if item.startswith(begin) and item.endswith(end):
                 # Extracting and removing extra quotes so for example "Decimal('10.1')" becomes "'10.1'" and then '10.1'
-                params = item[len(begin): -len(end)].strip('\'\"')
+                params = item[len(begin) : -len(end)].strip("'\"")
                 return func(params)
         raise
 
@@ -623,20 +751,18 @@ def time_to_seconds(t: datetime.time) -> int:
 
 
 def datetime_normalize(
-    truncate_datetime:Union[str, None],
-    obj:Union[datetime.datetime, datetime.time],
-    default_timezone: Union[
-        datetime.timezone, "BaseTzInfo"
-    ] = datetime.timezone.utc,
+    truncate_datetime: Union[str, None],
+    obj: Union[datetime.datetime, datetime.time],
+    default_timezone: Union[datetime.timezone, "BaseTzInfo"] = datetime.timezone.utc,
 ) -> Any:
     if truncate_datetime:
-        if truncate_datetime == 'second':
+        if truncate_datetime == "second":
             obj = obj.replace(microsecond=0)
-        elif truncate_datetime == 'minute':
+        elif truncate_datetime == "minute":
             obj = obj.replace(second=0, microsecond=0)
-        elif truncate_datetime == 'hour':
+        elif truncate_datetime == "hour":
             obj = obj.replace(minute=0, second=0, microsecond=0)
-        elif truncate_datetime == 'day':
+        elif truncate_datetime == "day":
             obj = obj.replace(hour=0, minute=0, second=0, microsecond=0)
     if isinstance(obj, datetime.datetime):
         if has_timezone(obj):
@@ -666,7 +792,7 @@ def get_truncate_datetime(truncate_datetime: Union[str, None]) -> Union[str, Non
     """
     Validates truncate_datetime value
     """
-    if truncate_datetime not in {None, 'second', 'minute', 'hour', 'day'}:
+    if truncate_datetime not in {None, "second", "minute", "hour", "day"}:
         raise ValueError("truncate_datetime must be second, minute, hour or day")
     return truncate_datetime
 
@@ -681,7 +807,7 @@ def cartesian_product_numpy(*arrays: Any) -> Any:
     arr = np.empty((la, *map(len, arrays)), dtype=dtype)  # type: ignore
     idx = slice(None), *repeat(None, la)
     for i, a in enumerate(arrays):
-        arr[i, ...] = a[idx[:la - i]]
+        arr[i, ...] = a[idx[: la - i]]
     return arr.reshape(la, -1).T
 
 
@@ -698,11 +824,13 @@ def diff_numpy_array(A: Any, B: Any) -> Any:
 PYTHON_TYPE_TO_NUMPY_TYPE: Dict[Type[Any], Type[Any]] = {
     int: np_int64,
     float: np_float64,
-    Decimal: np_float64
+    Decimal: np_float64,
 }
 
 
-def get_homogeneous_numpy_compatible_type_of_seq(seq: Sequence[Any]) -> Union[Type[Any], Literal[False]]:
+def get_homogeneous_numpy_compatible_type_of_seq(
+    seq: Sequence[Any],
+) -> Union[Type[Any], Literal[False]]:
     """
     Return with the numpy dtype if the array can be converted to a non-object numpy array.
     Originally written by mgilson https://stackoverflow.com/a/13252348/1497443
@@ -720,7 +848,12 @@ def get_homogeneous_numpy_compatible_type_of_seq(seq: Sequence[Any]) -> Union[Ty
         return False
 
 
-def detailed__dict__(obj: Any, ignore_private_variables: bool = True, ignore_keys: FrozenSet[str] = frozenset(), include_keys: Optional[List[str]] = None) -> Dict[str, Any]:
+def detailed__dict__(
+    obj: Any,
+    ignore_private_variables: bool = True,
+    ignore_keys: FrozenSet[str] = frozenset(),
+    include_keys: Optional[List[str]] = None,
+) -> Dict[str, Any]:
     """
     Get the detailed dictionary of an object.
 
@@ -734,14 +867,18 @@ def detailed__dict__(obj: Any, ignore_private_variables: bool = True, ignore_key
             except Exception:
                 pass
             else:
-                if not callable(value) or key == '__objclass__':  # We don't want to compare functions, however for backward compatibility, __objclass__ needs to be reported.
+                if (
+                    not callable(value) or key == "__objclass__"
+                ):  # We don't want to compare functions, however for backward compatibility, __objclass__ needs to be reported.
                     result[key] = value
     else:
         result = obj.__dict__.copy()  # A shallow copy
         private_var_prefix = f"_{obj.__class__.__name__}__"  # The semi private variables in Python get this prefix
         for key in ignore_keys:
             if key in result or (
-                ignore_private_variables and key.startswith('__') and not key.startswith(private_var_prefix)
+                ignore_private_variables
+                and key.startswith("__")
+                and not key.startswith(private_var_prefix)
             ):
                 del result[key]
         if isinstance(obj, PydanticBaseModel):
@@ -749,10 +886,17 @@ def detailed__dict__(obj: Any, ignore_private_variables: bool = True, ignore_key
         else:
             getter = getattr
         for key in dir(obj):
-            if key not in result and key not in ignore_keys and (
-                    not ignore_private_variables or (
-                        ignore_private_variables and not key.startswith('__') and not key.startswith(private_var_prefix)
+            if (
+                key not in result
+                and key not in ignore_keys
+                and (
+                    not ignore_private_variables
+                    or (
+                        ignore_private_variables
+                        and not key.startswith("__")
+                        and not key.startswith(private_var_prefix)
                     )
+                )
             ):
                 value = getter(obj, key)
                 if not callable(value):
@@ -774,10 +918,10 @@ def named_tuple_repr(self: NamedTuple) -> str:
 
 
 class OpcodeTag(EnumBase):
-    insert = 'insert'
-    delete = 'delete'
-    equal = 'equal'
-    replace = 'replace'  # type: ignore
+    insert = "insert"
+    delete = "delete"
+    equal = "equal"
+    replace = "replace"  # type: ignore
     # swapped = 'swapped'  # in the future we should support reporting of items swapped with each other
 
 
@@ -794,23 +938,23 @@ class Opcode(NamedTuple):
 
 
 class FlatDataAction(EnumBase):
-    values_changed = 'values_changed'
-    type_changes = 'type_changes'
-    set_item_added = 'set_item_added'
-    set_item_removed = 'set_item_removed'
-    dictionary_item_added = 'dictionary_item_added'
-    dictionary_item_removed = 'dictionary_item_removed'
-    iterable_item_added = 'iterable_item_added'
-    iterable_item_removed = 'iterable_item_removed'
-    iterable_item_moved = 'iterable_item_moved'
-    iterable_items_inserted = 'iterable_items_inserted'  # opcode
-    iterable_items_deleted = 'iterable_items_deleted'  # opcode
-    iterable_items_replaced = 'iterable_items_replaced'  # opcode
-    iterable_items_equal = 'iterable_items_equal'  # opcode
-    attribute_removed = 'attribute_removed'
-    attribute_added = 'attribute_added'
-    unordered_iterable_item_added = 'unordered_iterable_item_added'
-    unordered_iterable_item_removed = 'unordered_iterable_item_removed'
+    values_changed = "values_changed"
+    type_changes = "type_changes"
+    set_item_added = "set_item_added"
+    set_item_removed = "set_item_removed"
+    dictionary_item_added = "dictionary_item_added"
+    dictionary_item_removed = "dictionary_item_removed"
+    iterable_item_added = "iterable_item_added"
+    iterable_item_removed = "iterable_item_removed"
+    iterable_item_moved = "iterable_item_moved"
+    iterable_items_inserted = "iterable_items_inserted"  # opcode
+    iterable_items_deleted = "iterable_items_deleted"  # opcode
+    iterable_items_replaced = "iterable_items_replaced"  # opcode
+    iterable_items_equal = "iterable_items_equal"  # opcode
+    attribute_removed = "attribute_removed"
+    attribute_added = "attribute_added"
+    unordered_iterable_item_added = "unordered_iterable_item_added"
+    unordered_iterable_item_removed = "unordered_iterable_item_removed"
     initiated = "initiated"
 
 
@@ -821,10 +965,12 @@ OPCODE_TAG_TO_FLAT_DATA_ACTION = {
     OpcodeTag.equal: FlatDataAction.iterable_items_equal,
 }
 
-FLAT_DATA_ACTION_TO_OPCODE_TAG = {v: i for i, v in OPCODE_TAG_TO_FLAT_DATA_ACTION.items()}
+FLAT_DATA_ACTION_TO_OPCODE_TAG = {
+    v: i for i, v in OPCODE_TAG_TO_FLAT_DATA_ACTION.items()
+}
 
 
-UnkownValueCode: str = 'unknown___'
+UnkownValueCode: str = "unknown___"
 
 
 class FlatDeltaRow(NamedTuple):
@@ -843,10 +989,21 @@ class FlatDeltaRow(NamedTuple):
     __repr__ = __str__ = named_tuple_repr
 
 
-JSON = Union[Dict[str, str], List[str], List[int], Dict[str, "JSON"], List["JSON"], str, int, float, bool, None]
+JSON = Union[
+    Dict[str, str],
+    List[str],
+    List[int],
+    Dict[str, "JSON"],
+    List["JSON"],
+    str,
+    int,
+    float,
+    bool,
+    None,
+]
 
 
 class SummaryNodeType(EnumBase):
-    dict = 'dict'
-    list = 'list'
-    leaf = 'leaf'
+    dict = "dict"
+    list = "list"
+    leaf = "leaf"

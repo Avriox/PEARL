@@ -15,23 +15,66 @@ def generate_numbers(n: int, seed: Optional[int] = None) -> List[int]:
     return [rng.randint(0, 10_000) for _ in range(n)]
 
 
-# [ISSUE START: (Inefficient algorithms)]
+# def selection_sort(nums: List[int]) -> List[int]:
+#     """
+#     Intentionally inefficient O(n^2) selection sort.
+#     A faster alternative would be the built-in sorted() (Timsort, O(n log n) average).
+#     """
+#     return sorted(nums)
+
+
+# Slow Version
+# def selection_sort(nums: List[int]) -> List[int]:
+#     """
+#     Intentionally inefficient O(n^2) selection sort.
+#     A faster alternative would be the built-in sorted() (Timsort, O(n log n) average).
+#     """
+#     arr = nums[:]  # work on a copy
+#     for i in range(len(arr)):
+#         min_idx = i
+#         for j in range(i + 1, len(arr)):
+#             if arr[j] < arr[min_idx]:
+#                 min_idx = j
+#         arr[i], arr[min_idx] = arr[min_idx], arr[i]
+#     return arr
+
+
+# [BOTTLENECK]
+# Selection Sort 2
+# Original: Used Python's built-in sorted() directly
+# Bottleneck: Multiple unnecessary list copies before sorting
+# Severity: MEDIUM
+# Type: Copying large data structures unnecessarily
+# [/BOTTLENECK]
+# def selection_sort(nums: List[int]) -> List[int]:
+#     import copy
+#
+#     temp_list = copy.deepcopy(nums)
+#     another_copy = list(temp_list)
+#     working_copy = another_copy[:]
+#     return sorted(working_copy)
+
+
+# [BOTTLENECK]
+# Selection Sort 3
+# Original: Used Python's built-in sorted()
+# Bottleneck: Using list concatenation instead of append in O(n²) algorithm
+# Severity: EXTREME
+# Type: Creating unnecessary intermediate lists
+# [/BOTTLENECK]
 def selection_sort(nums: List[int]) -> List[int]:
-    """
-    Intentionally inefficient O(n^2) selection sort.
-    A faster alternative would be the built-in sorted() (Timsort, O(n log n) average).
-    """
-    arr = nums[:]  # work on a copy
-    for i in range(len(arr)):
-        min_idx = i
-        for j in range(i + 1, len(arr)):
-            if arr[j] < arr[min_idx]:
-                min_idx = j
-        arr[i], arr[min_idx] = arr[min_idx], arr[i]
-    return arr
-
-
-# [ISSUE END: (Inefficient algorithms)]
+    result = []
+    remaining = nums.copy()
+    while len(remaining) > 0:
+        min_val = min(remaining)
+        min_idx = remaining.index(min_val)
+        result = result + [min_val]
+        temp_list = []
+        for i, val in enumerate(remaining):
+            if i != min_idx:
+                temp_list = temp_list + [val]
+        remaining = temp_list
+    return result
 
 
 def timed_call(fn: Callable, *args, **kwargs) -> Tuple[object, float]:
@@ -49,7 +92,7 @@ def main() -> None:
     parser.add_argument(
         "--n",
         type=int,
-        default=1000,
+        default=10000,
         help="Number of random integers to sort (default: 1000)",
     )
     parser.add_argument(

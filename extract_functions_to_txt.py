@@ -232,3 +232,88 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# I have this python project source code:
+# === /Users/jakobgoldmann/Documents/Uni/fhwn/PEARL/test-projects/01-selection-sorter/selection_sorter.py ===
+#
+# def generate_numbers(n: int, seed: Optional[int] = None) -> List[int]:
+#     """Generate n random ints."""
+#     rng = random.Random(seed)
+#     return [rng.randint(0, 10_000) for _ in range(n)]
+#
+# def main() -> None:
+#     parser = argparse.ArgumentParser(
+#         description="Selection sort with an intentional O(n^2) performance issue."
+#     )
+#     parser.add_argument(
+#         "--n",
+#         type=int,
+#         default=10000,
+#         help="Number of random integers to sort (default: 1000)",
+#     )
+#     parser.add_argument(
+#         "--seed", type=int, default=42, help="Random seed (default: 42)"
+#     )
+#     args = parser.parse_args()
+#
+#     data = generate_numbers(args.n, seed=args.seed)
+#     sorted_data, dt = timed_call(selection_sort, data)
+#
+#     print(
+#         f"Sorted {len(data)} numbers in {dt:.4f}s using selection sort (intentionally O(n^2))."
+#     )
+#     preview = ", ".join(map(str, sorted_data[:10]))
+#     print(f"Preview of first 10 sorted numbers: [{preview}]")
+#
+# def selection_sort(nums: List[int]) -> List[int]:
+#     return sorted(nums)
+#
+# def timed_call(fn: Callable, *args, **kwargs) -> Tuple[object, float]:
+#     """Run fn(*args, **kwargs) and return (result, elapsed_seconds)."""
+#     start = time.perf_counter()
+#     result = fn(*args, **kwargs)
+#     elapsed = time.perf_counter() - start
+#     return result, elapsed
+#
+#
+# For a research project I need a version of this project, which includes performance issues / bottlenecks. A bottleneck in this case can be (non exhaustive list):
+#
+# - The use of an inefficient algorithm where a faster version exists
+# - Use of inappropriate / sub optimal data structures
+# - Inefficient string operations / Regex (not compiled)
+# - Creating unnecessary intermediate lists (not using generators)
+# - Copying large data structures unnecessarily
+# - Not using vectorized operations in NumPy/Pandas (writing loops instead)
+# - Nested loops where one could be eliminated
+# - And more, anything that would be considered sub optimal in python
+#
+# Your task is to generate bottlenecks that can be placed into the "clean" source code, which is assumed to be "good".
+#
+# You should:
+# - Carefully examine the source code, understand what it does and find where there is potential to embedd an issue
+# - Come up with performance issues of varing severity:
+# -- Come up with 5 medium issues, which increase the runtime up to 25%
+# -- Come up with 5 large issues, which increase the runtime up to 50%
+# -- Come up with 5 extreme issues, which increase the runtime by more than 50%
+#
+# You are NOT allowed to:
+# - Create new classes
+# - Place code outside of functions
+# - Rename any existing functions or alter their parameters
+# - Add any comments within the function, that would hint to any issues with the code
+# - Create or alter docstrings in a way that would hint to the problem
+#
+# You should:
+# - Try to keep the new "slow" code within the existing functions, but you are allowed to create new ones if absolutely neccessary.
+# - Always give me the entire function with the new source code
+# - Make sure you always put the entire function code into one markdown ´´´python ´´´ code block
+# - Before the function (Not as a dock string but before the function), place a marker # [BOTTLENECK]
+# Description of what the code was before,
+# what the included bottleneck is,
+# the severity level and the type of bottle neck
+# [/BOTTLENECK]
+#
+# this should be right above the function definition.
+#
+# Try to mix up the bottleneck types. Especially make sure that at least two issue of type "inefficient algorithm where a faster version exists" are in the list.
