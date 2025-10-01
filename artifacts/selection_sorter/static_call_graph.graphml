@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d0" for="edge" attr.name="weight" attr.type="long" />
+  <graph edgedefault="directed">
+    <node id="selection_sorter.generate_numbers" />
+    <node id="random.Random" />
+    <node id="rng.randint" />
+    <node id="selection_sorter.range" />
+    <node id="selection_sorter.selection_sort" />
+    <node id="selection_sorter.len" />
+    <node id="selection_sorter.timed_call" />
+    <node id="selection_sorter.fn" />
+    <node id="time.perf_counter" />
+    <node id="selection_sorter.main" />
+    <node id="&quot;&quot;&quot;, &quot;&quot;&quot;.join" />
+    <node id="argparse.ArgumentParser" />
+    <node id="parser.add_argument" />
+    <node id="parser.parse_args" />
+    <node id="selection_sorter.map" />
+    <node id="selection_sorter.print" />
+    <edge source="selection_sorter.generate_numbers" target="random.Random">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.generate_numbers" target="rng.randint">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.generate_numbers" target="selection_sorter.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.selection_sort" target="selection_sorter.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.selection_sort" target="selection_sorter.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.timed_call" target="selection_sorter.fn">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.timed_call" target="time.perf_counter">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.main" target="&quot;&quot;&quot;, &quot;&quot;&quot;.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.main" target="argparse.ArgumentParser">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.main" target="parser.add_argument">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.main" target="parser.parse_args">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.main" target="selection_sorter.generate_numbers">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.main" target="selection_sorter.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.main" target="selection_sorter.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.main" target="selection_sorter.print">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.main" target="selection_sorter.timed_call">
+      <data key="d0">1</data>
+    </edge>
+  </graph>
+</graphml>

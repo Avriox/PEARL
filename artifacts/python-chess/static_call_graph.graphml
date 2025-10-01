@@ -1,0 +1,853 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d0" for="edge" attr.name="weight" attr.type="long" />
+  <graph edgedefault="directed">
+    <node id="setup.status" />
+    <node id="setup.print" />
+    <node id="test.TestSlugify.test_extraneous_seperators" />
+    <node id="test.slugify" />
+    <node id="self.assertEqual" />
+    <node id="test.TestSlugify.test_non_word_characters" />
+    <node id="test.TestSlugify.test_phonetic_conversion_of_eastern_scripts" />
+    <node id="test.TestSlugify.test_accented_text" />
+    <node id="test.TestSlugify.test_accented_text_with_non_word_characters" />
+    <node id="test.TestSlugify.test_cyrillic_text" />
+    <node id="test.TestSlugify.test_max_length" />
+    <node id="test.TestSlugify.test_max_length_cutoff_not_required" />
+    <node id="test.TestSlugify.test_word_boundary" />
+    <node id="test.TestSlugify.test_custom_separator" />
+    <node id="test.TestSlugify.test_multi_character_separator" />
+    <node id="test.TestSlugify.test_save_order" />
+    <node id="test.TestSlugify.test_stopword_removal" />
+    <node id="test.TestSlugify.test_stopword_removal_casesensitive" />
+    <node id="test.TestSlugify.test_multiple_stopword_occurances" />
+    <node id="test.TestSlugify.test_differently_cased_stopword_match" />
+    <node id="test.TestSlugify.test_multiple_stopwords" />
+    <node id="test.TestSlugify.test_stopwords_with_different_separator" />
+    <node id="test.TestSlugify.test_html_entities_on" />
+    <node id="test.TestSlugify.test_html_entities_off" />
+    <node id="test.TestSlugify.test_html_decimal_on" />
+    <node id="test.TestSlugify.test_html_decimal_off" />
+    <node id="test.TestSlugify.test_html_hexadecimal_on" />
+    <node id="test.TestSlugify.test_html_hexadecimal_off" />
+    <node id="test.TestSlugify.test_starts_with_number" />
+    <node id="test.TestSlugify.test_contains_numbers" />
+    <node id="test.TestSlugify.test_ends_with_number" />
+    <node id="test.TestSlugify.test_numbers_only" />
+    <node id="test.TestSlugify.test_numbers_and_symbols" />
+    <node id="test.TestSlugify.test_regex_pattern_keep_underscore" />
+    <node id="test.TestSlugify.test_regex_pattern_keep_underscore_with_underscore_as_separator" />
+    <node id="self.assertNotEqual" />
+    <node id="test.TestSlugify.test_replacements" />
+    <node id="test.TestSlugify.test_replacements_german_umlaut_custom" />
+    <node id="test.TestSlugify.test_pre_translation" />
+    <node id="test.TestSlugifyUnicode.test_extraneous_seperators" />
+    <node id="test.TestSlugifyUnicode.test_non_word_characters" />
+    <node id="test.TestSlugifyUnicode.test_phonetic_conversion_of_eastern_scripts" />
+    <node id="test.TestSlugifyUnicode.test_accented_text" />
+    <node id="test.TestSlugifyUnicode.test_accented_text_with_non_word_characters" />
+    <node id="test.TestSlugifyUnicode.test_cyrillic_text" />
+    <node id="test.TestSlugifyUnicode.test_max_length" />
+    <node id="test.TestSlugifyUnicode.test_max_length_cutoff_not_required" />
+    <node id="test.TestSlugifyUnicode.test_word_boundary" />
+    <node id="test.TestSlugifyUnicode.test_custom_separator" />
+    <node id="test.TestSlugifyUnicode.test_multi_character_separator" />
+    <node id="test.TestSlugifyUnicode.test_save_order" />
+    <node id="test.TestSlugifyUnicode.test_save_order_rtl" />
+    <node id="test.TestSlugifyUnicode.test_stopword_removal" />
+    <node id="test.TestSlugifyUnicode.test_stopword_removal_casesensitive" />
+    <node id="test.TestSlugifyUnicode.test_multiple_stopword_occurances" />
+    <node id="test.TestSlugifyUnicode.test_differently_cased_stopword_match" />
+    <node id="test.TestSlugifyUnicode.test_multiple_stopwords" />
+    <node id="test.TestSlugifyUnicode.test_stopwords_with_different_separator" />
+    <node id="test.TestSlugifyUnicode.test_html_entities_on" />
+    <node id="test.TestSlugifyUnicode.test_html_entities_off" />
+    <node id="test.TestSlugifyUnicode.test_html_decimal_on" />
+    <node id="test.TestSlugifyUnicode.test_html_decimal_off" />
+    <node id="test.TestSlugifyUnicode.test_html_hexadecimal_on" />
+    <node id="test.TestSlugifyUnicode.test_html_hexadecimal_off" />
+    <node id="test.TestSlugifyUnicode.test_starts_with_number" />
+    <node id="test.TestSlugifyUnicode.test_contains_numbers" />
+    <node id="test.TestSlugifyUnicode.test_ends_with_number" />
+    <node id="test.TestSlugifyUnicode.test_numbers_only" />
+    <node id="test.TestSlugifyUnicode.test_numbers_and_symbols" />
+    <node id="test.TestSlugifyUnicode.test_regex_pattern_keep_underscore" />
+    <node id="test.TestSlugifyUnicode.test_regex_pattern_keep_underscore_with_underscore_as_separator" />
+    <node id="test.TestSlugifyUnicode.test_replacements" />
+    <node id="test.TestSlugifyUnicode.test_replacements_german_umlaut_custom" />
+    <node id="test.TestSlugifyUnicode.test_emojis" />
+    <node id="test.TestUtils.test_smart_truncate_no_max_length" />
+    <node id="test.smart_truncate" />
+    <node id="test.TestUtils.test_smart_truncate_no_seperator" />
+    <node id="test.captured_stderr" />
+    <node id="io.BytesIO" />
+    <node id="io.StringIO" />
+    <node id="test.loaded_stdin" />
+    <node id="test.TestCommandParams.get_params_from_cli" />
+    <node id="test.parse_args" />
+    <node id="test.list" />
+    <node id="test.slugify_params" />
+    <node id="test.TestCommandParams.make_params" />
+    <node id="test.dict" />
+    <node id="test.TestCommandParams.assertParamsMatch" />
+    <node id="expected.keys" />
+    <node id="test.TestCommandParams.test_defaults" />
+    <node id="self.assertParamsMatch" />
+    <node id="self.get_params_from_cli" />
+    <node id="test.TestCommandParams.test_negative_flags" />
+    <node id="self.make_params" />
+    <node id="self.assertFalse" />
+    <node id="test.TestCommandParams.test_affirmative_flags" />
+    <node id="test.TestCommandParams.test_valued_arguments" />
+    <node id="test.TestCommandParams.test_replacements_right" />
+    <node id="test.TestCommandParams.test_replacements_wrong" />
+    <node id="self.assertRaises" />
+    <node id="self.assertIn" />
+    <node id="cse.getvalue" />
+    <node id="test.TestCommandParams.test_text_in_cli" />
+    <node id="test.TestCommandParams.test_text_in_cli_multi" />
+    <node id="test.TestCommandParams.test_text_in_stdin" />
+    <node id="test.TestCommandParams.test_two_text_sources_fails" />
+    <node id="test.TestCommandParams.test_multivalued_options_with_text" />
+    <node id="slugify.__main__.parse_args" />
+    <node id="parser.error" />
+    <node id="repl.split" />
+    <node id="slugify.__main__.split_check" />
+    <node id="parser.parse_args" />
+    <node id="input_group.add_argument" />
+    <node id="argparse.ArgumentParser" />
+    <node id="parser.add_argument" />
+    <node id="parser.add_argument_group" />
+    <node id="slugify.__main__.slugify_params" />
+    <node id="slugify.__main__.dict" />
+    <node id="slugify.__main__.main" />
+    <node id="slugify.__main__.print" />
+    <node id="sys.exit" />
+    <node id="slugify.__main__.slugify" />
+    <node id="slugify.slugify.smart_truncate" />
+    <node id="string.split" />
+    <node id="slugify.slugify.len" />
+    <node id="truncated.strip" />
+    <node id="string.strip" />
+    <node id="slugify.slugify.slugify" />
+    <node id="slugify.slugify.chr" />
+    <node id="QUOTE_PATTERN.sub" />
+    <node id="unidecode.unidecode" />
+    <node id="s.lower" />
+    <node id="CHAR_ENTITY_PATTERN.sub" />
+    <node id="NUMBERS_PATTERN.sub" />
+    <node id="re.sub" />
+    <node id="slugify.slugify.isinstance" />
+    <node id="slugify.slugify.str" />
+    <node id="m.group" />
+    <node id="text.lower" />
+    <node id="unicodedata.normalize" />
+    <node id="DEFAULT_SEPARATOR.join" />
+    <node id="text.split" />
+    <node id="text.replace" />
+    <node id="DUPLICATE_DASH_PATTERN.sub" />
+    <node id="HEX_PATTERN.sub" />
+    <node id="DECIMAL_PATTERN.sub" />
+    <node id="slugify.slugify.int" />
+    <node id="slugify.special.add_uppercase_char" />
+    <node id="char.upper" />
+    <node id="char_list.insert" />
+    <node id="xlate.capitalize" />
+    <edge source="setup.status" target="setup.print">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_extraneous_seperators" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_extraneous_seperators" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_non_word_characters" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_non_word_characters" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_phonetic_conversion_of_eastern_scripts" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_phonetic_conversion_of_eastern_scripts" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_accented_text" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_accented_text" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_accented_text_with_non_word_characters" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_accented_text_with_non_word_characters" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_cyrillic_text" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_cyrillic_text" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_max_length" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_max_length" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_max_length_cutoff_not_required" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_max_length_cutoff_not_required" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_word_boundary" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_word_boundary" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_custom_separator" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_custom_separator" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_multi_character_separator" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_multi_character_separator" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_save_order" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_save_order" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_stopword_removal" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_stopword_removal" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_stopword_removal_casesensitive" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_stopword_removal_casesensitive" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_multiple_stopword_occurances" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_multiple_stopword_occurances" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_differently_cased_stopword_match" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_differently_cased_stopword_match" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_multiple_stopwords" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_multiple_stopwords" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_stopwords_with_different_separator" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_stopwords_with_different_separator" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_html_entities_on" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_html_entities_on" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_html_entities_off" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_html_entities_off" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_html_decimal_on" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_html_decimal_on" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_html_decimal_off" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_html_decimal_off" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_html_hexadecimal_on" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_html_hexadecimal_on" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_html_hexadecimal_off" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_html_hexadecimal_off" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_starts_with_number" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_starts_with_number" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_contains_numbers" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_contains_numbers" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_ends_with_number" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_ends_with_number" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_numbers_only" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_numbers_only" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_numbers_and_symbols" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_numbers_and_symbols" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_regex_pattern_keep_underscore" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_regex_pattern_keep_underscore" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_regex_pattern_keep_underscore_with_underscore_as_separator" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_regex_pattern_keep_underscore_with_underscore_as_separator" target="self.assertNotEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_replacements" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_replacements" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_replacements_german_umlaut_custom" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_replacements_german_umlaut_custom" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugify.test_pre_translation" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_extraneous_seperators" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_extraneous_seperators" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_non_word_characters" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_non_word_characters" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_phonetic_conversion_of_eastern_scripts" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_phonetic_conversion_of_eastern_scripts" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_accented_text" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_accented_text" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_accented_text_with_non_word_characters" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_accented_text_with_non_word_characters" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_cyrillic_text" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_cyrillic_text" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_max_length" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_max_length" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_max_length_cutoff_not_required" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_max_length_cutoff_not_required" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_word_boundary" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_word_boundary" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_custom_separator" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_custom_separator" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_multi_character_separator" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_multi_character_separator" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_save_order" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_save_order" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_save_order_rtl" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_save_order_rtl" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_stopword_removal" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_stopword_removal" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_stopword_removal_casesensitive" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_stopword_removal_casesensitive" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_multiple_stopword_occurances" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_multiple_stopword_occurances" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_differently_cased_stopword_match" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_differently_cased_stopword_match" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_multiple_stopwords" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_multiple_stopwords" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_stopwords_with_different_separator" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_stopwords_with_different_separator" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_html_entities_on" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_html_entities_on" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_html_entities_off" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_html_entities_off" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_html_decimal_on" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_html_decimal_on" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_html_decimal_off" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_html_decimal_off" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_html_hexadecimal_on" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_html_hexadecimal_on" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_html_hexadecimal_off" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_html_hexadecimal_off" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_starts_with_number" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_starts_with_number" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_contains_numbers" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_contains_numbers" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_ends_with_number" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_ends_with_number" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_numbers_only" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_numbers_only" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_numbers_and_symbols" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_numbers_and_symbols" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_regex_pattern_keep_underscore" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_regex_pattern_keep_underscore" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_regex_pattern_keep_underscore_with_underscore_as_separator" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_regex_pattern_keep_underscore_with_underscore_as_separator" target="self.assertNotEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_replacements" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_replacements" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_replacements_german_umlaut_custom" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_replacements_german_umlaut_custom" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_emojis" target="test.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestSlugifyUnicode.test_emojis" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestUtils.test_smart_truncate_no_max_length" target="test.smart_truncate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestUtils.test_smart_truncate_no_max_length" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestUtils.test_smart_truncate_no_seperator" target="test.smart_truncate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestUtils.test_smart_truncate_no_seperator" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.captured_stderr" target="io.BytesIO">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.captured_stderr" target="io.StringIO">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.loaded_stdin" target="io.BytesIO">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.loaded_stdin" target="io.StringIO">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.get_params_from_cli" target="test.parse_args">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.get_params_from_cli" target="test.list">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.get_params_from_cli" target="test.slugify_params">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.make_params" target="test.dict">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.assertParamsMatch" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.assertParamsMatch" target="expected.keys">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_defaults" target="self.assertParamsMatch">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_defaults" target="self.get_params_from_cli">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_negative_flags" target="self.assertParamsMatch">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_negative_flags" target="self.make_params">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_negative_flags" target="self.assertFalse">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_negative_flags" target="self.get_params_from_cli">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_affirmative_flags" target="self.assertParamsMatch">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_affirmative_flags" target="self.make_params">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_affirmative_flags" target="self.get_params_from_cli">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_valued_arguments" target="self.assertParamsMatch">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_valued_arguments" target="self.make_params">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_valued_arguments" target="self.get_params_from_cli">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_replacements_right" target="self.assertParamsMatch">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_replacements_right" target="self.make_params">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_replacements_right" target="self.get_params_from_cli">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_replacements_wrong" target="self.assertRaises">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_replacements_wrong" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_replacements_wrong" target="test.captured_stderr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_replacements_wrong" target="self.assertIn">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_replacements_wrong" target="self.get_params_from_cli">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_replacements_wrong" target="cse.getvalue">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_text_in_cli" target="self.assertParamsMatch">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_text_in_cli" target="self.make_params">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_text_in_cli" target="self.get_params_from_cli">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_text_in_cli_multi" target="self.assertParamsMatch">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_text_in_cli_multi" target="self.make_params">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_text_in_cli_multi" target="self.get_params_from_cli">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_text_in_stdin" target="self.assertParamsMatch">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_text_in_stdin" target="self.make_params">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_text_in_stdin" target="self.get_params_from_cli">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_text_in_stdin" target="test.loaded_stdin">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_two_text_sources_fails" target="self.assertRaises">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_two_text_sources_fails" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_two_text_sources_fails" target="test.captured_stderr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_two_text_sources_fails" target="self.assertIn">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_two_text_sources_fails" target="self.get_params_from_cli">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_two_text_sources_fails" target="cse.getvalue">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_multivalued_options_with_text" target="self.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test.TestCommandParams.test_multivalued_options_with_text" target="self.get_params_from_cli">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.__main__.parse_args" target="parser.error">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.__main__.parse_args" target="repl.split">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.__main__.parse_args" target="slugify.__main__.split_check">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.__main__.parse_args" target="parser.parse_args">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.__main__.parse_args" target="input_group.add_argument">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.__main__.parse_args" target="argparse.ArgumentParser">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.__main__.parse_args" target="parser.add_argument">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.__main__.parse_args" target="parser.add_argument_group">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.__main__.slugify_params" target="slugify.__main__.dict">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.__main__.main" target="slugify.__main__.print">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.__main__.main" target="slugify.__main__.parse_args">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.__main__.main" target="slugify.__main__.slugify_params">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.__main__.main" target="sys.exit">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.__main__.main" target="slugify.__main__.slugify">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.smart_truncate" target="string.split">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.smart_truncate" target="slugify.slugify.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.smart_truncate" target="truncated.strip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.smart_truncate" target="string.strip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="slugify.slugify.chr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="QUOTE_PATTERN.sub">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="slugify.slugify.smart_truncate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="unidecode.unidecode">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="s.lower">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="CHAR_ENTITY_PATTERN.sub">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="NUMBERS_PATTERN.sub">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="re.sub">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="slugify.slugify.isinstance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="slugify.slugify.str">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="m.group">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="text.lower">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="unicodedata.normalize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="DEFAULT_SEPARATOR.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="text.split">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="text.replace">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="DUPLICATE_DASH_PATTERN.sub">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="HEX_PATTERN.sub">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="DECIMAL_PATTERN.sub">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="slugify.slugify.int">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.special.add_uppercase_char" target="char.upper">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.special.add_uppercase_char" target="char_list.insert">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.special.add_uppercase_char" target="xlate.capitalize">
+      <data key="d0">1</data>
+    </edge>
+  </graph>
+</graphml>

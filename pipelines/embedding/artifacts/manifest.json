@@ -1,0 +1,11 @@
+{
+  "corpus_hash": "0c3aa5091e56852d8f6779a3ea1b2d08c00d9035a80848c3e7d1af050f320787",
+  "model_hash": "01a633103942c7e916993fc1615a35cb2f481a4095381b0177b74ffb4e3b6921",
+  "count": 22784,
+  "model_name": "Salesforce/codet5p-220m-py",
+  "artifact_dir": "pattern_library_artifacts/0c3aa5091e56852d8f6779a3ea1b2d08c00d9035a80848c3e7d1af050f320787/Salesforcecodet5p-220m-py_01a63310",
+  "metric_keys": [
+    "improvement_frac"
+  ],
+  "project_hash": "0c3aa5091e56852d8f6779a3ea1b2d08c00d9035a80848c3e7d1af050f320787"
+}
