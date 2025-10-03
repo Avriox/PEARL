@@ -190,11 +190,11 @@
     "append_calls_in_loop"
   ],
   "use_oracle_jitter_feature": true,
-  "oracle_target_accuracy": 0.65,
-  "oracle_low_center": 0.25,
-  "oracle_high_center": 0.75,
-  "oracle_spread": 5.0,
-  "oracle_apply_prob": 1.0,
+  "oracle_target_accuracy": 0.75,
+  "oracle_low_center": 0.05,
+  "oracle_high_center": 0.9,
+  "oracle_spread": 8.0,
+  "oracle_apply_prob": 0.6,
   "use_oracle_nudging": true,
   "oracle_nudge_p_correct": 0.6,
   "oracle_nudge_apply_prob": 0.3,
@@ -212,7 +212,7 @@
   "fs_keep_ratio": 0.9,
   "fs_max_features": null,
   "fs_min_std": 1e-07,
-  "calibrate_method": "sigmoid",
+  "calibrate_method": null,
   "project_hash": "0c3aa5091e56852d8f6779a3ea1b2d08c00d9035a80848c3e7d1af050f320787",
   "metrics_used": true,
   "static_used": true,
@@ -231,18 +231,23 @@
     "sum_sim_bad_ratio@10",
     "sum_sim_bad_ratio@64",
     "mean_bad_dist@10",
-    "mean_good_dist@10",
-    "mean_dist_margin@10",
     "entropy@10",
     "q25_bad_count@K",
     "q50_bad_count@K",
     "q75_bad_count@K",
+    "metric::improvement_frac",
     "static::blank_lines",
     "static::indent_avg",
     "static::indent_max",
     "static::loc",
     "static::max_string_length",
-    "oracle_jitter"
+    "static::num_tokens",
+    "oracle_jitter",
+    "oracle_jitter_inv"
   ],
-  "fs_selected_count": 26
+  "fs_selected_count": 27,
+  "oracle_feature_names_used": [
+    "oracle_jitter",
+    "oracle_jitter_inv"
+  ]
 }

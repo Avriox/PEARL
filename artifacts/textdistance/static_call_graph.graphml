@@ -1,0 +1,3143 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d0" for="edge" attr.name="weight" attr.type="long" />
+  <graph edgedefault="directed">
+    <node id="fuzzing.textdistance_fuzzer.initialize_fuzz_options" />
+    <node id="fuzzing.textdistance_fuzzer.FuzzTarget" />
+    <node id="fuzzing.textdistance_fuzzer.hasattr" />
+    <node id="itertools.product" />
+    <node id="fuzzing.textdistance_fuzzer.pick_qval" />
+    <node id="fdp.ConsumeBool" />
+    <node id="fdp.ConsumeIntInRange" />
+    <node id="fuzzing.textdistance_fuzzer.TestOneInput" />
+    <node id="FUZZ_TARGETS.remove" />
+    <node id="fdp.ConsumeRandomString" />
+    <node id="fdp.PickValueInList" />
+    <node id="fuzz_target.algo_cls" />
+    <node id="fuzzing.textdistance_fuzzer.EnhancedFuzzedDataProvider" />
+    <node id="fuzzing.textdistance_fuzzer.getattr" />
+    <node id="fuzzing.textdistance_fuzzer.str" />
+    <node id="fuzzing.textdistance_fuzzer.main" />
+    <node id="atheris.Fuzz" />
+    <node id="atheris.Setup" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRandomBytes" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeBytes" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeIntInRange" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.remaining_bytes" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRandomString" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeUnicodeNoSurrogates" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRemainingString" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRemainingBytes" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeSublist" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeBool" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.PickValueInList" />
+    <node id="fuzzing.fuzz_helpers.len" />
+    <node id="fuzzing.fuzz_helpers.range" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeDate" />
+    <node id="datetime.datetime" />
+    <node id="datetime.datetime.fromtimestamp" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeFloat" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeMemoryFile" />
+    <node id="file.close" />
+    <node id="io.BytesIO" />
+    <node id="io.StringIO" />
+    <node id="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeTemporaryFile" />
+    <node id="tempfile.NamedTemporaryFile" />
+    <node id="tfile.close" />
+    <node id="tfile.flush" />
+    <node id="tfile.seek" />
+    <node id="tfile.write" />
+    <node id="tests.test_common.test_normalization_range" />
+    <node id="alg.normalized_distance" />
+    <node id="alg.normalized_similarity" />
+    <node id="hypothesis.given" />
+    <node id="hypothesis.strategies.text" />
+    <node id="pytest.mark.parametrize" />
+    <node id="tests.test_common.test_normalization_by_one" />
+    <node id="tests.test_common.isclose" />
+    <node id="tests.test_common.test_normalization_same" />
+    <node id="alg.distance" />
+    <node id="tests.test_common.test_normalization_monotonic" />
+    <node id="alg.similarity" />
+    <node id="hypothesis.settings" />
+    <node id="tests.test_common.test_no_common_chars" />
+    <node id="tests.test_common.test_empty" />
+    <node id="tests.test_common.test_unequal_distance" />
+    <node id="alg.maximum" />
+    <node id="tests.test_external.test_compare" />
+    <node id="&quot;&quot;&quot;cannot import {}&quot;&quot;&quot;.format" />
+    <node id="lib.check_conditions" />
+    <node id="lib.get_function" />
+    <node id="lib.prepare" />
+    <node id="libraries.get_algorithms" />
+    <node id="libraries.get_libs" />
+    <node id="tests.test_external.RuntimeError" />
+    <node id="tests.test_external.external_func" />
+    <node id="tests.test_external.getattr" />
+    <node id="tests.test_external.internal_func" />
+    <node id="tests.test_external.isclose" />
+    <node id="tests.test_external.set" />
+    <node id="tests.test_external.str" />
+    <node id="tests.test_external.test_qval" />
+    <node id="internal_func._get_sequences" />
+    <node id="internal_func.quick_answer" />
+    <node id="tests.test_external.hasattr" />
+    <node id="tests.test_external.repr" />
+    <node id="tests.test_external.test_list_of_numbers" />
+    <node id="hypothesis.strategies.integers" />
+    <node id="hypothesis.strategies.lists" />
+    <node id="textdistance.benchmark.Lib.row" />
+    <node id="math.isinf" />
+    <node id="self.library.split" />
+    <node id="textdistance.benchmark.Benchmark.get_installed" />
+    <node id="textdistance.benchmark.Lib" />
+    <node id="textdistance.benchmark.float" />
+    <node id="textdistance.benchmark.print" />
+    <node id="textdistance.benchmark.Benchmark.get_external_benchmark" />
+    <node id="lib._replace" />
+    <node id="textdistance.benchmark.timeit" />
+    <node id="textdistance.benchmark.Benchmark.get_internal_benchmark" />
+    <node id="textdistance.benchmark.Benchmark.filter_benchmark" />
+    <node id="textdistance.benchmark.filter" />
+    <node id="textdistance.benchmark.Benchmark.get_table" />
+    <node id="textdistance.benchmark.len" />
+    <node id="textdistance.benchmark.tabulate" />
+    <node id="textdistance.benchmark.Benchmark.save" />
+    <node id="LIBRARIES_PATH.open" />
+    <node id="data[lib.algorithm].append" />
+    <node id="json.dump" />
+    <node id="textdistance.benchmark.defaultdict" />
+    <node id="textdistance.benchmark.Benchmark.run" />
+    <node id="benchmark.sort" />
+    <node id="installed.sort" />
+    <node id="textdistance.benchmark.list" />
+    <node id="textdistance.libraries.LibrariesManager.__init__" />
+    <node id="textdistance.libraries.defaultdict" />
+    <node id="textdistance.libraries.LibrariesManager.register" />
+    <node id="self.libs[alg].append" />
+    <node id="textdistance.libraries.LibrariesManager.optimize" />
+    <node id="json.load" />
+    <node id="libs_data.items" />
+    <node id="libs_names.index" />
+    <node id="self.libs[alg].sort" />
+    <node id="textdistance.libraries.LibrariesManager.get_libs" />
+    <node id="textdistance.libraries.LibrariesManager.get_algorithms" />
+    <node id="self.libs.keys" />
+    <node id="textdistance.libraries.list" />
+    <node id="textdistance.libraries.LibrariesManager.clone" />
+    <node id="textdistance.libraries.LibrariesManager.__class__" />
+    <node id="textdistance.libraries.deepcopy" />
+    <node id="textdistance.libraries.LibraryBase.__init__" />
+    <node id="textdistance.libraries.LibraryBase.check_conditions" />
+    <node id="self.conditions.items" />
+    <node id="textdistance.libraries.getattr" />
+    <node id="textdistance.libraries.len" />
+    <node id="textdistance.libraries.LibraryBase.prepare" />
+    <node id="textdistance.libraries.LibraryBase.setup" />
+    <node id="textdistance.libraries.repr" />
+    <node id="textdistance.libraries.LibraryBase.get_function" />
+    <node id="textdistance.libraries.import_module" />
+    <node id="textdistance.libraries.obj" />
+    <node id="textdistance.libraries.LibraryBase.__str__" />
+    <node id="textdistance.libraries.TextLibrary.check_conditions" />
+    <node id="textdistance.libraries.super" />
+    <node id="textdistance.libraries.type" />
+    <node id="textdistance.libraries.TextLibrary.prepare" />
+    <node id="&quot;&quot;&quot;&quot;&quot;&quot;.join" />
+    <node id="textdistance.libraries.isinstance" />
+    <node id="textdistance.libraries.map" />
+    <node id="textdistance.libraries.tuple" />
+    <node id="textdistance.libraries.SameLengthLibrary.check_conditions" />
+    <node id="textdistance.libraries.max" />
+    <node id="textdistance.libraries.min" />
+    <node id="textdistance.utils.words_combinations" />
+    <node id="&quot;&quot;&quot; &quot;&quot;&quot;.join" />
+    <node id="t.split" />
+    <node id="textdistance.utils.f" />
+    <node id="textdistance.utils.float" />
+    <node id="textdistance.utils.len" />
+    <node id="textdistance.utils.min" />
+    <node id="textdistance.utils.permutations" />
+    <node id="textdistance.utils.product" />
+    <node id="textdistance.utils.find_ngrams" />
+    <node id="textdistance.utils.list" />
+    <node id="textdistance.utils.range" />
+    <node id="textdistance.utils.zip" />
+    <node id="textdistance.algorithms.sequence_based.LCSSeq.__init__" />
+    <node id="textdistance.algorithms.sequence_based.LCSSeq._dynamic" />
+    <node id="numpy.zeros" />
+    <node id="textdistance.algorithms.sequence_based.array" />
+    <node id="textdistance.algorithms.sequence_based.enumerate" />
+    <node id="textdistance.algorithms.sequence_based.len" />
+    <node id="textdistance.algorithms.sequence_based.max" />
+    <node id="textdistance.algorithms.sequence_based.range" />
+    <node id="textdistance.algorithms.sequence_based.LCSSeq._recursive" />
+    <node id="textdistance.algorithms.sequence_based.LCSSeq.test_func" />
+    <node id="textdistance.algorithms.sequence_based.all" />
+    <node id="textdistance.algorithms.sequence_based.self" />
+    <node id="textdistance.algorithms.sequence_based.tuple" />
+    <node id="textdistance.algorithms.sequence_based.type" />
+    <node id="textdistance.algorithms.sequence_based.LCSSeq.__call__" />
+    <node id="textdistance.algorithms.sequence_based.LCSSeq._get_sequences" />
+    <node id="textdistance.algorithms.sequence_based.LCSSeq.similarity" />
+    <node id="textdistance.algorithms.sequence_based.LCSStr._standart" />
+    <node id="matcher.find_longest_match" />
+    <node id="textdistance.algorithms.sequence_based._SequenceMatcher" />
+    <node id="textdistance.algorithms.sequence_based.LCSStr._custom" />
+    <node id="textdistance.algorithms.sequence_based.find_ngrams" />
+    <node id="textdistance.algorithms.sequence_based.min" />
+    <node id="textdistance.algorithms.sequence_based.LCSStr.__call__" />
+    <node id="textdistance.algorithms.sequence_based.LCSStr._get_sequences" />
+    <node id="textdistance.algorithms.sequence_based.map" />
+    <node id="textdistance.algorithms.sequence_based.LCSStr.similarity" />
+    <node id="textdistance.algorithms.sequence_based.RatcliffObershelp.maximum" />
+    <node id="textdistance.algorithms.sequence_based.RatcliffObershelp._find" />
+    <node id="s.find" />
+    <node id="textdistance.algorithms.sequence_based.LCSStr" />
+    <node id="textdistance.algorithms.sequence_based.RatcliffObershelp.__call__" />
+    <node id="textdistance.algorithms.sequence_based.RatcliffObershelp._get_sequences" />
+    <node id="textdistance.algorithms.sequence_based.RatcliffObershelp.quick_answer" />
+    <node id="textdistance.algorithms.sequence_based.sum" />
+    <node id="textdistance.algorithms.compression_based._NCDBase.__init__" />
+    <node id="textdistance.algorithms.compression_based._NCDBase.maximum" />
+    <node id="textdistance.algorithms.compression_based._NCDBase._get_size" />
+    <node id="textdistance.algorithms.compression_based._NCDBase._compress" />
+    <node id="textdistance.algorithms.compression_based.len" />
+    <node id="textdistance.algorithms.compression_based._NCDBase.__call__" />
+    <node id="empty.join" />
+    <node id="textdistance.algorithms.compression_based._NCDBase._get_sequences" />
+    <node id="textdistance.algorithms.compression_based.float" />
+    <node id="textdistance.algorithms.compression_based.isinstance" />
+    <node id="textdistance.algorithms.compression_based.max" />
+    <node id="textdistance.algorithms.compression_based.min" />
+    <node id="textdistance.algorithms.compression_based.permutations" />
+    <node id="textdistance.algorithms.compression_based.sum" />
+    <node id="textdistance.algorithms.compression_based.type" />
+    <node id="textdistance.algorithms.compression_based._BinaryNCDBase.__init__" />
+    <node id="textdistance.algorithms.compression_based._BinaryNCDBase.__call__" />
+    <node id="s.encode" />
+    <node id="textdistance.algorithms.compression_based.super" />
+    <node id="textdistance.algorithms.compression_based.tuple" />
+    <node id="textdistance.algorithms.compression_based.ArithNCD.__init__" />
+    <node id="textdistance.algorithms.compression_based.ArithNCD._make_probs" />
+    <node id="counts.most_common" />
+    <node id="counts.values" />
+    <node id="textdistance.algorithms.compression_based.ArithNCD._get_counters" />
+    <node id="textdistance.algorithms.compression_based.ArithNCD._sum_counters" />
+    <node id="textdistance.algorithms.compression_based.Fraction" />
+    <node id="textdistance.algorithms.compression_based.ArithNCD._get_range" />
+    <node id="data.replace" />
+    <node id="textdistance.algorithms.compression_based.ArithNCD._compress" />
+    <node id="textdistance.algorithms.compression_based.ArithNCD._get_size" />
+    <node id="math.ceil" />
+    <node id="math.log" />
+    <node id="textdistance.algorithms.compression_based.RLENCD._compress" />
+    <node id="new_data.append" />
+    <node id="textdistance.algorithms.compression_based.groupby" />
+    <node id="textdistance.algorithms.compression_based.list" />
+    <node id="textdistance.algorithms.compression_based.str" />
+    <node id="textdistance.algorithms.compression_based.BWTRLENCD.__init__" />
+    <node id="textdistance.algorithms.compression_based.BWTRLENCD._compress" />
+    <node id="textdistance.algorithms.compression_based.range" />
+    <node id="textdistance.algorithms.compression_based.sorted" />
+    <node id="textdistance.algorithms.compression_based.SqrtNCD.__init__" />
+    <node id="textdistance.algorithms.compression_based.SqrtNCD._compress" />
+    <node id="Counter(data).items" />
+    <node id="math.sqrt" />
+    <node id="textdistance.algorithms.compression_based.Counter" />
+    <node id="textdistance.algorithms.compression_based.SqrtNCD._get_size" />
+    <node id="self._compress(data).values" />
+    <node id="textdistance.algorithms.compression_based.EntropyNCD.__init__" />
+    <node id="textdistance.algorithms.compression_based.EntropyNCD._compress" />
+    <node id="Counter(data).values" />
+    <node id="textdistance.algorithms.compression_based.EntropyNCD._get_size" />
+    <node id="textdistance.algorithms.compression_based.BZ2NCD._compress" />
+    <node id="codecs.encode" />
+    <node id="textdistance.algorithms.compression_based.LZMANCD._compress" />
+    <node id="lzma.compress" />
+    <node id="textdistance.algorithms.compression_based.ImportError" />
+    <node id="textdistance.algorithms.compression_based.ZLIBNCD._compress" />
+    <node id="textdistance.algorithms.vector_based.Chebyshev._numpy" />
+    <node id="numpy.asarray" />
+    <node id="textdistance.algorithms.vector_based.abs" />
+    <node id="textdistance.algorithms.vector_based.max" />
+    <node id="textdistance.algorithms.vector_based.Chebyshev._pure" />
+    <node id="textdistance.algorithms.vector_based.zip" />
+    <node id="textdistance.algorithms.vector_based.Chebyshev.__call__" />
+    <node id="textdistance.algorithms.vector_based.Minkowski.__init__" />
+    <node id="textdistance.algorithms.vector_based.ValueError" />
+    <node id="textdistance.algorithms.vector_based.Minkowski._numpy" />
+    <node id="result.sum" />
+    <node id="textdistance.algorithms.vector_based.Minkowski._pure" />
+    <node id="textdistance.algorithms.vector_based.sum" />
+    <node id="textdistance.algorithms.vector_based.Minkowski.__call__" />
+    <node id="textdistance.algorithms.vector_based.Manhattan.__call__" />
+    <node id="textdistance.algorithms.vector_based.Euclidean.__init__" />
+    <node id="textdistance.algorithms.vector_based.Euclidean._numpy" />
+    <node id="(q * q.T).sum" />
+    <node id="numpy.matrix" />
+    <node id="numpy.sqrt" />
+    <node id="textdistance.algorithms.vector_based.Euclidean._pure" />
+    <node id="textdistance.algorithms.vector_based.Euclidean.__call__" />
+    <node id="textdistance.algorithms.vector_based.Mahalanobis.__call__" />
+    <node id="textdistance.algorithms.vector_based.Correlation._numpy" />
+    <node id="numpy.dot" />
+    <node id="s.mean" />
+    <node id="textdistance.algorithms.vector_based.reduce" />
+    <node id="textdistance.algorithms.vector_based.Correlation._pure" />
+    <node id="textdistance.algorithms.vector_based.Correlation.__call__" />
+    <node id="textdistance.algorithms.vector_based.Kulsinski.__call__" />
+    <node id="textdistance.algorithms.edit_based.Hamming.__init__" />
+    <node id="textdistance.algorithms.edit_based.Hamming.__call__" />
+    <node id="textdistance.algorithms.edit_based.Hamming._get_sequences" />
+    <node id="textdistance.algorithms.edit_based.Hamming.quick_answer" />
+    <node id="textdistance.algorithms.edit_based.Hamming.test_func" />
+    <node id="textdistance.algorithms.edit_based._zip" />
+    <node id="textdistance.algorithms.edit_based.isinstance" />
+    <node id="textdistance.algorithms.edit_based.sum" />
+    <node id="textdistance.algorithms.edit_based.Levenshtein.__init__" />
+    <node id="textdistance.algorithms.edit_based.Levenshtein._recursive" />
+    <node id="textdistance.algorithms.edit_based.Levenshtein.test_func" />
+    <node id="textdistance.algorithms.edit_based.len" />
+    <node id="textdistance.algorithms.edit_based.min" />
+    <node id="textdistance.algorithms.edit_based.self" />
+    <node id="textdistance.algorithms.edit_based.Levenshtein._cycled" />
+    <node id="numpy.arange" />
+    <node id="textdistance.algorithms.edit_based.int" />
+    <node id="textdistance.algorithms.edit_based.range" />
+    <node id="textdistance.algorithms.edit_based.Levenshtein.__call__" />
+    <node id="textdistance.algorithms.edit_based.Levenshtein._get_sequences" />
+    <node id="textdistance.algorithms.edit_based.Levenshtein.quick_answer" />
+    <node id="textdistance.algorithms.edit_based.DamerauLevenshtein.__init__" />
+    <node id="textdistance.algorithms.edit_based.DamerauLevenshtein._numpy" />
+    <node id="textdistance.algorithms.edit_based.DamerauLevenshtein.test_func" />
+    <node id="textdistance.algorithms.edit_based.enumerate" />
+    <node id="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_unrestricted" />
+    <node id="da.get" />
+    <node id="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_restricted" />
+    <node id="textdistance.algorithms.edit_based.DamerauLevenshtein.__call__" />
+    <node id="textdistance.algorithms.edit_based.DamerauLevenshtein._get_sequences" />
+    <node id="textdistance.algorithms.edit_based.DamerauLevenshtein.quick_answer" />
+    <node id="textdistance.algorithms.edit_based.JaroWinkler.__init__" />
+    <node id="textdistance.algorithms.edit_based.JaroWinkler.maximum" />
+    <node id="textdistance.algorithms.edit_based.JaroWinkler.__call__" />
+    <node id="textdistance.algorithms.edit_based.JaroWinkler._get_sequences" />
+    <node id="textdistance.algorithms.edit_based.JaroWinkler.quick_answer" />
+    <node id="textdistance.algorithms.edit_based.max" />
+    <node id="textdistance.algorithms.edit_based.Jaro.__init__" />
+    <node id="textdistance.algorithms.edit_based.super" />
+    <node id="textdistance.algorithms.edit_based.NeedlemanWunsch.__init__" />
+    <node id="textdistance.algorithms.edit_based.NeedlemanWunsch.minimum" />
+    <node id="textdistance.algorithms.edit_based.map" />
+    <node id="textdistance.algorithms.edit_based.NeedlemanWunsch.maximum" />
+    <node id="textdistance.algorithms.edit_based.NeedlemanWunsch.distance" />
+    <node id="textdistance.algorithms.edit_based.NeedlemanWunsch.similarity" />
+    <node id="textdistance.algorithms.edit_based.NeedlemanWunsch.normalized_distance" />
+    <node id="textdistance.algorithms.edit_based.NeedlemanWunsch.normalized_similarity" />
+    <node id="textdistance.algorithms.edit_based.NeedlemanWunsch.__call__" />
+    <node id="textdistance.algorithms.edit_based.ImportError" />
+    <node id="textdistance.algorithms.edit_based.NeedlemanWunsch._get_sequences" />
+    <node id="textdistance.algorithms.edit_based.NeedlemanWunsch.sim_func" />
+    <node id="textdistance.algorithms.edit_based.SmithWaterman.__init__" />
+    <node id="textdistance.algorithms.edit_based.SmithWaterman.maximum" />
+    <node id="textdistance.algorithms.edit_based.SmithWaterman.__call__" />
+    <node id="textdistance.algorithms.edit_based.SmithWaterman._get_sequences" />
+    <node id="textdistance.algorithms.edit_based.SmithWaterman.quick_answer" />
+    <node id="textdistance.algorithms.edit_based.SmithWaterman.sim_func" />
+    <node id="textdistance.algorithms.edit_based.Gotoh.__init__" />
+    <node id="textdistance.algorithms.edit_based.Gotoh.minimum" />
+    <node id="textdistance.algorithms.edit_based.Gotoh.maximum" />
+    <node id="textdistance.algorithms.edit_based.Gotoh.__call__" />
+    <node id="textdistance.algorithms.edit_based.Gotoh._get_sequences" />
+    <node id="textdistance.algorithms.edit_based.Gotoh.sim_func" />
+    <node id="textdistance.algorithms.edit_based.float" />
+    <node id="textdistance.algorithms.edit_based.StrCmp95.__init__" />
+    <node id="textdistance.algorithms.edit_based.StrCmp95.maximum" />
+    <node id="textdistance.algorithms.edit_based.StrCmp95._in_range" />
+    <node id="textdistance.algorithms.edit_based.ord" />
+    <node id="textdistance.algorithms.edit_based.StrCmp95.__call__" />
+    <node id="s1.strip" />
+    <node id="s1.strip().upper" />
+    <node id="s1[0].isdigit" />
+    <node id="s2.strip" />
+    <node id="s2.strip().upper" />
+    <node id="sc1.isdigit" />
+    <node id="textdistance.algorithms.edit_based.StrCmp95.quick_answer" />
+    <node id="textdistance.algorithms.edit_based.defaultdict" />
+    <node id="textdistance.algorithms.edit_based.zip" />
+    <node id="textdistance.algorithms.edit_based.MLIPNS.__init__" />
+    <node id="textdistance.algorithms.edit_based.MLIPNS.maximum" />
+    <node id="textdistance.algorithms.edit_based.MLIPNS.__call__" />
+    <node id="textdistance.algorithms.edit_based.Hamming" />
+    <node id="textdistance.algorithms.edit_based.MLIPNS._get_sequences" />
+    <node id="textdistance.algorithms.edit_based.MLIPNS.quick_answer" />
+    <node id="textdistance.algorithms.edit_based.all" />
+    <node id="textdistance.algorithms.token_based.Jaccard.__init__" />
+    <node id="textdistance.algorithms.token_based.Jaccard.maximum" />
+    <node id="textdistance.algorithms.token_based.Jaccard.__call__" />
+    <node id="textdistance.algorithms.token_based.Jaccard._count_counters" />
+    <node id="textdistance.algorithms.token_based.Jaccard._get_counters" />
+    <node id="textdistance.algorithms.token_based.Jaccard._intersect_counters" />
+    <node id="textdistance.algorithms.token_based.Jaccard._union_counters" />
+    <node id="textdistance.algorithms.token_based.Jaccard.quick_answer" />
+    <node id="textdistance.algorithms.token_based.Sorensen.__init__" />
+    <node id="textdistance.algorithms.token_based.Sorensen.maximum" />
+    <node id="textdistance.algorithms.token_based.Sorensen.__call__" />
+    <node id="textdistance.algorithms.token_based.Sorensen._count_counters" />
+    <node id="textdistance.algorithms.token_based.Sorensen._get_counters" />
+    <node id="textdistance.algorithms.token_based.Sorensen._intersect_counters" />
+    <node id="textdistance.algorithms.token_based.Sorensen.quick_answer" />
+    <node id="textdistance.algorithms.token_based.sum" />
+    <node id="textdistance.algorithms.token_based.Tversky.__init__" />
+    <node id="textdistance.algorithms.token_based.repeat" />
+    <node id="textdistance.algorithms.token_based.Tversky.maximum" />
+    <node id="textdistance.algorithms.token_based.Tversky.__call__" />
+    <node id="textdistance.algorithms.token_based.Tversky._count_counters" />
+    <node id="textdistance.algorithms.token_based.Tversky._get_counters" />
+    <node id="textdistance.algorithms.token_based.Tversky._intersect_counters" />
+    <node id="textdistance.algorithms.token_based.Tversky.quick_answer" />
+    <node id="textdistance.algorithms.token_based.islice" />
+    <node id="textdistance.algorithms.token_based.len" />
+    <node id="textdistance.algorithms.token_based.list" />
+    <node id="textdistance.algorithms.token_based.max" />
+    <node id="textdistance.algorithms.token_based.min" />
+    <node id="textdistance.algorithms.token_based.zip" />
+    <node id="textdistance.algorithms.token_based.Overlap.__init__" />
+    <node id="textdistance.algorithms.token_based.Overlap.maximum" />
+    <node id="textdistance.algorithms.token_based.Overlap.__call__" />
+    <node id="textdistance.algorithms.token_based.Overlap._count_counters" />
+    <node id="textdistance.algorithms.token_based.Overlap._get_counters" />
+    <node id="textdistance.algorithms.token_based.Overlap._intersect_counters" />
+    <node id="textdistance.algorithms.token_based.Overlap.quick_answer" />
+    <node id="textdistance.algorithms.token_based.Cosine.__init__" />
+    <node id="textdistance.algorithms.token_based.Cosine.maximum" />
+    <node id="textdistance.algorithms.token_based.Cosine.__call__" />
+    <node id="textdistance.algorithms.token_based.Cosine._count_counters" />
+    <node id="textdistance.algorithms.token_based.Cosine._get_counters" />
+    <node id="textdistance.algorithms.token_based.Cosine._intersect_counters" />
+    <node id="textdistance.algorithms.token_based.Cosine.quick_answer" />
+    <node id="textdistance.algorithms.token_based.pow" />
+    <node id="textdistance.algorithms.token_based.reduce" />
+    <node id="textdistance.algorithms.token_based.Tanimoto.__call__" />
+    <node id="textdistance.algorithms.token_based.float" />
+    <node id="textdistance.algorithms.token_based.log" />
+    <node id="textdistance.algorithms.token_based.super" />
+    <node id="textdistance.algorithms.token_based.MongeElkan.__init__" />
+    <node id="textdistance.algorithms.token_based.MongeElkan.maximum" />
+    <node id="self.algorithm.maximum" />
+    <node id="textdistance.algorithms.token_based.MongeElkan._calc" />
+    <node id="maxes.append" />
+    <node id="self.algorithm.similarity" />
+    <node id="textdistance.algorithms.token_based.MongeElkan.__call__" />
+    <node id="result.append" />
+    <node id="textdistance.algorithms.token_based.MongeElkan._get_sequences" />
+    <node id="textdistance.algorithms.token_based.MongeElkan.quick_answer" />
+    <node id="textdistance.algorithms.token_based.permutations" />
+    <node id="textdistance.algorithms.token_based.Bag.__call__" />
+    <node id="textdistance.algorithms.token_based.Bag._count_counters" />
+    <node id="textdistance.algorithms.token_based.Bag._get_counters" />
+    <node id="textdistance.algorithms.token_based.Bag._intersect_counters" />
+    <node id="textdistance.algorithms.simple.Prefix.__init__" />
+    <node id="textdistance.algorithms.simple.Prefix.__call__" />
+    <node id="b''.join" />
+    <node id="textdistance.algorithms.simple.Prefix._get_sequences" />
+    <node id="textdistance.algorithms.simple.Prefix.sim_test" />
+    <node id="textdistance.algorithms.simple.isinstance" />
+    <node id="textdistance.algorithms.simple.takewhile" />
+    <node id="textdistance.algorithms.simple.zip" />
+    <node id="textdistance.algorithms.simple.Prefix.similarity" />
+    <node id="textdistance.algorithms.simple.len" />
+    <node id="textdistance.algorithms.simple.self" />
+    <node id="textdistance.algorithms.simple.Postfix.__call__" />
+    <node id="textdistance.algorithms.simple.list" />
+    <node id="textdistance.algorithms.simple.reversed" />
+    <node id="textdistance.algorithms.simple.super" />
+    <node id="textdistance.algorithms.simple.Length.__call__" />
+    <node id="textdistance.algorithms.simple.map" />
+    <node id="textdistance.algorithms.simple.max" />
+    <node id="textdistance.algorithms.simple.min" />
+    <node id="textdistance.algorithms.simple.Identity.maximum" />
+    <node id="textdistance.algorithms.simple.Identity.__call__" />
+    <node id="textdistance.algorithms.simple.Identity._ident" />
+    <node id="textdistance.algorithms.simple.int" />
+    <node id="textdistance.algorithms.simple.Matrix.__init__" />
+    <node id="textdistance.algorithms.simple.Matrix.maximum" />
+    <node id="textdistance.algorithms.simple.Matrix.__call__" />
+    <node id="textdistance.algorithms.simple.Matrix._ident" />
+    <node id="textdistance.algorithms.simple.tuple" />
+    <node id="textdistance.algorithms.phonetic.MRA.maximum" />
+    <node id="textdistance.algorithms.phonetic.MRA._calc_mra" />
+    <node id="textdistance.algorithms.phonetic.list" />
+    <node id="textdistance.algorithms.phonetic.map" />
+    <node id="textdistance.algorithms.phonetic.max" />
+    <node id="textdistance.algorithms.phonetic.groupby" />
+    <node id="textdistance.algorithms.phonetic.len" />
+    <node id="word.upper" />
+    <node id="textdistance.algorithms.phonetic.MRA.__call__" />
+    <node id="new_sequences.append" />
+    <node id="textdistance.algorithms.phonetic.MRA._ident" />
+    <node id="textdistance.algorithms.phonetic.abs" />
+    <node id="textdistance.algorithms.phonetic.all" />
+    <node id="textdistance.algorithms.phonetic.min" />
+    <node id="textdistance.algorithms.phonetic.range" />
+    <node id="textdistance.algorithms.phonetic.zip" />
+    <node id="textdistance.algorithms.phonetic.zip_longest" />
+    <node id="textdistance.algorithms.phonetic.Editex.__init__" />
+    <node id="frozenset.union" />
+    <node id="textdistance.algorithms.phonetic.ValueError" />
+    <node id="textdistance.algorithms.phonetic.Editex.maximum" />
+    <node id="textdistance.algorithms.phonetic.Editex.r_cost" />
+    <node id="textdistance.algorithms.phonetic.Editex._ident" />
+    <node id="textdistance.algorithms.phonetic.any" />
+    <node id="textdistance.algorithms.phonetic.Editex.d_cost" />
+    <node id="textdistance.algorithms.phonetic.Editex.__call__" />
+    <node id="s1.upper" />
+    <node id="s2.upper" />
+    <node id="textdistance.algorithms.phonetic.Editex.quick_answer" />
+    <node id="textdistance.algorithms.phonetic.defaultdict" />
+    <node id="textdistance.algorithms.phonetic.enumerate" />
+    <node id="textdistance.algorithms.base.Base.__init__" />
+    <node id="textdistance.algorithms.base.Base.__call__" />
+    <node id="textdistance.algorithms.base.Base.maximum" />
+    <node id="textdistance.algorithms.base.map" />
+    <node id="textdistance.algorithms.base.max" />
+    <node id="textdistance.algorithms.base.Base.distance" />
+    <node id="textdistance.algorithms.base.self" />
+    <node id="textdistance.algorithms.base.Base.similarity" />
+    <node id="textdistance.algorithms.base.Base.normalized_distance" />
+    <node id="textdistance.algorithms.base.Base.normalized_similarity" />
+    <node id="textdistance.algorithms.base.Base.external_answer" />
+    <node id="textdistance.algorithms.base.func" />
+    <node id="textdistance.algorithms.base.getattr" />
+    <node id="textdistance.algorithms.base.suppress" />
+    <node id="textdistance.algorithms.base.Base.quick_answer" />
+    <node id="textdistance.algorithms.base.Base._ident" />
+    <node id="textdistance.algorithms.base.all" />
+    <node id="textdistance.algorithms.base.len" />
+    <node id="textdistance.algorithms.base.set" />
+    <node id="textdistance.algorithms.base.zip" />
+    <node id="textdistance.algorithms.base.Base._get_sequences" />
+    <node id="s.split" />
+    <node id="textdistance.algorithms.base.find_ngrams" />
+    <node id="textdistance.algorithms.base.list" />
+    <node id="textdistance.algorithms.base.Base._get_counters" />
+    <node id="textdistance.algorithms.base.Counter" />
+    <node id="textdistance.algorithms.base.isinstance" />
+    <node id="textdistance.algorithms.base.Base._intersect_counters" />
+    <node id="sequences[0].copy" />
+    <node id="textdistance.algorithms.base.Base._union_counters" />
+    <node id="textdistance.algorithms.base.Base._sum_counters" />
+    <node id="textdistance.algorithms.base.Base._count_counters" />
+    <node id="counter.values" />
+    <node id="textdistance.algorithms.base.sum" />
+    <node id="textdistance.algorithms.base.Base.__repr__" />
+    <node id="&quot;&quot;&quot;{name}({data})&quot;&quot;&quot;.format" />
+    <node id="textdistance.algorithms.base.type" />
+    <node id="textdistance.algorithms.base.BaseSimilarity.distance" />
+    <node id="textdistance.algorithms.base.BaseSimilarity.maximum" />
+    <node id="textdistance.algorithms.base.BaseSimilarity.similarity" />
+    <node id="textdistance.algorithms.base.BaseSimilarity.quick_answer" />
+    <node id="textdistance.algorithms.base.BaseSimilarity._ident" />
+    <node id="textdistance.algorithms.base.BaseSimilarity.external_answer" />
+    <node id="tests.test_edit.test_strcmp95.test_distance" />
+    <node id="tests.test_edit.test_strcmp95.ALG" />
+    <node id="tests.test_edit.test_strcmp95.isclose" />
+    <node id="tests.test_edit.test_smith_waterman.test_distance_matrix" />
+    <node id="tests.test_edit.test_smith_waterman.ALG" />
+    <node id="textdistance.Matrix" />
+    <node id="tests.test_edit.test_smith_waterman.sim_ident" />
+    <node id="tests.test_edit.test_smith_waterman.test_distance_ident" />
+    <node id="tests.test_edit.test_smith_waterman.test_distance_ident_with_gap_5" />
+    <node id="tests.test_edit.test_gotoh.sim_ident" />
+    <node id="tests.test_edit.test_gotoh.test_distance_ident" />
+    <node id="tests.test_edit.test_gotoh.ALG" />
+    <node id="tests.test_edit.test_gotoh.test_distance_ident_with_gap_05" />
+    <node id="tests.test_edit.test_gotoh.test_distance_ident_with_gap_5" />
+    <node id="tests.test_edit.test_jaro.test_distance" />
+    <node id="tests.test_edit.test_jaro.ALG" />
+    <node id="tests.test_edit.test_jaro.isclose" />
+    <node id="tests.test_edit.test_matrix.test_distance" />
+    <node id="tests.test_edit.test_matrix.ALG" />
+    <node id="tests.test_edit.test_mlipns.test_distance" />
+    <node id="tests.test_edit.test_mlipns.ALG" />
+    <node id="tests.test_edit.test_damerau_levenshtein.test_distance_restricted" />
+    <node id="ALG()._pure_python_restricted" />
+    <node id="tests.test_edit.test_damerau_levenshtein.ALG" />
+    <node id="tests.test_edit.test_damerau_levenshtein.test_distance_unrestricted" />
+    <node id="ALG()._pure_python_unrestricted" />
+    <node id="tests.test_edit.test_needleman_wunsch.test_distance_matrix" />
+    <node id="tests.test_edit.test_needleman_wunsch.ALG" />
+    <node id="tests.test_edit.test_needleman_wunsch.sim_ident" />
+    <node id="tests.test_edit.test_needleman_wunsch.test_distance_ident" />
+    <node id="tests.test_edit.test_needleman_wunsch.test_distance_ident_with_gap_5" />
+    <node id="tests.test_edit.test_jaro_winkler.test_distance" />
+    <node id="tests.test_edit.test_jaro_winkler.ALG" />
+    <node id="tests.test_edit.test_jaro_winkler.isclose" />
+    <node id="tests.test_edit.test_editex.test_distance" />
+    <node id="tests.test_edit.test_editex.ALG" />
+    <node id="tests.test_edit.test_editex.test_distance_with_params" />
+    <node id="tests.test_edit.test_editex.dict" />
+    <node id="tests.test_edit.test_levenshtein.test_distance" />
+    <node id="tests.test_edit.test_levenshtein.ALG" />
+    <node id="tests.test_edit.test_hamming.test_distance" />
+    <node id="tests.test_edit.test_hamming.ALG" />
+    <node id="tests.test_token.test_jaccard.test_distance" />
+    <node id="tests.test_token.test_jaccard.ALG" />
+    <node id="tests.test_token.test_jaccard.isclose" />
+    <node id="tests.test_token.test_jaccard.test_compare_with_tversky" />
+    <node id="ALG().distance" />
+    <node id="textdistance.Tversky" />
+    <node id="textdistance.Tversky(ks=[1, 1]).distance" />
+    <node id="tests.test_token.test_jaccard.test_compare_with_tversky_as_set" />
+    <node id="ALG(as_set=True).distance" />
+    <node id="textdistance.Tversky(ks=[1, 1], as_set=True).distance" />
+    <node id="tests.test_token.test_monge_elkan.test_similarity" />
+    <node id="ALG(qval=1, algorithm=textdistance.jaro_winkler).similarity" />
+    <node id="tests.test_token.test_monge_elkan.ALG" />
+    <node id="tests.test_token.test_monge_elkan.isclose" />
+    <node id="tests.test_token.test_bag.test_distance" />
+    <node id="tests.test_token.test_bag.ALG" />
+    <node id="tests.test_token.test_sorensen.test_distance" />
+    <node id="tests.test_token.test_sorensen.ALG" />
+    <node id="tests.test_token.test_sorensen.isclose" />
+    <node id="tests.test_token.test_sorensen.test_compare_with_tversky" />
+    <node id="textdistance.Tversky(ks=[0.5, 0.5]).distance" />
+    <node id="tests.test_token.test_sorensen.test_compare_with_tversky_as_set" />
+    <node id="textdistance.Tversky(ks=[0.5, 0.5], as_set=True).distance" />
+    <node id="tests.test_token.test_overlap.test_distance" />
+    <node id="tests.test_token.test_overlap.ALG" />
+    <node id="tests.test_token.test_overlap.isclose" />
+    <node id="tests.test_token.test_cosine.test_distance" />
+    <node id="tests.test_token.test_cosine.ALG" />
+    <node id="tests.test_token.test_cosine.isclose" />
+    <node id="tests.test_token.test_cosine.pow" />
+    <node id="tests.test_sequence.test_lcsstr.test_distance" />
+    <node id="tests.test_sequence.test_lcsstr.ALG" />
+    <node id="tests.test_sequence.test_lcsseq.test_distance" />
+    <node id="tests.test_sequence.test_lcsseq.ALG" />
+    <node id="tests.test_sequence.test_lcsseq.test_distance_multiseq" />
+    <node id="tests.test_phonetic.test_editex.test_distance" />
+    <node id="tests.test_phonetic.test_editex.ALG" />
+    <node id="tests.test_phonetic.test_editex.len" />
+    <node id="tests.test_phonetic.test_editex.test_local" />
+    <node id="tests.test_compression.test_bz2_ncd.test_similarity" />
+    <node id="tests.test_compression.test_bz2_ncd.ALG" />
+    <node id="tests.test_compression.test_bz2_ncd.isclose" />
+    <node id="tests.test_compression.test_common.test_monotonicity" />
+    <node id="tests.test_compression.test_common.alg" />
+    <node id="tests.test_compression.test_common.test_simmetry" />
+    <node id="tests.test_compression.test_common.test_is_normalized" />
+    <node id="tests.test_compression.test_common.test_normalized_by_one" />
+    <node id="tests.test_compression.test_common.isclose" />
+    <node id="tests.test_compression.test_bwtrle_ncd.test_similarity" />
+    <node id="tests.test_compression.test_bwtrle_ncd.ALG" />
+    <node id="tests.test_compression.test_bwtrle_ncd.isclose" />
+    <node id="tests.test_compression.test_entropy_ncd.test_similarity" />
+    <node id="ALG.similarity" />
+    <node id="tests.test_compression.test_entropy_ncd.isclose" />
+    <node id="tests.test_compression.test_entropy_ncd.test_simmetry_compressor" />
+    <node id="ALG._compress" />
+    <node id="tests.test_compression.test_entropy_ncd.reversed" />
+    <node id="tests.test_compression.test_entropy_ncd.test_idempotency_compressor" />
+    <node id="ALG._get_size" />
+    <node id="tests.test_compression.test_entropy_ncd.test_monotonicity_compressor" />
+    <node id="hypothesis.strategies.characters" />
+    <node id="tests.test_compression.test_entropy_ncd.test_distributivity_compressor" />
+    <node id="tests.test_compression.test_entropy_ncd.test_normalization_range" />
+    <node id="ALG.normalized_distance" />
+    <node id="ALG.normalized_similarity" />
+    <node id="tests.test_compression.test_sqrt_ncd.test_similarity" />
+    <node id="tests.test_compression.test_sqrt_ncd.ALG" />
+    <node id="tests.test_compression.test_sqrt_ncd.isclose" />
+    <node id="tests.test_compression.test_sqrt_ncd.test_simmetry_compressor" />
+    <node id="tests.test_compression.test_sqrt_ncd.reversed" />
+    <node id="tests.test_compression.test_sqrt_ncd.test_idempotency_compressor" />
+    <node id="tests.test_compression.test_sqrt_ncd.test_monotonicity_compressor" />
+    <node id="tests.test_compression.test_sqrt_ncd.test_distributivity_compressor" />
+    <node id="tests.test_compression.test_sqrt_ncd.test_normalization_range" />
+    <node id="tests.test_compression.test_arith_ncd.test_similarity" />
+    <node id="tests.test_compression.test_arith_ncd.ALG" />
+    <node id="tests.test_compression.test_arith_ncd.isclose" />
+    <node id="tests.test_compression.test_arith_ncd.test_make_probs" />
+    <node id="alg._make_probs" />
+    <node id="tests.test_compression.test_arith_ncd.Fraction" />
+    <node id="textdistance.ArithNCD" />
+    <node id="tests.test_compression.test_arith_ncd.test_arith_output" />
+    <node id="alg._compress" />
+    <edge source="fuzzing.textdistance_fuzzer.initialize_fuzz_options" target="fuzzing.textdistance_fuzzer.FuzzTarget">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.initialize_fuzz_options" target="fuzzing.textdistance_fuzzer.hasattr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.initialize_fuzz_options" target="itertools.product">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.pick_qval" target="fdp.ConsumeBool">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.pick_qval" target="fdp.ConsumeIntInRange">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.TestOneInput" target="FUZZ_TARGETS.remove">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.TestOneInput" target="fdp.ConsumeRandomString">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.TestOneInput" target="fdp.PickValueInList">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.TestOneInput" target="fuzz_target.algo_cls">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.TestOneInput" target="fuzzing.textdistance_fuzzer.EnhancedFuzzedDataProvider">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.TestOneInput" target="fuzzing.textdistance_fuzzer.getattr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.TestOneInput" target="fuzzing.textdistance_fuzzer.pick_qval">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.TestOneInput" target="fuzzing.textdistance_fuzzer.str">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.main" target="atheris.Fuzz">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.main" target="atheris.Setup">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.textdistance_fuzzer.main" target="fuzzing.textdistance_fuzzer.initialize_fuzz_options">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRandomBytes" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeBytes">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRandomBytes" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeIntInRange">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRandomBytes" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.remaining_bytes">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRandomString" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeIntInRange">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRandomString" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeUnicodeNoSurrogates">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRandomString" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.remaining_bytes">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRemainingString" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeUnicodeNoSurrogates">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRemainingString" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.remaining_bytes">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRemainingBytes" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeBytes">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRemainingBytes" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.remaining_bytes">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeSublist" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeBool">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeSublist" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeIntInRange">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeSublist" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.PickValueInList">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeSublist" target="fuzzing.fuzz_helpers.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeSublist" target="fuzzing.fuzz_helpers.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeDate" target="datetime.datetime">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeDate" target="datetime.datetime.fromtimestamp">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeDate" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeFloat">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeMemoryFile" target="file.close">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeMemoryFile" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRandomBytes">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeMemoryFile" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRandomString">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeMemoryFile" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRemainingBytes">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeMemoryFile" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRemainingString">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeMemoryFile" target="io.BytesIO">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeMemoryFile" target="io.StringIO">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeTemporaryFile" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRandomBytes">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeTemporaryFile" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRandomString">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeTemporaryFile" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRemainingBytes">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeTemporaryFile" target="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeRemainingString">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeTemporaryFile" target="tempfile.NamedTemporaryFile">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeTemporaryFile" target="tfile.close">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeTemporaryFile" target="tfile.flush">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeTemporaryFile" target="tfile.seek">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="fuzzing.fuzz_helpers.EnhancedFuzzedDataProvider.ConsumeTemporaryFile" target="tfile.write">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_range" target="alg.normalized_distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_range" target="alg.normalized_similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_range" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_range" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_range" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_by_one" target="alg.normalized_distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_by_one" target="alg.normalized_similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_by_one" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_by_one" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_by_one" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_by_one" target="tests.test_common.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_same" target="alg.distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_same" target="alg.normalized_distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_same" target="alg.normalized_similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_same" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_same" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_same" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_monotonic" target="alg.distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_monotonic" target="alg.normalized_distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_monotonic" target="alg.normalized_similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_monotonic" target="alg.similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_monotonic" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_monotonic" target="hypothesis.settings">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_monotonic" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_normalization_monotonic" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_no_common_chars" target="alg.similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_no_common_chars" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_empty" target="alg.distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_empty" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_unequal_distance" target="alg.distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_unequal_distance" target="alg.maximum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_common.test_unequal_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="&quot;&quot;&quot;cannot import {}&quot;&quot;&quot;.format">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="hypothesis.settings">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="lib.check_conditions">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="lib.get_function">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="lib.prepare">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="libraries.get_algorithms">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="libraries.get_libs">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="tests.test_external.RuntimeError">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="tests.test_external.external_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="tests.test_external.getattr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="tests.test_external.internal_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="tests.test_external.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="tests.test_external.set">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_compare" target="tests.test_external.str">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="&quot;&quot;&quot;cannot import {}&quot;&quot;&quot;.format">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="internal_func._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="internal_func.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="lib.check_conditions">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="lib.get_function">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="lib.prepare">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="libraries.get_algorithms">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="libraries.get_libs">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="tests.test_external.RuntimeError">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="tests.test_external.external_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="tests.test_external.getattr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="tests.test_external.hasattr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="tests.test_external.internal_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="tests.test_external.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="tests.test_external.repr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="tests.test_external.set">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_qval" target="tests.test_external.str">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="&quot;&quot;&quot;cannot import {}&quot;&quot;&quot;.format">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="hypothesis.strategies.integers">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="hypothesis.strategies.lists">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="internal_func.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="lib.check_conditions">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="lib.get_function">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="lib.prepare">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="libraries.get_algorithms">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="libraries.get_libs">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="tests.test_external.RuntimeError">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="tests.test_external.external_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="tests.test_external.getattr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="tests.test_external.internal_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="tests.test_external.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="tests.test_external.repr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_external.test_list_of_numbers" target="tests.test_external.str">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Lib.row" target="math.isinf">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Lib.row" target="self.library.split">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.get_installed" target="lib.get_function">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.get_installed" target="libraries.get_algorithms">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.get_installed" target="libraries.get_libs">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.get_installed" target="textdistance.benchmark.Lib">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.get_installed" target="textdistance.benchmark.float">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.get_installed" target="textdistance.benchmark.print">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.get_external_benchmark" target="lib._replace">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.get_external_benchmark" target="textdistance.benchmark.timeit">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.get_internal_benchmark" target="libraries.get_algorithms">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.get_internal_benchmark" target="textdistance.benchmark.Lib">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.get_internal_benchmark" target="textdistance.benchmark.timeit">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.filter_benchmark" target="textdistance.benchmark.filter">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.get_table" target="textdistance.benchmark.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.get_table" target="textdistance.benchmark.tabulate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.save" target="LIBRARIES_PATH.open">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.save" target="data[lib.algorithm].append">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.save" target="json.dump">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.save" target="textdistance.benchmark.defaultdict">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.run" target="benchmark.sort">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.run" target="installed.sort">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.run" target="textdistance.benchmark.Benchmark.filter_benchmark">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.run" target="textdistance.benchmark.Benchmark.get_external_benchmark">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.run" target="textdistance.benchmark.Benchmark.get_installed">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.run" target="textdistance.benchmark.Benchmark.get_internal_benchmark">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.run" target="textdistance.benchmark.Benchmark.get_table">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.run" target="textdistance.benchmark.Benchmark.save">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.run" target="textdistance.benchmark.list">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.benchmark.Benchmark.run" target="textdistance.benchmark.print">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibrariesManager.__init__" target="textdistance.libraries.defaultdict">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibrariesManager.register" target="self.libs[alg].append">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibrariesManager.optimize" target="LIBRARIES_PATH.open">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibrariesManager.optimize" target="json.load">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibrariesManager.optimize" target="libs_data.items">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibrariesManager.optimize" target="libs_names.index">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibrariesManager.optimize" target="self.libs[alg].sort">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibrariesManager.optimize" target="textdistance.libraries.LibrariesManager.get_libs">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibrariesManager.get_algorithms" target="self.libs.keys">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibrariesManager.get_algorithms" target="textdistance.libraries.list">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibrariesManager.clone" target="textdistance.libraries.LibrariesManager.__class__">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibrariesManager.clone" target="textdistance.libraries.deepcopy">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibraryBase.check_conditions" target="self.conditions.items">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibraryBase.check_conditions" target="textdistance.libraries.getattr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibraryBase.check_conditions" target="textdistance.libraries.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibraryBase.setup" target="textdistance.libraries.repr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibraryBase.get_function" target="textdistance.libraries.getattr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibraryBase.get_function" target="textdistance.libraries.import_module">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.LibraryBase.get_function" target="textdistance.libraries.obj">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.TextLibrary.check_conditions" target="textdistance.libraries.TextLibrary.check_conditions">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.TextLibrary.check_conditions" target="textdistance.libraries.getattr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.TextLibrary.check_conditions" target="textdistance.libraries.super">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.TextLibrary.check_conditions" target="textdistance.libraries.type">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.TextLibrary.prepare" target="&quot;&quot;&quot;&quot;&quot;&quot;.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.TextLibrary.prepare" target="textdistance.libraries.isinstance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.TextLibrary.prepare" target="textdistance.libraries.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.TextLibrary.prepare" target="textdistance.libraries.tuple">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.SameLengthLibrary.check_conditions" target="textdistance.libraries.SameLengthLibrary.check_conditions">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.SameLengthLibrary.check_conditions" target="textdistance.libraries.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.SameLengthLibrary.check_conditions" target="textdistance.libraries.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.SameLengthLibrary.check_conditions" target="textdistance.libraries.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.libraries.SameLengthLibrary.check_conditions" target="textdistance.libraries.super">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.utils.words_combinations" target="&quot;&quot;&quot; &quot;&quot;&quot;.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.utils.words_combinations" target="t.split">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.utils.words_combinations" target="textdistance.utils.f">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.utils.words_combinations" target="textdistance.utils.float">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.utils.words_combinations" target="textdistance.utils.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.utils.words_combinations" target="textdistance.utils.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.utils.words_combinations" target="textdistance.utils.permutations">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.utils.words_combinations" target="textdistance.utils.product">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.utils.find_ngrams" target="textdistance.utils.list">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.utils.find_ngrams" target="textdistance.utils.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.utils.find_ngrams" target="textdistance.utils.zip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq._dynamic" target="numpy.zeros">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq._dynamic" target="textdistance.algorithms.sequence_based.array">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq._dynamic" target="textdistance.algorithms.sequence_based.enumerate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq._dynamic" target="textdistance.algorithms.sequence_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq._dynamic" target="textdistance.algorithms.sequence_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq._dynamic" target="textdistance.algorithms.sequence_based.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq._recursive" target="textdistance.algorithms.sequence_based.LCSSeq.test_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq._recursive" target="textdistance.algorithms.sequence_based.all">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq._recursive" target="textdistance.algorithms.sequence_based.enumerate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq._recursive" target="textdistance.algorithms.sequence_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq._recursive" target="textdistance.algorithms.sequence_based.self">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq._recursive" target="textdistance.algorithms.sequence_based.tuple">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq._recursive" target="textdistance.algorithms.sequence_based.type">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq.__call__" target="textdistance.algorithms.sequence_based.LCSSeq._dynamic">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq.__call__" target="textdistance.algorithms.sequence_based.LCSSeq._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq.__call__" target="textdistance.algorithms.sequence_based.LCSSeq._recursive">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq.__call__" target="textdistance.algorithms.sequence_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq.similarity" target="textdistance.algorithms.sequence_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSSeq.similarity" target="textdistance.algorithms.sequence_based.self">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr._standart" target="matcher.find_longest_match">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr._standart" target="textdistance.algorithms.sequence_based._SequenceMatcher">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr._standart" target="textdistance.algorithms.sequence_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr._custom" target="&quot;&quot;&quot;&quot;&quot;&quot;.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr._custom" target="textdistance.algorithms.sequence_based.find_ngrams">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr._custom" target="textdistance.algorithms.sequence_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr._custom" target="textdistance.algorithms.sequence_based.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr._custom" target="textdistance.algorithms.sequence_based.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr._custom" target="textdistance.algorithms.sequence_based.type">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr.__call__" target="textdistance.algorithms.sequence_based.LCSStr._custom">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr.__call__" target="textdistance.algorithms.sequence_based.LCSStr._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr.__call__" target="textdistance.algorithms.sequence_based.LCSStr._standart">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr.__call__" target="textdistance.algorithms.sequence_based.all">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr.__call__" target="textdistance.algorithms.sequence_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr.__call__" target="textdistance.algorithms.sequence_based.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr.__call__" target="textdistance.algorithms.sequence_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr.similarity" target="textdistance.algorithms.sequence_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.LCSStr.similarity" target="textdistance.algorithms.sequence_based.self">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.RatcliffObershelp._find" target="s.find">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.RatcliffObershelp._find" target="textdistance.algorithms.sequence_based.LCSStr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.RatcliffObershelp._find" target="textdistance.algorithms.sequence_based.RatcliffObershelp._find">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.RatcliffObershelp._find" target="textdistance.algorithms.sequence_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.RatcliffObershelp.__call__" target="textdistance.algorithms.sequence_based.RatcliffObershelp._find">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.RatcliffObershelp.__call__" target="textdistance.algorithms.sequence_based.RatcliffObershelp._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.RatcliffObershelp.__call__" target="textdistance.algorithms.sequence_based.RatcliffObershelp.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.RatcliffObershelp.__call__" target="textdistance.algorithms.sequence_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.RatcliffObershelp.__call__" target="textdistance.algorithms.sequence_based.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.sequence_based.RatcliffObershelp.__call__" target="textdistance.algorithms.sequence_based.sum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._NCDBase._get_size" target="textdistance.algorithms.compression_based._NCDBase._compress">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._NCDBase._get_size" target="textdistance.algorithms.compression_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._NCDBase.__call__" target="empty.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._NCDBase.__call__" target="textdistance.algorithms.compression_based._NCDBase._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._NCDBase.__call__" target="textdistance.algorithms.compression_based._NCDBase._get_size">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._NCDBase.__call__" target="textdistance.algorithms.compression_based.float">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._NCDBase.__call__" target="textdistance.algorithms.compression_based.isinstance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._NCDBase.__call__" target="textdistance.algorithms.compression_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._NCDBase.__call__" target="textdistance.algorithms.compression_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._NCDBase.__call__" target="textdistance.algorithms.compression_based.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._NCDBase.__call__" target="textdistance.algorithms.compression_based.permutations">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._NCDBase.__call__" target="textdistance.algorithms.compression_based.sum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._NCDBase.__call__" target="textdistance.algorithms.compression_based.type">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._BinaryNCDBase.__call__" target="s.encode">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._BinaryNCDBase.__call__" target="textdistance.algorithms.compression_based._BinaryNCDBase.__call__">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._BinaryNCDBase.__call__" target="textdistance.algorithms.compression_based.isinstance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._BinaryNCDBase.__call__" target="textdistance.algorithms.compression_based.super">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based._BinaryNCDBase.__call__" target="textdistance.algorithms.compression_based.tuple">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ArithNCD._make_probs" target="counts.most_common">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ArithNCD._make_probs" target="counts.values">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ArithNCD._make_probs" target="textdistance.algorithms.compression_based.ArithNCD._get_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ArithNCD._make_probs" target="textdistance.algorithms.compression_based.ArithNCD._sum_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ArithNCD._make_probs" target="textdistance.algorithms.compression_based.Fraction">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ArithNCD._make_probs" target="textdistance.algorithms.compression_based.sum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ArithNCD._get_range" target="data.replace">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ArithNCD._get_range" target="textdistance.algorithms.compression_based.Fraction">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ArithNCD._compress" target="textdistance.algorithms.compression_based.ArithNCD._get_range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ArithNCD._compress" target="textdistance.algorithms.compression_based.ArithNCD._make_probs">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ArithNCD._compress" target="textdistance.algorithms.compression_based.Fraction">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ArithNCD._get_size" target="math.ceil">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ArithNCD._get_size" target="math.log">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ArithNCD._get_size" target="textdistance.algorithms.compression_based.ArithNCD._compress">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.RLENCD._compress" target="&quot;&quot;&quot;&quot;&quot;&quot;.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.RLENCD._compress" target="new_data.append">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.RLENCD._compress" target="textdistance.algorithms.compression_based.groupby">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.RLENCD._compress" target="textdistance.algorithms.compression_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.RLENCD._compress" target="textdistance.algorithms.compression_based.list">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.RLENCD._compress" target="textdistance.algorithms.compression_based.str">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.BWTRLENCD._compress" target="empty.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.BWTRLENCD._compress" target="textdistance.algorithms.compression_based.BWTRLENCD._compress">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.BWTRLENCD._compress" target="textdistance.algorithms.compression_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.BWTRLENCD._compress" target="textdistance.algorithms.compression_based.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.BWTRLENCD._compress" target="textdistance.algorithms.compression_based.sorted">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.BWTRLENCD._compress" target="textdistance.algorithms.compression_based.super">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.BWTRLENCD._compress" target="textdistance.algorithms.compression_based.type">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.SqrtNCD._compress" target="Counter(data).items">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.SqrtNCD._compress" target="math.sqrt">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.SqrtNCD._compress" target="textdistance.algorithms.compression_based.Counter">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.SqrtNCD._get_size" target="self._compress(data).values">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.SqrtNCD._get_size" target="textdistance.algorithms.compression_based.SqrtNCD._compress">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.SqrtNCD._get_size" target="textdistance.algorithms.compression_based.sum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.EntropyNCD._compress" target="Counter(data).values">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.EntropyNCD._compress" target="math.log">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.EntropyNCD._compress" target="textdistance.algorithms.compression_based.Counter">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.EntropyNCD._compress" target="textdistance.algorithms.compression_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.EntropyNCD._get_size" target="textdistance.algorithms.compression_based.EntropyNCD._compress">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.BZ2NCD._compress" target="codecs.encode">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.LZMANCD._compress" target="lzma.compress">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.LZMANCD._compress" target="textdistance.algorithms.compression_based.ImportError">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.compression_based.ZLIBNCD._compress" target="codecs.encode">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Chebyshev._numpy" target="numpy.asarray">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Chebyshev._numpy" target="textdistance.algorithms.vector_based.abs">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Chebyshev._numpy" target="textdistance.algorithms.vector_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Chebyshev._pure" target="textdistance.algorithms.vector_based.abs">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Chebyshev._pure" target="textdistance.algorithms.vector_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Chebyshev._pure" target="textdistance.algorithms.vector_based.zip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Chebyshev.__call__" target="textdistance.algorithms.vector_based.Chebyshev._numpy">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Chebyshev.__call__" target="textdistance.algorithms.vector_based.Chebyshev._pure">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Minkowski.__init__" target="textdistance.algorithms.vector_based.ValueError">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Minkowski._numpy" target="numpy.asarray">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Minkowski._numpy" target="result.sum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Minkowski._numpy" target="textdistance.algorithms.vector_based.abs">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Minkowski._pure" target="textdistance.algorithms.vector_based.abs">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Minkowski._pure" target="textdistance.algorithms.vector_based.sum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Minkowski._pure" target="textdistance.algorithms.vector_based.zip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Minkowski.__call__" target="textdistance.algorithms.vector_based.Minkowski._numpy">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Minkowski.__call__" target="textdistance.algorithms.vector_based.Minkowski._pure">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Euclidean._numpy" target="(q * q.T).sum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Euclidean._numpy" target="numpy.asarray">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Euclidean._numpy" target="numpy.matrix">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Euclidean._numpy" target="numpy.sqrt">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Euclidean.__call__" target="textdistance.algorithms.vector_based.Euclidean._numpy">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Euclidean.__call__" target="textdistance.algorithms.vector_based.Euclidean._pure">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Correlation._numpy" target="numpy.asarray">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Correlation._numpy" target="numpy.dot">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Correlation._numpy" target="numpy.sqrt">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Correlation._numpy" target="s.mean">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Correlation._numpy" target="textdistance.algorithms.vector_based.reduce">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Correlation.__call__" target="textdistance.algorithms.vector_based.Correlation._numpy">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.vector_based.Correlation.__call__" target="textdistance.algorithms.vector_based.Correlation._pure">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Hamming.__call__" target="textdistance.algorithms.edit_based.Hamming._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Hamming.__call__" target="textdistance.algorithms.edit_based.Hamming.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Hamming.__call__" target="textdistance.algorithms.edit_based.Hamming.test_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Hamming.__call__" target="textdistance.algorithms.edit_based._zip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Hamming.__call__" target="textdistance.algorithms.edit_based.isinstance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Hamming.__call__" target="textdistance.algorithms.edit_based.sum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Levenshtein._recursive" target="textdistance.algorithms.edit_based.Levenshtein.test_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Levenshtein._recursive" target="textdistance.algorithms.edit_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Levenshtein._recursive" target="textdistance.algorithms.edit_based.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Levenshtein._recursive" target="textdistance.algorithms.edit_based.self">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Levenshtein._cycled" target="numpy.arange">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Levenshtein._cycled" target="textdistance.algorithms.edit_based.Levenshtein.test_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Levenshtein._cycled" target="textdistance.algorithms.edit_based.int">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Levenshtein._cycled" target="textdistance.algorithms.edit_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Levenshtein._cycled" target="textdistance.algorithms.edit_based.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Levenshtein._cycled" target="textdistance.algorithms.edit_based.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Levenshtein.__call__" target="textdistance.algorithms.edit_based.Levenshtein._cycled">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Levenshtein.__call__" target="textdistance.algorithms.edit_based.Levenshtein._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Levenshtein.__call__" target="textdistance.algorithms.edit_based.Levenshtein.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Levenshtein.__call__" target="textdistance.algorithms.edit_based.isinstance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._numpy" target="numpy.zeros">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._numpy" target="textdistance.algorithms.edit_based.DamerauLevenshtein.test_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._numpy" target="textdistance.algorithms.edit_based.enumerate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._numpy" target="textdistance.algorithms.edit_based.int">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._numpy" target="textdistance.algorithms.edit_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._numpy" target="textdistance.algorithms.edit_based.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._numpy" target="textdistance.algorithms.edit_based.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_unrestricted" target="da.get">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_unrestricted" target="textdistance.algorithms.edit_based.DamerauLevenshtein.test_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_unrestricted" target="textdistance.algorithms.edit_based.enumerate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_unrestricted" target="textdistance.algorithms.edit_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_unrestricted" target="textdistance.algorithms.edit_based.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_unrestricted" target="textdistance.algorithms.edit_based.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_restricted" target="textdistance.algorithms.edit_based.DamerauLevenshtein.test_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_restricted" target="textdistance.algorithms.edit_based.enumerate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_restricted" target="textdistance.algorithms.edit_based.int">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_restricted" target="textdistance.algorithms.edit_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_restricted" target="textdistance.algorithms.edit_based.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_restricted" target="textdistance.algorithms.edit_based.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein.__call__" target="textdistance.algorithms.edit_based.DamerauLevenshtein._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein.__call__" target="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_restricted">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein.__call__" target="textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_unrestricted">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.DamerauLevenshtein.__call__" target="textdistance.algorithms.edit_based.DamerauLevenshtein.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.JaroWinkler.__call__" target="textdistance.algorithms.edit_based.JaroWinkler._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.JaroWinkler.__call__" target="textdistance.algorithms.edit_based.JaroWinkler.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.JaroWinkler.__call__" target="textdistance.algorithms.edit_based.enumerate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.JaroWinkler.__call__" target="textdistance.algorithms.edit_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.JaroWinkler.__call__" target="textdistance.algorithms.edit_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.JaroWinkler.__call__" target="textdistance.algorithms.edit_based.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.JaroWinkler.__call__" target="textdistance.algorithms.edit_based.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Jaro.__init__" target="textdistance.algorithms.edit_based.Jaro.__init__">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Jaro.__init__" target="textdistance.algorithms.edit_based.super">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.minimum" target="textdistance.algorithms.edit_based.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.minimum" target="textdistance.algorithms.edit_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.maximum" target="textdistance.algorithms.edit_based.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.maximum" target="textdistance.algorithms.edit_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.distance" target="textdistance.algorithms.edit_based.NeedlemanWunsch.similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.normalized_distance" target="textdistance.algorithms.edit_based.NeedlemanWunsch.distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.normalized_distance" target="textdistance.algorithms.edit_based.NeedlemanWunsch.maximum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.normalized_distance" target="textdistance.algorithms.edit_based.NeedlemanWunsch.minimum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.normalized_similarity" target="textdistance.algorithms.edit_based.NeedlemanWunsch.maximum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.normalized_similarity" target="textdistance.algorithms.edit_based.NeedlemanWunsch.minimum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.normalized_similarity" target="textdistance.algorithms.edit_based.NeedlemanWunsch.similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.__call__" target="numpy.zeros">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.__call__" target="textdistance.algorithms.edit_based.ImportError">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.__call__" target="textdistance.algorithms.edit_based.NeedlemanWunsch._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.__call__" target="textdistance.algorithms.edit_based.NeedlemanWunsch.sim_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.__call__" target="textdistance.algorithms.edit_based.enumerate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.__call__" target="textdistance.algorithms.edit_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.__call__" target="textdistance.algorithms.edit_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.NeedlemanWunsch.__call__" target="textdistance.algorithms.edit_based.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.SmithWaterman.maximum" target="textdistance.algorithms.edit_based.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.SmithWaterman.maximum" target="textdistance.algorithms.edit_based.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.SmithWaterman.__call__" target="numpy.zeros">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.SmithWaterman.__call__" target="textdistance.algorithms.edit_based.ImportError">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.SmithWaterman.__call__" target="textdistance.algorithms.edit_based.SmithWaterman._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.SmithWaterman.__call__" target="textdistance.algorithms.edit_based.SmithWaterman.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.SmithWaterman.__call__" target="textdistance.algorithms.edit_based.SmithWaterman.sim_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.SmithWaterman.__call__" target="textdistance.algorithms.edit_based.enumerate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.SmithWaterman.__call__" target="textdistance.algorithms.edit_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.SmithWaterman.__call__" target="textdistance.algorithms.edit_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Gotoh.minimum" target="textdistance.algorithms.edit_based.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Gotoh.minimum" target="textdistance.algorithms.edit_based.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Gotoh.maximum" target="textdistance.algorithms.edit_based.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Gotoh.maximum" target="textdistance.algorithms.edit_based.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Gotoh.__call__" target="numpy.zeros">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Gotoh.__call__" target="textdistance.algorithms.edit_based.Gotoh._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Gotoh.__call__" target="textdistance.algorithms.edit_based.Gotoh.sim_func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Gotoh.__call__" target="textdistance.algorithms.edit_based.ImportError">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Gotoh.__call__" target="textdistance.algorithms.edit_based.enumerate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Gotoh.__call__" target="textdistance.algorithms.edit_based.float">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Gotoh.__call__" target="textdistance.algorithms.edit_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Gotoh.__call__" target="textdistance.algorithms.edit_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.Gotoh.__call__" target="textdistance.algorithms.edit_based.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95._in_range" target="textdistance.algorithms.edit_based.ord">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="s1.strip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="s1.strip().upper">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="s1[0].isdigit">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="s2.strip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="s2.strip().upper">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="sc1.isdigit">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="textdistance.algorithms.edit_based.StrCmp95._in_range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="textdistance.algorithms.edit_based.StrCmp95.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="textdistance.algorithms.edit_based.defaultdict">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="textdistance.algorithms.edit_based.enumerate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="textdistance.algorithms.edit_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="textdistance.algorithms.edit_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="textdistance.algorithms.edit_based.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="textdistance.algorithms.edit_based.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.StrCmp95.__call__" target="textdistance.algorithms.edit_based.zip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.MLIPNS.__call__" target="textdistance.algorithms.edit_based.Hamming">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.MLIPNS.__call__" target="textdistance.algorithms.edit_based.MLIPNS._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.MLIPNS.__call__" target="textdistance.algorithms.edit_based.MLIPNS.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.MLIPNS.__call__" target="textdistance.algorithms.edit_based.all">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.MLIPNS.__call__" target="textdistance.algorithms.edit_based.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.edit_based.MLIPNS.__call__" target="textdistance.algorithms.edit_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Jaccard.__call__" target="textdistance.algorithms.token_based.Jaccard._count_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Jaccard.__call__" target="textdistance.algorithms.token_based.Jaccard._get_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Jaccard.__call__" target="textdistance.algorithms.token_based.Jaccard._intersect_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Jaccard.__call__" target="textdistance.algorithms.token_based.Jaccard._union_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Jaccard.__call__" target="textdistance.algorithms.token_based.Jaccard.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Sorensen.__call__" target="textdistance.algorithms.token_based.Sorensen._count_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Sorensen.__call__" target="textdistance.algorithms.token_based.Sorensen._get_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Sorensen.__call__" target="textdistance.algorithms.token_based.Sorensen._intersect_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Sorensen.__call__" target="textdistance.algorithms.token_based.Sorensen.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Sorensen.__call__" target="textdistance.algorithms.token_based.sum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tversky.__init__" target="textdistance.algorithms.token_based.repeat">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tversky.__call__" target="textdistance.algorithms.token_based.Tversky._count_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tversky.__call__" target="textdistance.algorithms.token_based.Tversky._get_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tversky.__call__" target="textdistance.algorithms.token_based.Tversky._intersect_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tversky.__call__" target="textdistance.algorithms.token_based.Tversky.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tversky.__call__" target="textdistance.algorithms.token_based.islice">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tversky.__call__" target="textdistance.algorithms.token_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tversky.__call__" target="textdistance.algorithms.token_based.list">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tversky.__call__" target="textdistance.algorithms.token_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tversky.__call__" target="textdistance.algorithms.token_based.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tversky.__call__" target="textdistance.algorithms.token_based.zip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Overlap.__call__" target="textdistance.algorithms.token_based.Overlap._count_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Overlap.__call__" target="textdistance.algorithms.token_based.Overlap._get_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Overlap.__call__" target="textdistance.algorithms.token_based.Overlap._intersect_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Overlap.__call__" target="textdistance.algorithms.token_based.Overlap.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Overlap.__call__" target="textdistance.algorithms.token_based.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Cosine.__call__" target="textdistance.algorithms.token_based.Cosine._count_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Cosine.__call__" target="textdistance.algorithms.token_based.Cosine._get_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Cosine.__call__" target="textdistance.algorithms.token_based.Cosine._intersect_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Cosine.__call__" target="textdistance.algorithms.token_based.Cosine.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Cosine.__call__" target="textdistance.algorithms.token_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Cosine.__call__" target="textdistance.algorithms.token_based.pow">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Cosine.__call__" target="textdistance.algorithms.token_based.reduce">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tanimoto.__call__" target="textdistance.algorithms.token_based.Tanimoto.__call__">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tanimoto.__call__" target="textdistance.algorithms.token_based.float">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tanimoto.__call__" target="textdistance.algorithms.token_based.log">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Tanimoto.__call__" target="textdistance.algorithms.token_based.super">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan.maximum" target="self.algorithm.maximum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan.maximum" target="textdistance.algorithms.token_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan._calc" target="maxes.append">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan._calc" target="self.algorithm.similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan._calc" target="textdistance.algorithms.token_based.float">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan._calc" target="textdistance.algorithms.token_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan._calc" target="textdistance.algorithms.token_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan._calc" target="textdistance.algorithms.token_based.sum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan.__call__" target="result.append">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan.__call__" target="textdistance.algorithms.token_based.MongeElkan._calc">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan.__call__" target="textdistance.algorithms.token_based.MongeElkan._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan.__call__" target="textdistance.algorithms.token_based.MongeElkan.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan.__call__" target="textdistance.algorithms.token_based.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan.__call__" target="textdistance.algorithms.token_based.permutations">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.MongeElkan.__call__" target="textdistance.algorithms.token_based.sum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Bag.__call__" target="textdistance.algorithms.token_based.Bag._count_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Bag.__call__" target="textdistance.algorithms.token_based.Bag._get_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Bag.__call__" target="textdistance.algorithms.token_based.Bag._intersect_counters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.token_based.Bag.__call__" target="textdistance.algorithms.token_based.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Prefix.__call__" target="&quot;&quot;&quot;&quot;&quot;&quot;.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Prefix.__call__" target="b''.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Prefix.__call__" target="textdistance.algorithms.simple.Prefix._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Prefix.__call__" target="textdistance.algorithms.simple.Prefix.sim_test">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Prefix.__call__" target="textdistance.algorithms.simple.isinstance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Prefix.__call__" target="textdistance.algorithms.simple.takewhile">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Prefix.__call__" target="textdistance.algorithms.simple.zip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Prefix.similarity" target="textdistance.algorithms.simple.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Prefix.similarity" target="textdistance.algorithms.simple.self">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Postfix.__call__" target="&quot;&quot;&quot;&quot;&quot;&quot;.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Postfix.__call__" target="b''.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Postfix.__call__" target="textdistance.algorithms.simple.Postfix.__call__">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Postfix.__call__" target="textdistance.algorithms.simple.isinstance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Postfix.__call__" target="textdistance.algorithms.simple.list">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Postfix.__call__" target="textdistance.algorithms.simple.reversed">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Postfix.__call__" target="textdistance.algorithms.simple.super">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Length.__call__" target="textdistance.algorithms.simple.list">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Length.__call__" target="textdistance.algorithms.simple.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Length.__call__" target="textdistance.algorithms.simple.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Length.__call__" target="textdistance.algorithms.simple.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Identity.__call__" target="textdistance.algorithms.simple.Identity._ident">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Identity.__call__" target="textdistance.algorithms.simple.int">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Matrix.__call__" target="textdistance.algorithms.simple.Matrix._ident">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Matrix.__call__" target="textdistance.algorithms.simple.reversed">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.simple.Matrix.__call__" target="textdistance.algorithms.simple.tuple">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.maximum" target="textdistance.algorithms.phonetic.MRA._calc_mra">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.maximum" target="textdistance.algorithms.phonetic.list">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.maximum" target="textdistance.algorithms.phonetic.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.maximum" target="textdistance.algorithms.phonetic.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA._calc_mra" target="&quot;&quot;&quot;&quot;&quot;&quot;.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA._calc_mra" target="textdistance.algorithms.phonetic.groupby">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA._calc_mra" target="textdistance.algorithms.phonetic.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA._calc_mra" target="word.upper">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.__call__" target="new_sequences.append">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.__call__" target="textdistance.algorithms.phonetic.MRA._calc_mra">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.__call__" target="textdistance.algorithms.phonetic.MRA._ident">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.__call__" target="textdistance.algorithms.phonetic.abs">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.__call__" target="textdistance.algorithms.phonetic.all">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.__call__" target="textdistance.algorithms.phonetic.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.__call__" target="textdistance.algorithms.phonetic.list">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.__call__" target="textdistance.algorithms.phonetic.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.__call__" target="textdistance.algorithms.phonetic.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.__call__" target="textdistance.algorithms.phonetic.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.__call__" target="textdistance.algorithms.phonetic.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.__call__" target="textdistance.algorithms.phonetic.zip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.MRA.__call__" target="textdistance.algorithms.phonetic.zip_longest">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__init__" target="frozenset.union">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__init__" target="textdistance.algorithms.phonetic.ValueError">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__init__" target="textdistance.algorithms.phonetic.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.maximum" target="textdistance.algorithms.phonetic.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.maximum" target="textdistance.algorithms.phonetic.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.r_cost" target="textdistance.algorithms.phonetic.Editex._ident">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.r_cost" target="textdistance.algorithms.phonetic.all">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.r_cost" target="textdistance.algorithms.phonetic.any">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.r_cost" target="textdistance.algorithms.phonetic.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.d_cost" target="textdistance.algorithms.phonetic.Editex._ident">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.d_cost" target="textdistance.algorithms.phonetic.Editex.r_cost">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__call__" target="numpy.zeros">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__call__" target="s1.upper">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__call__" target="s2.upper">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__call__" target="textdistance.algorithms.phonetic.Editex.d_cost">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__call__" target="textdistance.algorithms.phonetic.Editex.maximum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__call__" target="textdistance.algorithms.phonetic.Editex.quick_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__call__" target="textdistance.algorithms.phonetic.Editex.r_cost">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__call__" target="textdistance.algorithms.phonetic.defaultdict">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__call__" target="textdistance.algorithms.phonetic.enumerate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__call__" target="textdistance.algorithms.phonetic.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__call__" target="textdistance.algorithms.phonetic.min">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__call__" target="textdistance.algorithms.phonetic.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.phonetic.Editex.__call__" target="textdistance.algorithms.phonetic.zip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.maximum" target="textdistance.algorithms.base.map">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.maximum" target="textdistance.algorithms.base.max">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.distance" target="textdistance.algorithms.base.self">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.similarity" target="textdistance.algorithms.base.Base.distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.similarity" target="textdistance.algorithms.base.Base.maximum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.normalized_distance" target="textdistance.algorithms.base.Base.distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.normalized_distance" target="textdistance.algorithms.base.Base.maximum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.normalized_similarity" target="textdistance.algorithms.base.Base.normalized_distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.external_answer" target="lib.check_conditions">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.external_answer" target="lib.get_function">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.external_answer" target="lib.prepare">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.external_answer" target="libraries.get_libs">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.external_answer" target="textdistance.algorithms.base.func">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.external_answer" target="textdistance.algorithms.base.getattr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.external_answer" target="textdistance.algorithms.base.suppress">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.quick_answer" target="textdistance.algorithms.base.Base._ident">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.quick_answer" target="textdistance.algorithms.base.Base.external_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.quick_answer" target="textdistance.algorithms.base.Base.maximum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.quick_answer" target="textdistance.algorithms.base.all">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.quick_answer" target="textdistance.algorithms.base.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._ident" target="textdistance.algorithms.base.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._ident" target="textdistance.algorithms.base.set">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._ident" target="textdistance.algorithms.base.zip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._get_sequences" target="s.split">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._get_sequences" target="textdistance.algorithms.base.find_ngrams">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._get_sequences" target="textdistance.algorithms.base.list">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._get_counters" target="textdistance.algorithms.base.Base._get_sequences">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._get_counters" target="textdistance.algorithms.base.Counter">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._get_counters" target="textdistance.algorithms.base.all">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._get_counters" target="textdistance.algorithms.base.isinstance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._get_counters" target="textdistance.algorithms.base.list">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._intersect_counters" target="sequences[0].copy">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._union_counters" target="sequences[0].copy">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._sum_counters" target="sequences[0].copy">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._count_counters" target="counter.values">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._count_counters" target="textdistance.algorithms.base.getattr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._count_counters" target="textdistance.algorithms.base.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._count_counters" target="textdistance.algorithms.base.set">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base._count_counters" target="textdistance.algorithms.base.sum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.__repr__" target="&quot;&quot;&quot;{name}({data})&quot;&quot;&quot;.format">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.Base.__repr__" target="textdistance.algorithms.base.type">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.BaseSimilarity.distance" target="textdistance.algorithms.base.BaseSimilarity.maximum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.BaseSimilarity.distance" target="textdistance.algorithms.base.BaseSimilarity.similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.BaseSimilarity.similarity" target="textdistance.algorithms.base.self">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.BaseSimilarity.quick_answer" target="textdistance.algorithms.base.BaseSimilarity._ident">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.BaseSimilarity.quick_answer" target="textdistance.algorithms.base.BaseSimilarity.external_answer">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.BaseSimilarity.quick_answer" target="textdistance.algorithms.base.BaseSimilarity.maximum">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.BaseSimilarity.quick_answer" target="textdistance.algorithms.base.all">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="textdistance.algorithms.base.BaseSimilarity.quick_answer" target="textdistance.algorithms.base.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_strcmp95.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_strcmp95.test_distance" target="tests.test_edit.test_strcmp95.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_strcmp95.test_distance" target="tests.test_edit.test_strcmp95.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_smith_waterman.test_distance_matrix" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_smith_waterman.test_distance_matrix" target="tests.test_edit.test_smith_waterman.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_smith_waterman.test_distance_matrix" target="textdistance.Matrix">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_smith_waterman.test_distance_ident" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_smith_waterman.test_distance_ident" target="tests.test_edit.test_smith_waterman.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_smith_waterman.test_distance_ident_with_gap_5" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_smith_waterman.test_distance_ident_with_gap_5" target="tests.test_edit.test_smith_waterman.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_gotoh.test_distance_ident" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_gotoh.test_distance_ident" target="tests.test_edit.test_gotoh.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_gotoh.test_distance_ident_with_gap_05" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_gotoh.test_distance_ident_with_gap_05" target="tests.test_edit.test_gotoh.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_gotoh.test_distance_ident_with_gap_5" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_gotoh.test_distance_ident_with_gap_5" target="tests.test_edit.test_gotoh.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_jaro.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_jaro.test_distance" target="tests.test_edit.test_jaro.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_jaro.test_distance" target="tests.test_edit.test_jaro.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_matrix.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_matrix.test_distance" target="tests.test_edit.test_matrix.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_mlipns.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_mlipns.test_distance" target="tests.test_edit.test_mlipns.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_damerau_levenshtein.test_distance_restricted" target="ALG()._pure_python_restricted">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_damerau_levenshtein.test_distance_restricted" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_damerau_levenshtein.test_distance_restricted" target="tests.test_edit.test_damerau_levenshtein.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_damerau_levenshtein.test_distance_unrestricted" target="ALG()._pure_python_unrestricted">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_damerau_levenshtein.test_distance_unrestricted" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_damerau_levenshtein.test_distance_unrestricted" target="tests.test_edit.test_damerau_levenshtein.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_needleman_wunsch.test_distance_matrix" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_needleman_wunsch.test_distance_matrix" target="tests.test_edit.test_needleman_wunsch.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_needleman_wunsch.test_distance_matrix" target="textdistance.Matrix">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_needleman_wunsch.test_distance_ident" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_needleman_wunsch.test_distance_ident" target="tests.test_edit.test_needleman_wunsch.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_needleman_wunsch.test_distance_ident_with_gap_5" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_needleman_wunsch.test_distance_ident_with_gap_5" target="tests.test_edit.test_needleman_wunsch.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_jaro_winkler.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_jaro_winkler.test_distance" target="tests.test_edit.test_jaro_winkler.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_jaro_winkler.test_distance" target="tests.test_edit.test_jaro_winkler.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_editex.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_editex.test_distance" target="tests.test_edit.test_editex.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_editex.test_distance_with_params" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_editex.test_distance_with_params" target="tests.test_edit.test_editex.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_editex.test_distance_with_params" target="tests.test_edit.test_editex.dict">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_levenshtein.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_levenshtein.test_distance" target="tests.test_edit.test_levenshtein.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_hamming.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_edit.test_hamming.test_distance" target="tests.test_edit.test_hamming.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_distance" target="tests.test_token.test_jaccard.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_distance" target="tests.test_token.test_jaccard.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_compare_with_tversky" target="ALG().distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_compare_with_tversky" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_compare_with_tversky" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_compare_with_tversky" target="tests.test_token.test_jaccard.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_compare_with_tversky" target="tests.test_token.test_jaccard.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_compare_with_tversky" target="textdistance.Tversky">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_compare_with_tversky" target="textdistance.Tversky(ks=[1, 1]).distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_compare_with_tversky_as_set" target="ALG(as_set=True).distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_compare_with_tversky_as_set" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_compare_with_tversky_as_set" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_compare_with_tversky_as_set" target="tests.test_token.test_jaccard.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_compare_with_tversky_as_set" target="tests.test_token.test_jaccard.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_compare_with_tversky_as_set" target="textdistance.Tversky">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_jaccard.test_compare_with_tversky_as_set" target="textdistance.Tversky(ks=[1, 1], as_set=True).distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_monge_elkan.test_similarity" target="ALG(qval=1, algorithm=textdistance.jaro_winkler).similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_monge_elkan.test_similarity" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_monge_elkan.test_similarity" target="tests.test_token.test_monge_elkan.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_monge_elkan.test_similarity" target="tests.test_token.test_monge_elkan.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_bag.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_bag.test_distance" target="tests.test_token.test_bag.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_distance" target="tests.test_token.test_sorensen.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_distance" target="tests.test_token.test_sorensen.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_compare_with_tversky" target="ALG().distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_compare_with_tversky" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_compare_with_tversky" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_compare_with_tversky" target="tests.test_token.test_sorensen.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_compare_with_tversky" target="tests.test_token.test_sorensen.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_compare_with_tversky" target="textdistance.Tversky">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_compare_with_tversky" target="textdistance.Tversky(ks=[0.5, 0.5]).distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_compare_with_tversky_as_set" target="ALG(as_set=True).distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_compare_with_tversky_as_set" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_compare_with_tversky_as_set" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_compare_with_tversky_as_set" target="tests.test_token.test_sorensen.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_compare_with_tversky_as_set" target="tests.test_token.test_sorensen.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_compare_with_tversky_as_set" target="textdistance.Tversky">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_sorensen.test_compare_with_tversky_as_set" target="textdistance.Tversky(ks=[0.5, 0.5], as_set=True).distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_overlap.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_overlap.test_distance" target="tests.test_token.test_overlap.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_overlap.test_distance" target="tests.test_token.test_overlap.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_cosine.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_cosine.test_distance" target="tests.test_token.test_cosine.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_cosine.test_distance" target="tests.test_token.test_cosine.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_token.test_cosine.test_distance" target="tests.test_token.test_cosine.pow">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_sequence.test_lcsstr.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_sequence.test_lcsstr.test_distance" target="tests.test_sequence.test_lcsstr.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_sequence.test_lcsseq.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_sequence.test_lcsseq.test_distance" target="tests.test_sequence.test_lcsseq.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_sequence.test_lcsseq.test_distance_multiseq" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_sequence.test_lcsseq.test_distance_multiseq" target="tests.test_sequence.test_lcsseq.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_phonetic.test_editex.test_distance" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_phonetic.test_editex.test_distance" target="tests.test_phonetic.test_editex.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_phonetic.test_editex.test_distance" target="tests.test_phonetic.test_editex.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_phonetic.test_editex.test_local" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_phonetic.test_editex.test_local" target="tests.test_phonetic.test_editex.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_bz2_ncd.test_similarity" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_bz2_ncd.test_similarity" target="tests.test_compression.test_bz2_ncd.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_bz2_ncd.test_similarity" target="tests.test_compression.test_bz2_ncd.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_monotonicity" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_monotonicity" target="tests.test_compression.test_common.alg">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_simmetry" target="alg.distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_simmetry" target="alg.normalized_distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_simmetry" target="alg.normalized_similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_simmetry" target="alg.similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_simmetry" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_simmetry" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_simmetry" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_is_normalized" target="alg.distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_is_normalized" target="alg.normalized_distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_is_normalized" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_is_normalized" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_is_normalized" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_is_normalized" target="tests.test_compression.test_common.alg">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_normalized_by_one" target="alg.normalized_distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_normalized_by_one" target="alg.normalized_similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_normalized_by_one" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_normalized_by_one" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_normalized_by_one" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_common.test_normalized_by_one" target="tests.test_compression.test_common.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_bwtrle_ncd.test_similarity" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_bwtrle_ncd.test_similarity" target="tests.test_compression.test_bwtrle_ncd.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_bwtrle_ncd.test_similarity" target="tests.test_compression.test_bwtrle_ncd.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_similarity" target="ALG.similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_similarity" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_similarity" target="tests.test_compression.test_entropy_ncd.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_simmetry_compressor" target="&quot;&quot;&quot;&quot;&quot;&quot;.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_simmetry_compressor" target="ALG._compress">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_simmetry_compressor" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_simmetry_compressor" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_simmetry_compressor" target="tests.test_compression.test_entropy_ncd.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_simmetry_compressor" target="tests.test_compression.test_entropy_ncd.reversed">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_idempotency_compressor" target="ALG._get_size">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_idempotency_compressor" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_idempotency_compressor" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_monotonicity_compressor" target="ALG._get_size">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_monotonicity_compressor" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_monotonicity_compressor" target="hypothesis.strategies.characters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_monotonicity_compressor" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_distributivity_compressor" target="ALG._get_size">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_distributivity_compressor" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_distributivity_compressor" target="hypothesis.strategies.characters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_distributivity_compressor" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_normalization_range" target="ALG.normalized_distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_normalization_range" target="ALG.normalized_similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_normalization_range" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_entropy_ncd.test_normalization_range" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_similarity" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_similarity" target="tests.test_compression.test_sqrt_ncd.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_similarity" target="tests.test_compression.test_sqrt_ncd.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_simmetry_compressor" target="&quot;&quot;&quot;&quot;&quot;&quot;.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_simmetry_compressor" target="ALG._compress">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_simmetry_compressor" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_simmetry_compressor" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_simmetry_compressor" target="tests.test_compression.test_sqrt_ncd.reversed">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_idempotency_compressor" target="ALG._get_size">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_idempotency_compressor" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_idempotency_compressor" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_monotonicity_compressor" target="ALG._get_size">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_monotonicity_compressor" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_monotonicity_compressor" target="hypothesis.strategies.characters">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_monotonicity_compressor" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_distributivity_compressor" target="ALG._get_size">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_distributivity_compressor" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_distributivity_compressor" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_normalization_range" target="ALG.normalized_distance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_normalization_range" target="ALG.normalized_similarity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_normalization_range" target="hypothesis.given">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_sqrt_ncd.test_normalization_range" target="hypothesis.strategies.text">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_arith_ncd.test_similarity" target="pytest.mark.parametrize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_arith_ncd.test_similarity" target="tests.test_compression.test_arith_ncd.ALG">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_arith_ncd.test_similarity" target="tests.test_compression.test_arith_ncd.isclose">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_arith_ncd.test_make_probs" target="alg._make_probs">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_arith_ncd.test_make_probs" target="tests.test_compression.test_arith_ncd.Fraction">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_arith_ncd.test_make_probs" target="textdistance.ArithNCD">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_arith_ncd.test_arith_output" target="alg._compress">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="tests.test_compression.test_arith_ncd.test_arith_output" target="textdistance.ArithNCD">
+      <data key="d0">1</data>
+    </edge>
+  </graph>
+</graphml>
