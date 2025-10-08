@@ -226,10 +226,25 @@ class FQNResolver:
 
         rows = db.execute_sql(
             f"""
-            SELECT fqn, module_name, function_name, class_name, file_path, start_line, end_line
-            FROM functions
-            WHERE project_id = '{project_id}'
-        """
+    WITH latest AS (
+        SELECT fqn, MAX(version) AS v
+        FROM functions
+        WHERE project_id = '{project_id}'
+        GROUP BY fqn
+    )
+    SELECT
+        f.fqn,
+        f.module_name,
+        f.function_name,
+        f.class_name,
+        f.file_path,
+        f.start_line,
+        f.end_line
+    FROM functions AS f
+    JOIN latest AS l
+      ON f.fqn = l.fqn AND f.version = l.v
+    WHERE f.project_id = '{project_id}'
+    """
         )
         for r in rows:
             rel = str(Path(r["file_path"]).as_posix())

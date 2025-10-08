@@ -818,6 +818,13 @@ class EmbeddingPipeline:
                 }
             )
 
+            self.db.execute_write_sql("""
+                INSERT OR REPLACE INTO embedding_predictions (
+                    fqn, project_id, p_slow, is_slow
+                ) VALUES (?, ?, ?, ?)
+            """, (fqn, project_id, float(p_all[i]), int(is_slow)))
+
+
         # Debug feature statistics
         try:
             print(f"\n[debug] Feature statistics across {len(X_df)} functions:")

@@ -222,6 +222,79 @@ class ChunkDatabase:
             "CREATE INDEX IF NOT EXISTS idx_dynhot_run ON dynamic_hotspots(project_id, run_id)"
         )
 
+
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS embedding_predictions (
+                                                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                   fqn TEXT NOT NULL,
+                                                   project_id TEXT NOT NULL,
+                                                   p_slow REAL NOT NULL,
+                                                   is_slow BOOLEAN NOT NULL,
+                                                   UNIQUE(fqn)
+            )
+            """
+        )
+        self.conn.commit()
+
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS llm_responses (
+                                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                    fqn TEXT NOT NULL,
+                                                    project_id TEXT NOT NULL,
+                                                    p_slow REAL NOT NULL,
+                                                    is_slow BOOLEAN NOT NULL,
+                                                    UNIQUE(fqn)
+            )
+            """
+        )
+
+
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS llm_interactions (
+                                                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+
+                -- Identity / grouping
+                                                            session_id TEXT NOT NULL,         -- unique per optimize() call
+                                                            project_id TEXT NOT NULL,
+                                                            llm_model TEXT NOT NULL,
+                                                            round INTEGER NOT NULL,           -- optimization round
+
+                -- Context of the event
+                                                            stage TEXT NOT NULL,              -- 'triage' | 'inspection' | 'repair' | 'post_reprofile'
+                                                            event_type TEXT NOT NULL,         -- 'response' | 'code_request' | 'invalid_json' | 'invalid_fqn' | 'fix_submission' | 'fix_runtime_error' | 'status' | 'post_reprofile'
+                                                            status TEXT,                      -- 'continue' | 'done' (when applicable)
+
+                -- Payload (JSON)
+                                                            code_requests_json TEXT,          -- JSON array
+                                                            hypotheses_json TEXT,             -- JSON array (triage)
+                                                            bottlenecks_json TEXT,            -- JSON array (inspection, includes replacement_source)
+                                                            invalid_fqns_json TEXT,           -- JSON array of missing FQNs
+
+                -- Raw model IO and errors
+                                                            raw_model_output TEXT,            -- raw content from the model before parsing
+                                                            parsed_json TEXT,                 -- final JSON string you parsed (for auditing)
+                                                            error_type TEXT,                  -- e.g., 'invalid_json', 'runtime_error'
+                                                            error_message TEXT,
+                                                            stacktrace TEXT,
+
+                -- Optional usage/cost
+                                                            usage_prompt_tokens INTEGER,
+                                                            usage_completion_tokens INTEGER,
+                                                            usage_total_tokens INTEGER,
+
+                -- Free-form ext metadata (latency, hashes, before/after timing, etc.)
+                                                            meta_json TEXT
+            )
+            """
+        )
+
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_llm_interactions_session ON llm_interactions(session_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_llm_interactions_proj_round ON llm_interactions(project_id, round)")
+
         self.conn.commit()
 
     # ------------------------
@@ -807,6 +880,33 @@ class ChunkDatabase:
 
         # Multiple rows - return list of dicts
         return [dict(zip(columns, row)) for row in rows]
+
+    def execute_write_sql(self, sql_string: str, params: tuple = None):
+        """
+        Execute INSERT, UPDATE, DELETE, or other write operations.
+
+        Args:
+            sql_string: SQL statement to execute
+            params: Optional tuple of parameters for parameterized queries
+
+        Returns:
+            Dict with:
+            - lastrowid: ID of last inserted row (useful for INSERT)
+            - rowcount: Number of affected rows
+        """
+        cursor = self.conn.cursor()
+
+        if params:
+            cursor.execute(sql_string, params)
+        else:
+            cursor.execute(sql_string)
+
+        self.conn.commit()
+
+        return {
+            'lastrowid': cursor.lastrowid,
+            'rowcount': cursor.rowcount
+        }
 
     def update_dynamic_function_extras(
         self, project_id: str, run_id: str, fqn: str, extras: Dict[str, Any]

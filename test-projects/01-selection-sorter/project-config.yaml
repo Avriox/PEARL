@@ -35,7 +35,7 @@ entrypoint:
 
 run:
   default_args: [ "--n", "2000", "--seed", "42" ]
-  timeout_seconds: 60
+  timeout_seconds: 500
 
 notes:
   usage_examples:

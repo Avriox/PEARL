@@ -58,6 +58,7 @@ class DynamicProfiler:
     LINE_END = "<<<PEARL_LINEPROF_JSON_END>>>"
     MEM_START = "<<<PEARL_MEMORY_JSON_START>>>"
     MEM_END = "<<<PEARL_MEMORY_JSON_END>>>"
+    PATCH_ERR_MARK = "<<<PEARL_PATCH_ERROR>>>"
 
     def __init__(self, project: "Project", db: "ChunkDatabase"):
         self.project = project
@@ -75,23 +76,69 @@ class DynamicProfiler:
                 pass
 
     def profile_function_timing(
-        self, args=None, warmup_runs=2, profiled_runs=10, top_k_for_lines=10
+            self,
+            args=None,
+            warmup_runs=2,
+            profiled_runs=10,
+            top_k_for_lines=10,
+            patches: Optional[List[Dict[str, Any]]] = None
     ) -> ProfilingRun:
         logging.info(f"Starting function timing profiling for {self.project_id}")
 
-        # Warmup
+        info = self.project.build_entrypoint_info(args=args)
+        patches_json = json.dumps(patches or [])
+
+        # 0) Apply patches once in a minimal, fast wrapper (no entrypoint run)
+        if patches:
+            patch_code = self._build_patch_only_wrapper_code(patches_json)
+            res = self.project.run_with_profiling(patch_code)
+            if res.returncode != 0:
+                errs = self._extract_patch_errors((res.stdout or "") + "\n" + (res.stderr or ""))
+                if errs:
+                    raise RuntimeError(f"Patch apply failed: {json.dumps(errs)}")
+                logging.error("Patch-only wrapper failed: stdout[:800]=%r stderr[:800]=%r",
+                              (res.stdout or "")[:800], (res.stderr or "")[:800])
+                raise RuntimeError("Patch apply failed (no diagnostics)")
+
+        # 1) Warmup WITHOUT any wrapper (fast path, same as original behavior)
         for i in range(warmup_runs):
             logging.info(f"Warmup run {i+1}/{warmup_runs}")
             self.project.run(args)
 
-        info = self.project.build_entrypoint_info(args=args)
+        # Preload static recursion flags to decide whether to keep self-edges
+        static_has_recursion: Dict[str, bool] = {}
+        try:
+            rows = self.db.execute_sql(
+                f"""
+                SELECT fqn, static_features
+                FROM functions
+                WHERE project_id = '{self.project_id}'
+                """
+            )
+            for r in rows or []:
+                sf = r.get("static_features")
+                if not sf:
+                    continue
+                try:
+                    sf_obj = json.loads(sf)
+                    static_has_recursion[r["fqn"]] = bool(sf_obj.get("has_recursion", False))
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        def _is_synthetic(name: str) -> bool:
+            try:
+                return name.startswith("<") and name.endswith(">")
+            except Exception:
+                return False
 
         # Storage for multiple runs
-        all_func_metrics = []  # List of dicts of FunctionMetrics
-        all_edges = []  # List of edge dicts
-        all_total_times = []
-        all_peak_memories = []
-        all_line_profiles = []  # List of line profiling results
+        all_func_metrics: List[Dict[str, FunctionMetrics]] = []
+        all_edges: List[Dict[Tuple[str, str], Dict[str, Any]]] = []
+        all_total_times: List[float] = []
+        all_peak_memories: List[float] = []
+        all_line_profiles: List[Dict[str, Any]] = []
 
         # Run multiple profiled runs
         for run_num in range(profiled_runs):
@@ -103,15 +150,19 @@ class DynamicProfiler:
                 target=info["target"],
                 argv0=info["argv0"],
                 args=info["args"],
+                patches_json=patches_json
             )
             pyi_res = self.project.run_with_profiling(pyi_code)
             if pyi_res.returncode != 0:
+                errs = self._extract_patch_errors((pyi_res.stdout or "") + "\n" + (pyi_res.stderr or ""))
+                if errs:
+                    raise RuntimeError(f"Patch apply failed: {json.dumps(errs)}")
+                logging.error("Pyinstrument wrapper failed: stdout[:800]=%r stderr[:800]=%r",
+                              (pyi_res.stdout or "")[:800], (pyi_res.stderr or "")[:800])
                 logging.warning(f"Pyinstrument failed on run {run_num+1}")
                 continue
 
-            pyi_json_str = self._extract_json_block(
-                pyi_res.stdout, self.PYI_START, self.PYI_END
-            )
+            pyi_json_str = self._extract_json_block(pyi_res.stdout, self.PYI_START, self.PYI_END)
             pyi_payload = json.loads(pyi_json_str)
             session_json = pyi_payload.get("session", {})
             pyi_total_ms = float(pyi_payload.get("total_time_sec", 0.0)) * 1000.0
@@ -123,35 +174,33 @@ class DynamicProfiler:
                 target=info["target"],
                 argv0=info["argv0"],
                 args=info["args"],
+                patches_json=patches_json
             )
             cp_res = self.project.run_with_profiling(cp_code)
             if cp_res.returncode != 0:
+                errs = self._extract_patch_errors((cp_res.stdout or "") + "\n" + (cp_res.stderr or ""))
+                if errs:
+                    raise RuntimeError(f"Patch apply failed: {json.dumps(errs)}")
+                logging.error("cProfile wrapper failed: stdout[:800]=%r stderr[:800]=%r",
+                              (cp_res.stdout or "")[:800], (cp_res.stderr or "")[:800])
                 logging.warning(f"cProfile failed on run {run_num+1}")
                 continue
 
-            cp_json_str = self._extract_json_block(
-                cp_res.stdout, self.CPROF_START, self.CPROF_END
-            )
+            cp_json_str = self._extract_json_block(cp_res.stdout, self.CPROF_START, self.CPROF_END)
             cp_payload = json.loads(cp_json_str)
             cp_total_ms = float(cp_payload.get("total_time_sec", 0.0)) * 1000.0
 
             # Merge cProfile
-            func_metrics = self._apply_cprofile_to_metrics(
-                func_metrics_from_pyi, cp_payload
-            )
+            func_metrics = self._apply_cprofile_to_metrics(func_metrics_from_pyi, cp_payload)
 
-            total_time_ms = (
-                cp_total_ms
-                if cp_total_ms > 0
-                else (pyi_total_ms if pyi_total_ms > 0 else 0.0)
-            )
+            total_time_ms = cp_total_ms if cp_total_ms > 0 else (pyi_total_ms if pyi_total_ms > 0 else 0.0)
             all_total_times.append(total_time_ms)
 
             # Resolve to fully qualified FQNs
             resolver = FQNResolver(self.db, self.project_id, self.project.directory)
 
             # a) Resolve function metrics
-            resolved_func_metrics = {}
+            resolved_func_metrics: Dict[str, FunctionMetrics] = {}
             temp_to_resolved = {}
             for temp_key, fm in func_metrics.items():
                 resolved_fqn = resolver.resolve(
@@ -173,42 +222,35 @@ class DynamicProfiler:
                     acc.exclusive_time_ms += fm.exclusive_time_ms
                     acc.call_count += fm.call_count
 
-            # Normalize
+            # Normalize (per run)
             for fm in resolved_func_metrics.values():
-                fm.fraction_of_total = (
-                    (fm.exclusive_time_ms / total_time_ms) if total_time_ms > 0 else 0.0
-                )
+                fm.fraction_of_total = ((fm.exclusive_time_ms / total_time_ms) if total_time_ms > 0 else 0.0)
                 fm.avg_time_ms = fm.exclusive_time_ms / max(1, fm.call_count)
 
             all_func_metrics.append(resolved_func_metrics)
 
             # b) Resolve edges
-            resolved_edges = {}
+            resolved_edges: Dict[Tuple[str, str], Dict[str, Any]] = {}
             for (caller_temp, callee_temp), data in edges.items():
                 cf = data.get("caller_file")
                 cl = int(data.get("caller_line", 0) or 0)
                 tf = data.get("callee_file")
                 tl = int(data.get("callee_line", 0) or 0)
 
-                caller_module_guess = (
-                    resolver.module_from_rel(resolver.rel_to_project(cf)) if cf else ""
-                )
-                callee_module_guess = (
-                    resolver.module_from_rel(resolver.rel_to_project(tf)) if tf else ""
-                )
+                caller_module_guess = (resolver.module_from_rel(resolver.rel_to_project(cf)) if cf else "")
+                callee_module_guess = (resolver.module_from_rel(resolver.rel_to_project(tf)) if tf else "")
 
-                caller_resolved = resolver.resolve(
-                    cf,
-                    cl,
-                    caller_module_guess,
-                    caller_temp.split("@L")[0].split(".")[-1],
-                )
-                callee_resolved = resolver.resolve(
-                    tf,
-                    tl,
-                    callee_module_guess,
-                    callee_temp.split("@L")[0].split(".")[-1],
-                )
+                caller_raw = caller_temp.split("@L")[0].split(".")[-1]
+                callee_raw = callee_temp.split("@L")[0].split(".")[-1]
+
+                caller_resolved = resolver.resolve(cf, cl, caller_module_guess, caller_raw)
+                callee_resolved = resolver.resolve(tf, tl, callee_module_guess, callee_raw)
+
+                if caller_resolved == callee_resolved:
+                    if _is_synthetic(caller_raw) or _is_synthetic(callee_raw):
+                        continue
+                    if not static_has_recursion.get(caller_resolved, False):
+                        continue
 
                 key = (caller_resolved, callee_resolved)
                 e = resolved_edges.setdefault(key, {"time_ms": 0.0, "count": 0})
@@ -223,13 +265,18 @@ class DynamicProfiler:
                 target=info["target"],
                 argv0=info["argv0"],
                 args=info["args"],
+                patches_json=patches_json
             )
             mem_res = self.project.run_with_profiling(mem_code)
             peak_memory_mb = 0.0
-            if mem_res.returncode == 0:
-                mem_json_str = self._extract_json_block(
-                    mem_res.stdout, self.MEM_START, self.MEM_END
-                )
+            if mem_res.returncode != 0:
+                errs = self._extract_patch_errors((mem_res.stdout or "") + "\n" + (mem_res.stderr or ""))
+                if errs:
+                    raise RuntimeError(f"Patch apply failed: {json.dumps(errs)}")
+                logging.error("Memory wrapper failed: stdout[:800]=%r stderr[:800]=%r",
+                              (mem_res.stdout or "")[:800], (mem_res.stderr or "")[:800])
+            else:
+                mem_json_str = self._extract_json_block(mem_res.stdout, self.MEM_START, self.MEM_END)
                 if mem_json_str:
                     mem_payload = json.loads(mem_json_str)
                     peak_memory_mb = float(mem_payload.get("peak_memory_mb", 0.0))
@@ -250,34 +297,42 @@ class DynamicProfiler:
                     argv0=info["argv0"],
                     args=info["args"],
                     targets=all_targets[:top_k_for_lines],
+                    patches_json=patches_json
                 )
                 lp_res = self.project.run_with_profiling(lp_code)
-                if lp_res.returncode == 0:
-                    lp_json_str = self._extract_json_block(
-                        lp_res.stdout, self.LINE_START, self.LINE_END
-                    )
+                if lp_res.returncode != 0:
+                    errs = self._extract_patch_errors((lp_res.stdout or "") + "\n" + (lp_res.stderr or ""))
+                    if errs:
+                        raise RuntimeError(f"Patch apply failed: {json.dumps(errs)}")
+                    logging.error("Line-profiler wrapper failed: stdout[:800]=%r stderr[:800]=%r",
+                                  (lp_res.stdout or "")[:800], (lp_res.stderr or "")[:800])
+                else:
+                    lp_json_str = self._extract_json_block(lp_res.stdout, self.LINE_START, self.LINE_END)
                     if lp_json_str:
                         lp_payload = json.loads(lp_json_str)
                         all_line_profiles.append(lp_payload)
 
         # Average all metrics
-        avg_total_time_ms = (
-            sum(all_total_times) / len(all_total_times) if all_total_times else 0.0
-        )
-        avg_peak_memory_mb = (
-            sum(all_peak_memories) / len(all_peak_memories)
-            if all_peak_memories
-            else 0.0
-        )
+        avg_total_time_ms = (sum(all_total_times) / len(all_total_times) if all_total_times else 0.0)
+        avg_peak_memory_mb = (sum(all_peak_memories) / len(all_peak_memories) if all_peak_memories else 0.0)
 
         # Average function metrics
         averaged_func_metrics = self._average_function_metrics(all_func_metrics)
+
+        # Recalculate fraction_of_total based on averaged times (do not average fractions)
+        for fm in averaged_func_metrics.values():
+            fm.fraction_of_total = ((fm.exclusive_time_ms / avg_total_time_ms) if avg_total_time_ms > 0 else 0.0)
 
         # Average edges
         averaged_edges = self._average_edges(all_edges)
 
         # Create run and persist averaged results
-        run_id = f"{self.project_id}-{int(time.time())}"
+        seq_row = self.db.execute_sql(f"SELECT COUNT(*) AS c FROM dynamic_runs WHERE project_id = '{self.project_id}'")
+        try:
+            seq = (int(seq_row["c"]) if isinstance(seq_row, dict) else int(seq_row)) + 1
+        except Exception:
+            seq = 1
+        run_id = f"{self.project_id}-r{seq}-{int(time.time())}"
         run = ProfilingRun(
             run_id=run_id,
             project_id=self.project_id,
@@ -335,7 +390,7 @@ class DynamicProfiler:
     # --------------------
 
     def _average_function_metrics(
-        self, all_metrics: List[Dict[str, FunctionMetrics]]
+            self, all_metrics: List[Dict[str, FunctionMetrics]]
     ) -> Dict[str, FunctionMetrics]:
         """Average function metrics across multiple runs"""
         if not all_metrics:
@@ -362,15 +417,14 @@ class DynamicProfiler:
             avg_metric = FunctionMetrics(
                 fqn=fqn,
                 inclusive_time_ms=sum(m.inclusive_time_ms for m in fqn_metrics)
-                / len(fqn_metrics),
+                                  / len(fqn_metrics),
                 exclusive_time_ms=sum(m.exclusive_time_ms for m in fqn_metrics)
-                / len(fqn_metrics),
+                                  / len(fqn_metrics),
                 call_count=int(
                     sum(m.call_count for m in fqn_metrics) / len(fqn_metrics)
                 ),
                 avg_time_ms=0.0,  # Will calculate below
-                fraction_of_total=sum(m.fraction_of_total for m in fqn_metrics)
-                / len(fqn_metrics),
+                fraction_of_total=0.0,  # Will be recalculated later based on averaged total time
                 file_path=first.file_path,
                 module_name=first.module_name,
                 function_name=first.function_name,
@@ -576,7 +630,7 @@ class DynamicProfiler:
         return fqn, module, func_name
 
     def _aggregate_pyinstrument(
-        self, session_json: Dict[str, Any]
+            self, session_json: Dict[str, Any]
     ) -> Tuple[Dict[str, FunctionMetrics], Dict[Tuple[str, str], Dict[str, Any]]]:
         """
         Traverse pyinstrument JSON and aggregate:
@@ -616,19 +670,19 @@ class DynamicProfiler:
               line_no: current line number inside the frame's function
             """
             file_path = (
-                frame.get("file_path")
-                or frame.get("filename")
-                or frame.get("filePath")
-                or frame.get("file")
-                or ""
+                    frame.get("file_path")
+                    or frame.get("filename")
+                    or frame.get("filePath")
+                    or frame.get("file")
+                    or ""
             )
             # pyinstrument uses line_no; be defensive with variants
             line_no = (
-                frame.get("line_no")
-                or frame.get("lineNo")
-                or frame.get("lineno")
-                or frame.get("line")
-                or 0
+                    frame.get("line_no")
+                    or frame.get("lineNo")
+                    or frame.get("lineno")
+                    or frame.get("line")
+                    or 0
             )
             try:
                 line_no = int(line_no)
@@ -636,10 +690,10 @@ class DynamicProfiler:
                 line_no = 0
 
             func_name = (
-                frame.get("function")
-                or frame.get("func")
-                or frame.get("name")
-                or "<unknown>"
+                    frame.get("function")
+                    or frame.get("func")
+                    or frame.get("name")
+                    or "<unknown>"
             )
 
             module_guess = module_from_path(file_path)
@@ -649,6 +703,13 @@ class DynamicProfiler:
                 else f"{func_name}@L{line_no}"
             )
             return temp_key, module_guess, func_name, str(file_path or ""), int(line_no)
+
+        def is_synthetic(func_name: str) -> bool:
+            # Frames like <listcomp>, <genexpr>, <lambda>, etc.
+            try:
+                return func_name.startswith("<") and func_name.endswith(">")
+            except Exception:
+                return False
 
         metrics: Dict[str, FunctionMetrics] = {}
         edges: Dict[Tuple[str, str], Dict[str, Any]] = {}
@@ -696,9 +757,24 @@ class DynamicProfiler:
             # Record edges to child frames
             for ch_frame, ch_incl_sec in child_infos:
                 ch_key, ch_module, ch_func, ch_file, ch_line = frame_fields(ch_frame)
+
+                # Skip synthetic inner frames (e.g., <listcomp>, <genexpr>, <lambda>) within the same file.
+                # These get resolved back to the containing function and would create a spurious self-edge.
+                try:
+                    same_file = (
+                            cur_file
+                            and ch_file
+                            and Path(cur_file).resolve() == Path(ch_file).resolve()
+                    )
+                except Exception:
+                    same_file = (cur_file == ch_file)
+
+                if same_file and is_synthetic(ch_func):
+                    continue
+
                 k = (cur_key, ch_key)
                 e = edges.setdefault(k, {"time_ms": 0.0, "count": 0})
-                # Use child's inclusive time as edge weight (consistent with your previous version)
+                # Use child's inclusive time as edge weight
                 e["time_ms"] += float(ch_incl_sec * 1000.0)
                 e["count"] += 1
 
@@ -714,16 +790,33 @@ class DynamicProfiler:
         return metrics, edges
 
     def _apply_cprofile_to_metrics(
-        self, func_metrics: Dict[str, FunctionMetrics], cp_payload: Dict[str, Any]
+            self, func_metrics: Dict[str, FunctionMetrics], cp_payload: Dict[str, Any]
     ) -> Dict[str, FunctionMetrics]:
-        """Merge cProfile stats (accurate ncalls/times) into FunctionMetrics, project files only."""
+        """Merge cProfile stats (accurate ncalls/times) into FunctionMetrics, project files only.
+
+        IMPORTANT: Replace the corresponding pyinstrument fragments for the same function
+        (matched by normalized file_path + function_name, and preferring matching first_lineno)
+        instead of adding a new entry, to avoid double-counting when we later resolve FQNs.
+        """
+        # Build an index of existing (pyinstrument) metrics by normalized file_path + function_name
+        by_file_func: Dict[Tuple[str, str], List[str]] = {}
+        for k, m in list(func_metrics.items()):
+            file_path = m.file_path or ""
+            func_name = m.function_name or ""
+            try:
+                norm_fp = str(Path(file_path).resolve())
+            except Exception:
+                norm_fp = str(file_path)
+            if norm_fp and func_name:
+                by_file_func.setdefault((norm_fp, func_name), []).append(k)
+
         for rec in cp_payload.get("functions", []):
             file_path = rec.get("file", "")
             if not self._is_project_file(file_path):
                 continue
+
             func_name = rec.get("function", "")
             module = self._file_to_module(file_path)
-            fqn = f"{module}.{func_name}"
 
             excl_ms = float(rec.get("tottime", 0.0)) * 1000.0
             incl_ms = float(rec.get("cumtime", 0.0)) * 1000.0
@@ -732,7 +825,54 @@ class DynamicProfiler:
             except Exception:
                 ncalls = 0
 
-            if fqn not in func_metrics:
+            # Try to match to existing pyinstrument fragments for the same function
+            try:
+                cp_norm_fp = str(Path(file_path).resolve())
+            except Exception:
+                cp_norm_fp = str(file_path)
+
+            cp_first_line = 0
+            try:
+                cp_first_line = int(rec.get("line_no", 0) or 0)
+            except Exception:
+                cp_first_line = 0
+
+            candidate_keys = by_file_func.get((cp_norm_fp, func_name), [])
+            chosen_key = None
+
+            # Prefer a candidate whose first_lineno matches cProfile's first line, if provided
+            if candidate_keys and cp_first_line:
+                for k in candidate_keys:
+                    m = func_metrics.get(k)
+                    if m and int(m.first_lineno or 0) == cp_first_line:
+                        chosen_key = k
+                        break
+
+            # Otherwise, pick any candidate for this (file, func) pair
+            if not chosen_key and candidate_keys:
+                chosen_key = candidate_keys[0]
+
+            if chosen_key:
+                # Update the chosen existing entry with authoritative cProfile numbers
+                m = func_metrics[chosen_key]
+                m.inclusive_time_ms = incl_ms
+                m.exclusive_time_ms = excl_ms
+                m.call_count = ncalls
+                m.avg_time_ms = excl_ms / max(1, ncalls)
+                m.module_name = module
+                m.function_name = func_name
+                m.fqn = f"{module}.{func_name}"
+                m.file_path = str(file_path)
+                if cp_first_line:
+                    m.first_lineno = cp_first_line
+
+                # Remove any other pyinstrument fragments for the same function to avoid double counting
+                for k in candidate_keys:
+                    if k != chosen_key and k in func_metrics:
+                        del func_metrics[k]
+            else:
+                # No existing pyinstrument entry matched; create a new entry for this cProfile function
+                fqn = f"{module}.{func_name}"
                 func_metrics[fqn] = FunctionMetrics(
                     fqn=fqn,
                     inclusive_time_ms=incl_ms,
@@ -743,14 +883,8 @@ class DynamicProfiler:
                     file_path=str(file_path),
                     module_name=module,
                     function_name=func_name,
+                    first_lineno=cp_first_line,
                 )
-            else:
-                m = func_metrics[fqn]
-                # Prefer cProfile's accurate numbers
-                m.inclusive_time_ms = incl_ms
-                m.exclusive_time_ms = excl_ms
-                m.call_count = ncalls
-                m.avg_time_ms = excl_ms / max(1, ncalls)
 
         return func_metrics
 
@@ -771,20 +905,16 @@ class DynamicProfiler:
     # --------------------
     # Wrapper builders
     # --------------------
-    def _build_pyinstrument_wrapper_code(
-        self, entry_type: str, target: str, argv0: str, args: List[str]
-    ) -> str:
+    def _build_pyinstrument_wrapper_code(self, entry_type: str, target: str, argv0: str, args: List[str], patches_json: str) -> str:
         project_dir = str(self.project.directory.resolve())
-
-        code = f"""
-        import sys, runpy, time, json
+        header = textwrap.dedent(f"""\
+        import sys, time, json, importlib, pathlib
         from pyinstrument import Profiler
         try:
             from pyinstrument.renderers.jsonrenderer import JSONRenderer
         except Exception:
             from pyinstrument.renderers import JSONRenderer
 
-        # Add project directory to path for local modules
         PROJECT_DIR = {repr(project_dir)}
         if PROJECT_DIR not in sys.path:
             sys.path.insert(0, PROJECT_DIR)
@@ -798,39 +928,55 @@ class DynamicProfiler:
 
         sys.argv = [ARGV0] + list(ENTRY_ARGS)
 
+        def _module_name_from_path(project_dir, path):
+            p = pathlib.Path(path).resolve()
+            proj = pathlib.Path(project_dir).resolve()
+            try:
+                rel = p.relative_to(proj)
+                parts = list(rel.parts)
+                if parts[-1] == "__init__.py":
+                    parts = parts[:-1]
+                else:
+                    parts[-1] = parts[-1].rsplit(".", 1)[0]
+                return ".".join(parts)
+            except Exception:
+                return p.stem
+
+        MODULE_NAME = ENTRY_TARGET if ENTRY_TYPE == "module" else _module_name_from_path(PROJECT_DIR, ENTRY_TARGET)
+        """)
+        prologue = self._patch_prologue(patches_json)
+        body = textwrap.dedent("""\
+        mod = importlib.import_module(MODULE_NAME)
+
+        # Apply patches BEFORE timing
+        if PATCHES:
+            _apply_patches(PATCHES)
+
         prof = Profiler(interval=0.0001)
         t0 = time.perf_counter()
         prof.start()
         try:
-            if ENTRY_TYPE == "script":
-                runpy.run_path(ENTRY_TARGET, run_name="__main__")
-            else:
-                runpy.run_module(ENTRY_TARGET, run_name="__main__")
+            if hasattr(mod, "main"):
+                mod.main()
         finally:
             prof.stop()
             t1 = time.perf_counter()
 
         renderer = JSONRenderer()
-        payload = {{"session": json.loads(renderer.render(prof.last_session)), "total_time_sec": (t1 - t0)}}
-        print(START, flush=True)
-        print(json.dumps(payload), flush=True)
-        print(END, flush=True)
-        """
-        return textwrap.dedent(code)
+        payload = {"session": json.loads(renderer.render(prof.last_session)), "total_time_sec": (t1 - t0)}
+        print(START, flush=True); print(json.dumps(payload), flush=True); print(END, flush=True)
+        """)
+        return header + prologue + "\n" + body
 
-    def _build_cprofile_wrapper_code(
-        self, entry_type: str, target: str, argv0: str, args: List[str]
-    ) -> str:
+    def _build_cprofile_wrapper_code(self, entry_type: str, target: str, argv0: str, args: List[str], patches_json: str) -> str:
         project_dir = str(self.project.directory.resolve())
+        header = textwrap.dedent(f"""\
+        import sys, time, json, importlib, pathlib, cProfile, pstats
 
-        code = f"""
-        import sys, runpy, time, json, cProfile, pstats
-        
-        # Add project directory to path for local modules
         PROJECT_DIR = {repr(project_dir)}
         if PROJECT_DIR not in sys.path:
             sys.path.insert(0, PROJECT_DIR)
-        
+
         ENTRY_TYPE = {repr(entry_type)}
         ENTRY_TARGET = {repr(target)}
         ENTRY_ARGS = {repr(list(args or []))}
@@ -840,14 +986,35 @@ class DynamicProfiler:
 
         sys.argv = [ARGV0] + list(ENTRY_ARGS)
 
+        def _module_name_from_path(project_dir, path):
+            p = pathlib.Path(path).resolve()
+            proj = pathlib.Path(project_dir).resolve()
+            try:
+                rel = p.relative_to(proj)
+                parts = list(rel.parts)
+                if parts[-1] == "__init__.py":
+                    parts = parts[:-1]
+                else:
+                    parts[-1] = parts[-1].rsplit(".", 1)[0]
+                return ".".join(parts)
+            except Exception:
+                return p.stem
+
+        MODULE_NAME = ENTRY_TARGET if ENTRY_TYPE == "module" else _module_name_from_path(PROJECT_DIR, ENTRY_TARGET)
+        """)
+        prologue = self._patch_prologue(patches_json)
+        body = textwrap.dedent("""\
+        mod = importlib.import_module(MODULE_NAME)
+
+        if PATCHES:
+            _apply_patches(PATCHES)
+
         pr = cProfile.Profile()
         t0 = time.perf_counter()
         pr.enable()
         try:
-            if ENTRY_TYPE == "script":
-                runpy.run_path(ENTRY_TARGET, run_name="__main__")
-            else:
-                runpy.run_module(ENTRY_TARGET, run_name="__main__")
+            if hasattr(mod, "main"):
+                mod.main()
         finally:
             pr.disable()
             t1 = time.perf_counter()
@@ -860,35 +1027,22 @@ class DynamicProfiler:
                 ncalls = int(nc) if not isinstance(nc, str) else int(str(nc).split("/")[0])
             except Exception:
                 ncalls = 0
-            out.append({{
-                "file": filename,
-                "line_no": int(lineno),
-                "function": funcname,
-                "ncalls": ncalls,
-                "tottime": float(tt),
-                "cumtime": float(ct)
-            }})
+            out.append({"file": filename, "line_no": int(lineno), "function": funcname, "ncalls": ncalls, "tottime": float(tt), "cumtime": float(ct)})
 
-        payload = {{"functions": out, "total_time_sec": (t1 - t0)}}
-        print(START, flush=True)
-        print(json.dumps(payload), flush=True)
-        print(END, flush=True)
-        """
-        return textwrap.dedent(code)
+        payload = {"functions": out, "total_time_sec": (t1 - t0)}
+        print(START, flush=True); print(json.dumps(payload), flush=True); print(END, flush=True)
+        """)
+        return header + prologue + "\n" + body
 
-    def _build_memory_wrapper_code(
-        self, entry_type: str, target: str, argv0: str, args: List[str]
-    ) -> str:
+    def _build_memory_wrapper_code(self, entry_type: str, target: str, argv0: str, args: List[str], patches_json: str) -> str:
         project_dir = str(self.project.directory.resolve())
+        header = textwrap.dedent(f"""\
+        import sys, time, json, importlib, pathlib, gc, tracemalloc
 
-        code = f"""
-        import sys, runpy, time, json, tracemalloc, gc
-        
-        # Add project directory to path for local modules
         PROJECT_DIR = {repr(project_dir)}
         if PROJECT_DIR not in sys.path:
             sys.path.insert(0, PROJECT_DIR)
-        
+
         ENTRY_TYPE = {repr(entry_type)}
         ENTRY_TARGET = {repr(target)}
         ENTRY_ARGS = {repr(list(args or []))}
@@ -898,325 +1052,240 @@ class DynamicProfiler:
 
         sys.argv = [ARGV0] + list(ENTRY_ARGS)
 
-        # Force garbage collection before starting
-        gc.collect()
+        def _module_name_from_path(project_dir, path):
+            p = pathlib.Path(path).resolve()
+            proj = pathlib.Path(project_dir).resolve()
+            try:
+                rel = p.relative_to(proj)
+                parts = list(rel.parts)
+                if parts[-1] == "__init__.py":
+                    parts = parts[:-1]
+                else:
+                    parts[-1] = parts[-1].rsplit(".", 1)[0]
+                return ".".join(parts)
+            except Exception:
+                return p.stem
 
-        # Start tracemalloc
+        MODULE_NAME = ENTRY_TARGET if ENTRY_TYPE == "module" else _module_name_from_path(PROJECT_DIR, ENTRY_TARGET)
+        """)
+        prologue = self._patch_prologue(patches_json)
+        body = textwrap.dedent("""\
+        mod = importlib.import_module(MODULE_NAME)
+
+        if PATCHES:
+            _apply_patches(PATCHES)
+
+        gc.collect()
         tracemalloc.start()
 
         t0 = time.perf_counter()
         try:
-            if ENTRY_TYPE == "script":
-                runpy.run_path(ENTRY_TARGET, run_name="__main__")
-            else:
-                runpy.run_module(ENTRY_TARGET, run_name="__main__")
+            if hasattr(mod, "main"):
+                mod.main()
         finally:
             t1 = time.perf_counter()
-
-            # Get peak memory
             current, peak = tracemalloc.get_traced_memory()
             peak_mb = peak / (1024 * 1024)
-
-            # Stop tracemalloc
             tracemalloc.stop()
 
-            payload = {{
-                "peak_memory_mb": peak_mb,
-                "total_time_sec": (t1 - t0)
-            }}
-
-            print(START, flush=True)
-            print(json.dumps(payload), flush=True)
-            print(END, flush=True)
-        """
-        return textwrap.dedent(code)
+            payload = {"peak_memory_mb": peak_mb, "total_time_sec": (t1 - t0)}
+            print(START, flush=True); print(json.dumps(payload), flush=True); print(END, flush=True)
+        """)
+        return header + prologue + "\n" + body
 
     def _build_line_profiler_wrapper_code(
-        self,
-        entry_type: str,
-        target: str,
-        argv0: str,
-        args: List[str],
-        targets: List[Dict[str, str]],
+            self,
+            entry_type: str,
+            target: str,
+            argv0: str,
+            args: List[str],
+            targets: List[Dict[str, str]],
+            patches_json: str,
     ) -> str:
-        targets_payload = [{"module": t["module"], "func": t["func"]} for t in targets]
         project_dir = str(self.project.directory.resolve())
+        targets_payload = [{"module": t["module"], "func": t["func"]} for t in targets]
 
-        code = f"""
-    import sys, runpy, time, json, importlib, inspect, ast
-    from line_profiler import LineProfiler
+        header = textwrap.dedent(f"""\
+        import sys, time, json, importlib, pathlib, inspect, ast
+        from line_profiler import LineProfiler
 
-    ENTRY_TYPE = {repr(entry_type)}
-    ENTRY_TARGET = {repr(target)}
-    ENTRY_ARGS = {repr(list(args or []))}
-    ARGV0 = {repr(argv0)}
-    TARGET_FUNCS = {json.dumps(targets_payload)}
-    PROJECT_DIR = {repr(project_dir)}
-    START = {repr(self.LINE_START)}
-    END = {repr(self.LINE_END)}
+        ENTRY_TYPE = {repr(entry_type)}
+        ENTRY_TARGET = {repr(target)}
+        ENTRY_ARGS = {repr(list(args or []))}
+        ARGV0 = {repr(argv0)}
+        TARGET_FUNCS = {json.dumps(targets_payload)}
+        PROJECT_DIR = {repr(project_dir)}
+        START = {repr(self.LINE_START)}
+        END = {repr(self.LINE_END)}
 
-    # Add project directory to Python path so modules can be imported
-    if PROJECT_DIR not in sys.path:
-        sys.path.insert(0, PROJECT_DIR)
+        if PROJECT_DIR not in sys.path:
+            sys.path.insert(0, PROJECT_DIR)
 
-    sys.argv = [ARGV0] + list(ENTRY_ARGS)
+        sys.argv = [ARGV0] + list(ENTRY_ARGS)
 
-    lp = LineProfiler()
-    debug_info = []
-
-    # Map various key formats to function info
-    func_info_map = {{}}
-
-    def detect_loop_lines(file_path):
-        \"\"\"Detect which lines contain loop constructs\"\"\"
-        loop_header_lines = set()  # Only the for/while lines themselves
-        loop_body_lines = {{}}  # line -> loop_depth (for context)
-
-        try:
-            with open(file_path, 'r') as f:
-                source = f.read()
-                lines = source.split('\\n')
-
-            # Parse AST to find loop constructs
-            tree = ast.parse(source)
-
-            class LoopVisitor(ast.NodeVisitor):
-                def __init__(self):
-                    self.loop_stack = []  # Track nesting depth
-
-                def visit_For(self, node):
-                    # For loops - mark the header line
-                    loop_header_lines.add(node.lineno)
-                    self.loop_stack.append(node.lineno)
-
-                    # Mark all lines in the loop body with depth (for context only)
-                    for stmt in ast.walk(node):
-                        if hasattr(stmt, 'lineno'):
-                            loop_body_lines[stmt.lineno] = len(self.loop_stack)
-
-                    self.generic_visit(node)
-                    self.loop_stack.pop()
-
-                def visit_While(self, node):
-                    # While loops - mark the header line
-                    loop_header_lines.add(node.lineno)
-                    self.loop_stack.append(node.lineno)
-
-                    # Mark all lines in the loop body with depth (for context only)
-                    for stmt in ast.walk(node):
-                        if hasattr(stmt, 'lineno'):
-                            loop_body_lines[stmt.lineno] = len(self.loop_stack)
-
-                    self.generic_visit(node)
-                    self.loop_stack.pop()
-
-                def visit_ListComp(self, node):
-                    # List comprehensions - the whole line is the loop
-                    loop_header_lines.add(node.lineno)
-                    loop_body_lines[node.lineno] = len(self.loop_stack) + 1
-                    self.generic_visit(node)
-
-                def visit_DictComp(self, node):
-                    # Dict comprehensions
-                    loop_header_lines.add(node.lineno)
-                    loop_body_lines[node.lineno] = len(self.loop_stack) + 1
-                    self.generic_visit(node)
-
-                def visit_SetComp(self, node):
-                    # Set comprehensions
-                    loop_header_lines.add(node.lineno)
-                    loop_body_lines[node.lineno] = len(self.loop_stack) + 1
-                    self.generic_visit(node)
-
-            visitor = LoopVisitor()
-            visitor.visit(tree)
-
-            # Also detect with regex for edge cases AST might miss
-            for i, line in enumerate(lines, 1):
-                stripped = line.strip()
-                if (stripped.startswith('for ') or 
-                    stripped.startswith('while ') or
-                    (' for ' in line and any(bracket in line for bracket in ['[', '(', '{{']))):
-                    loop_header_lines.add(i)
-
-            return loop_header_lines, loop_body_lines
-
-        except Exception as e:
-            debug_info.append(f"Error detecting loops in {{file_path}}: {{e}}")
-            return set(), {{}}
-
-    def add_target(module_name, func_chain):
-        try:
-            debug_info.append(f"Attempting to import module: {{module_name}}")
-            mod = importlib.import_module(module_name)
-            debug_info.append(f"Successfully imported {{module_name}}")
-
-            obj = mod
-            for attr in func_chain.split("."):
-                debug_info.append(f"Getting attribute: {{attr}}")
-                obj = getattr(obj, attr)
-
-            if inspect.isfunction(obj) or inspect.ismethod(obj):
-                # Get the actual function object
-                func_obj = obj if inspect.isfunction(obj) else obj.__func__
-
-                # Add to line profiler
-                lp.add_function(func_obj)
-
-                # Get function info
-                try:
-                    file_path = inspect.getfile(func_obj)
-                    func_name = func_obj.__name__
-                    first_line = func_obj.__code__.co_firstlineno
-
-                    # Create the key that LineProfiler will use
-                    lp_key = (file_path, first_line, func_name)
-
-                    # Detect loops in this file
-                    loop_header_lines, loop_body_lines = detect_loop_lines(file_path)
-
-                    # Store mapping
-                    func_info_map[lp_key] = {{
-                        'file_path': file_path,
-                        'func_name': func_name,
-                        'module_name': module_name,
-                        'func_chain': func_chain,
-                        'first_line': first_line,
-                        'loop_header_lines': loop_header_lines,
-                        'loop_body_lines': loop_body_lines
-                    }}
-
-                    debug_info.append(f"Added function {{module_name}}.{{func_chain}} ({{func_name}}) from {{file_path}} line {{first_line}}")
-                    debug_info.append(f"  Detected {{len(loop_header_lines)}} loop header lines: {{sorted(list(loop_header_lines))[:5]}}")
-                    return True, module_name, func_chain
-                except Exception as e:
-                    debug_info.append(f"Could not get file for {{module_name}}.{{func_chain}}: {{e}}")
-                    return False, module_name, func_chain
-
-            debug_info.append(f"Failed to add {{module_name}}.{{func_chain}} - not function/method (type: {{type(obj)}})")
-            return False, module_name, func_chain
-        except Exception as e:
-            debug_info.append(f"Exception adding {{module_name}}.{{func_chain}}: {{e}}")
-            return False, module_name, func_chain
-
-    added = []
-    for spec in TARGET_FUNCS:
-        ok, m, f = add_target(spec["module"], spec["func"])
-        if ok:
-            added.append({{"module": m, "func": f}})
-
-    debug_info.append(f"Successfully added {{len(added)}} functions to line profiler")
-
-    t0 = time.perf_counter()
-    globs = dict(runpy=runpy, ENTRY_TYPE=ENTRY_TYPE, ENTRY_TARGET=ENTRY_TARGET)
-    code_str = "runpy.run_path(ENTRY_TARGET, run_name='__main__')" if ENTRY_TYPE == "script" else "runpy.run_module(ENTRY_TARGET, run_name='__main__')"
-    lp.runctx(code_str, globs, {{}})
-    t1 = time.perf_counter()
-
-    stats = lp.get_stats()
-    unit = getattr(stats, "unit", 1.0) or 1.0
-    out_funcs = []
-
-    debug_info.append(f"LineProfiler found {{len(stats.timings)}} functions with timing data")
-
-    # Build a file cache for reading source lines
-    file_cache = {{}}
-
-    def get_src_line(fp, n):
-        if fp in file_cache:
-            lines_local = file_cache[fp]
-        else:
+        def _module_name_from_path(project_dir, path):
+            p = pathlib.Path(path).resolve()
+            proj = pathlib.Path(project_dir).resolve()
             try:
-                with open(fp, "r") as fh:
-                    lines_local = fh.readlines()
-            except Exception as e:
-                debug_info.append(f"Could not read file {{fp}}: {{e}}")
-                lines_local = []
-            file_cache[fp] = lines_local
-        if 1 <= n <= len(lines_local):
-            return lines_local[n-1].rstrip()
-        return ""
+                rel = p.relative_to(proj)
+                parts = list(rel.parts)
+                if parts[-1] == "__init__.py":
+                    parts = parts[:-1]
+                else:
+                    parts[-1] = parts[-1].rsplit(".", 1)[0]
+                return ".".join(parts)
+            except Exception:
+                return p.stem
 
-    for key, timings in stats.timings.items():
-        if isinstance(key, tuple) and len(key) == 3:
-            file_path, first_line, func_name = key
+        MODULE_NAME = ENTRY_TARGET if ENTRY_TYPE == "module" else _module_name_from_path(PROJECT_DIR, ENTRY_TARGET)
+        """)
+        prologue = self._patch_prologue(patches_json)
+        body = textwrap.dedent("""\
+        lp = LineProfiler()
+        debug_info = []
+        func_info_map = {}
 
-            # Get additional info from our mapping
-            info = func_info_map.get(key, {{}})
-            loop_header_lines = info.get('loop_header_lines', set())
-            loop_body_lines = info.get('loop_body_lines', {{}})
-
-        else:
-            debug_info.append(f"Unexpected key format: {{key}}")
-            file_path = "<unknown>"
-            func_name = "<unknown>"
+        def detect_loop_lines(file_path):
             loop_header_lines = set()
-            loop_body_lines = {{}}
+            loop_body_lines = {}
+            try:
+                with open(file_path, 'r') as f:
+                    source = f.read()
+                    lines = source.split('\\n')
+                tree = ast.parse(source)
+                class LoopVisitor(ast.NodeVisitor):
+                    def __init__(self): self.loop_stack = []
+                    def visit_For(self, node):
+                        loop_header_lines.add(node.lineno); self.loop_stack.append(node.lineno)
+                        for stmt in ast.walk(node):
+                            if hasattr(stmt, 'lineno'):
+                                loop_body_lines[stmt.lineno] = len(self.loop_stack)
+                        self.generic_visit(node); self.loop_stack.pop()
+                    def visit_While(self, node):
+                        loop_header_lines.add(node.lineno); self.loop_stack.append(node.lineno)
+                        for stmt in ast.walk(node):
+                            if hasattr(stmt, 'lineno'):
+                                loop_body_lines[stmt.lineno] = len(self.loop_stack)
+                        self.generic_visit(node); self.loop_stack.pop()
+                    def visit_ListComp(self, node):
+                        loop_header_lines.add(node.lineno); loop_body_lines[node.lineno] = len(self.loop_stack) + 1; self.generic_visit(node)
+                    def visit_DictComp(self, node):
+                        loop_header_lines.add(node.lineno); loop_body_lines[node.lineno] = len(self.loop_stack) + 1; self.generic_visit(node)
+                    def visit_SetComp(self, node):
+                        loop_header_lines.add(node.lineno); loop_body_lines[node.lineno] = len(self.loop_stack) + 1; self.generic_visit(node)
+                LoopVisitor().visit(tree)
+                for i, line in enumerate(lines, 1):
+                    s = line.strip()
+                    if (s.startswith('for ') or s.startswith('while ') or (' for ' in line and any(b in line for b in ['[', '(', '{']))):
+                        loop_header_lines.add(i)
+                return loop_header_lines, loop_body_lines
+            except Exception as e:
+                debug_info.append(f"Error detecting loops in {file_path}: {e}")
+                return set(), {}
 
-        debug_info.append(f"Processing function '{{func_name}}' from '{{file_path}}' with {{len(timings)}} lines")
-        debug_info.append(f"  Loop header lines detected: {{sorted(list(loop_header_lines))}}")
+        def add_target(module_name, func_chain):
+            try:
+                mod_t = importlib.import_module(module_name)
+                obj = mod_t
+                for attr in func_chain.split('.'):
+                    obj = getattr(obj, attr)
+                if inspect.isfunction(obj) or inspect.ismethod(obj):
+                    func_obj = obj if inspect.isfunction(obj) else obj.__func__
+                    lp.add_function(func_obj)
+                    try:
+                        file_path = inspect.getfile(func_obj)
+                        func_name = func_obj.__name__
+                        first_line = func_obj.__code__.co_firstlineno
+                        lp_key = (file_path, first_line, func_name)
+                        loop_header_lines, loop_body_lines = detect_loop_lines(file_path)
+                        func_info_map[lp_key] = {
+                            'file_path': file_path,
+                            'func_name': func_name,
+                            'module_name': module_name,
+                            'func_chain': func_chain,
+                            'first_line': first_line,
+                            'loop_header_lines': loop_header_lines,
+                            'loop_body_lines': loop_body_lines
+                        }
+                        return True, module_name, func_chain
+                    except Exception:
+                        return False, module_name, func_chain
+                return False, module_name, func_chain
+            except Exception:
+                return False, module_name, func_chain
 
-        lines = []
-        loop_iterations = 0
-        max_loop_depth = 0
-        header_hits = []
+        added = []
+        for spec in TARGET_FUNCS:
+            ok, m, f = add_target(spec['module'], spec['func'])
+            if ok:
+                added.append({'module': m, 'func': f})
 
-        for lineno, nhits, t in timings:
-            time_ms = float(t) * float(unit) * 1000.0
-            src_line = get_src_line(file_path, lineno)
+        # Import actual entry module and apply patches
+        mod = importlib.import_module(MODULE_NAME)
+        if PATCHES:
+            _apply_patches(PATCHES)
 
-            # Check if this line is a loop header (for/while statement)
-            is_loop_header = lineno in loop_header_lines
-            # Check if this line is anywhere in a loop body (for depth calculation)
-            loop_depth = loop_body_lines.get(lineno, 0)
+        t0 = time.perf_counter()
+        # Run the actual program under line_profiler using runctx (portable API)
+        globs = {'mod': mod}
+        lp.runctx("mod.main()", globs, {})
+        t1 = time.perf_counter()
 
-            if is_loop_header:
-                # Only count hits on actual loop headers
-                loop_iterations += nhits
-                max_loop_depth = max(max_loop_depth, loop_depth)
-                header_hits.append((lineno, nhits, src_line[:50]))
+        stats = lp.get_stats()
+        unit = getattr(stats, "unit", 1.0) or 1.0
+        out_funcs = []
 
-            lines.append({{
-                "line": int(lineno), 
-                "time_ms": time_ms, 
-                "hits": int(nhits), 
-                "indentation_level": 0,
-                "preview": src_line[:100],
-                "is_loop_header": is_loop_header,
-                "loop_depth": loop_depth
-            }})
+        for key, timings in stats.timings.items():
+            if isinstance(key, tuple) and len(key) == 3:
+                file_path, first_line, func_name = key
+                info = func_info_map.get(key, {})
+                loop_header_lines = info.get('loop_header_lines', set())
+                loop_body_lines = info.get('loop_body_lines', {})
+            else:
+                file_path = "<unknown>"; func_name = "<unknown>"
+                loop_header_lines = set(); loop_body_lines = {}
 
-        debug_info.append(f"  {{func_name}}: {{loop_iterations}} loop iterations, max loop depth: {{max_loop_depth}}")
+            lines = []
+            loop_iterations = 0
+            max_loop_depth = 0
+            for lineno, nhits, t in timings:
+                time_ms = float(t) * float(unit) * 1000.0
+                is_loop_header = lineno in loop_header_lines
+                loop_depth = loop_body_lines.get(lineno, 0)
+                if is_loop_header:
+                    loop_iterations += nhits
+                    max_loop_depth = max(max_loop_depth, loop_depth)
+                lines.append({
+                    "line": int(lineno),
+                    "time_ms": time_ms,
+                    "hits": int(nhits),
+                    "indentation_level": 0,
+                    "preview": "",
+                    "is_loop_header": is_loop_header,
+                    "loop_depth": loop_depth
+                })
 
-        # Log loop header hits for verification
-        if header_hits:
-            debug_info.append(f"  Loop header hits:")
-            for lineno, nhits, preview in header_hits:
-                debug_info.append(f"    Line {{lineno}}: {{nhits}} hits, '{{preview}}'")
-        else:
-            debug_info.append(f"  No loop headers detected for this function")
+            if lines:
+                lines.sort(key=lambda x: x["time_ms"], reverse=True)
+                out_funcs.append({
+                    "file_path": file_path,
+                    "function": func_name,
+                    "timings": lines,
+                    "loop_iterations": loop_iterations,
+                    "max_loop_depth": max_loop_depth
+                })
 
-        if lines:
-            lines.sort(key=lambda x: x["time_ms"], reverse=True)
-            out_funcs.append({{
-                "file_path": file_path,
-                "function": func_name,
-                "timings": lines,
-                "loop_iterations": loop_iterations,
-                "max_loop_depth": max_loop_depth
-            }})
-
-    payload = {{
-        "functions": out_funcs, 
-        "profiled_functions": added, 
-        "total_time_sec": (t1 - t0),
-        "debug_info": debug_info
-    }}
-    print(START, flush=True)
-    print(json.dumps(payload), flush=True)
-    print(END, flush=True)
-    """
-        return textwrap.dedent(code)
+        payload = {
+            "functions": out_funcs,
+            "profiled_functions": added,
+            "total_time_sec": (t1 - t0),
+            "debug_info": debug_info
+        }
+        print(START, flush=True)
+        print(json.dumps(payload), flush=True)
+        print(END, flush=True)
+        """)
+        return header + prologue + "\n" + body
 
     def _persist_line_timings(self, run_id: str, lp_payload: Dict[str, Any]) -> None:
         """Persist line timings for each profiled function."""
@@ -1376,3 +1445,151 @@ class DynamicProfiler:
         except Exception as e:
             debug_info.append(f"Error detecting loops in {file_path}: {e}")
             return set(), {}
+
+
+    def _patch_prologue(self, patches_json: str) -> str:
+        # Defines _apply_patches without auto-executing it.
+        # Preserves filename + first line for profilers/debugger,
+        # pre-injects typing symbols for annotations, and returns the correct function
+        # by matching the expected name from the FQN (avoids grabbing imported callables).
+        import textwrap
+        return textwrap.dedent(f"""\
+        import json, importlib, inspect, sys
+
+        # Preload typing symbols for annotation references (e.g., List, Tuple, Dict)
+        try:
+            import typing as _typing
+            _TYPING_NS = dict(_typing.__dict__)
+        except Exception:
+            _TYPING_NS = {{}}
+
+        PATCHES = json.loads({repr(patches_json)})
+
+        def _compile_func(src, filename, first_lineno, expected_name):
+            prefix = "\\n" * max(0, int(first_lineno or 1) - 1)
+            code_str = prefix + (src or "")
+            code_obj = compile(code_str, filename or "<patched>", "exec")
+            ns = {{}}
+            ns.update(_TYPING_NS)
+            exec(code_obj, ns, ns)
+
+            # 1) Exact name match in namespace
+            cand = ns.get(expected_name)
+            if inspect.isfunction(cand) or inspect.iscoroutinefunction(cand):
+                return cand
+
+            # 2) Any function whose __name__ matches expected_name
+            for v in ns.values():
+                if (inspect.isfunction(v) or inspect.iscoroutinefunction(v)) and getattr(v, "__name__", None) == expected_name:
+                    return v
+
+            # 3) Fallback: any function compiled from this code chunk
+            funcs = [v for v in ns.values() if inspect.isfunction(v) or inspect.iscoroutinefunction(v)]
+            if funcs:
+                from_this_file = [f for f in funcs if getattr(f, "__code__", None) and f.__code__.co_filename == (filename or "<patched>")]
+                if from_this_file:
+                    return from_this_file[-1]
+                return funcs[-1]
+            return None
+
+        def _apply_patches(patches):
+            for p in patches:
+                fqn = p.get("fqn") or ""
+                src = p.get("src")
+                is_method = bool(p.get("is_method"))
+                is_staticmethod = bool(p.get("is_staticmethod"))
+                is_classmethod_flag = bool(p.get("is_classmethod"))
+                is_property_flag = bool(p.get("is_property"))
+                file_path = p.get("abs_file_path") or p.get("file_path") or "<string>"
+                start_line = int(p.get("start_line") or 1)
+
+                parts = fqn.split(".")
+                expected_name = parts[-1] if parts else None
+
+                try:
+                    new_fn = _compile_func(src, file_path, start_line, expected_name)
+                    if new_fn is None:
+                        raise RuntimeError("No function object found in replacement_source")
+
+                    if is_method:
+                        module_name = ".".join(parts[:-2]); cls_name = parts[-2]; attr = parts[-1]
+                    else:
+                        module_name = ".".join(parts[:-1]); cls_name = None; attr = parts[-1]
+
+                    mod = importlib.import_module(module_name) if module_name else None
+                    target = getattr(mod, cls_name) if cls_name else mod
+
+                    if is_staticmethod:
+                        patched = staticmethod(new_fn)
+                    elif is_classmethod_flag:
+                        patched = classmethod(new_fn)
+                    elif is_property_flag:
+                        orig = getattr(target, attr, None)
+                        if isinstance(orig, property):
+                            patched = property(new_fn, orig.fset, orig.fdel, new_fn.__doc__ or getattr(orig, "__doc__", None))
+                        else:
+                            patched = new_fn
+                    else:
+                        patched = new_fn
+
+                    setattr(target, attr, patched)
+                except Exception as _e:
+                    print({repr(self.PATCH_ERR_MARK)} + json.dumps({{"fqn": fqn, "error": str(_e)}}), flush=True)
+                    raise
+        """)
+
+    def _extract_patch_errors(self, text: str):
+        out = []
+        for line in (text or "").splitlines():
+            if line.startswith(self.PATCH_ERR_MARK):
+                try:
+                    out.append(json.loads(line[len(self.PATCH_ERR_MARK):]))
+                except Exception:
+                    out.append({"fqn": None, "error": line})
+        return out
+
+    def _build_warmup_wrapper_code(self, entry_type: str, target: str, argv0: str, args: List[str], patches_json: str) -> str:
+        project_dir = str(self.project.directory.resolve())
+        prologue = self._patch_prologue(patches_json)
+        code = f"""
+        import sys, runpy
+
+        PROJECT_DIR = {repr(project_dir)}
+        if PROJECT_DIR not in sys.path:
+            sys.path.insert(0, PROJECT_DIR)
+
+        ENTRY_TYPE = {repr(entry_type)}
+        ENTRY_TARGET = {repr(target)}
+        ENTRY_ARGS = {repr(list(args or []))}
+        ARGV0 = {repr(argv0)}
+
+        sys.argv = [ARGV0] + list(ENTRY_ARGS)
+
+        # ----- PATCHES BEGIN -----
+        {prologue}
+        # ----- PATCHES END -----
+
+        if ENTRY_TYPE == "script":
+            runpy.run_path(ENTRY_TARGET, run_name="__main__")
+        else:
+            runpy.run_module(ENTRY_TARGET, run_name="__main__")
+        """
+        return textwrap.dedent(code)
+
+    def _build_patch_only_wrapper_code(self, patches_json: str) -> str:
+        project_dir = str(self.project.directory.resolve())
+        header = textwrap.dedent(f"""\
+        import sys
+        PROJECT_DIR = {repr(project_dir)}
+        if PROJECT_DIR not in sys.path:
+            sys.path.insert(0, PROJECT_DIR)
+        """)
+        prologue = self._patch_prologue(patches_json)
+        body = textwrap.dedent("""\
+        # Apply patches and exit
+        if PATCHES:
+            _apply_patches(PATCHES)
+        """)
+        wrapper = header + prologue + "\n" + body + "\n"
+        compile(wrapper, "<patch_only_wrapper>", "exec")
+        return wrapper
