@@ -33,7 +33,6 @@ def main() -> None:
     projects = ca_pipe.get_projects()
     for project in projects:
 
-
         project_id = project.project_info["id"]
 
         def reprofile_and_refresh(bottlenecks: List[Dict[str, Any]], session_id: str, round_idx: int, model: str) -> Dict[str, Any]:
@@ -43,14 +42,15 @@ def main() -> None:
                 bottlenecks=bottlenecks,
                 session_id=session_id,
                 llm_model=model,
-                round_idx=round_idx
+                round_idx=round_idx,
+                embedding_pipe=embedding_pipe,  # pass embedding pipeline so re-scoring happens post re-profile
             )
             if not run:
                 # Failed (patch error or runtime crash). Return patched FQNs for logging.
                 patched_fqns = [b.get("fqn") for b in bottlenecks if isinstance(b, dict) and (b.get("replacement_source") or "").strip().startswith("def ")]
                 return {"ok": False, "error": "patched run failed", "patched_fqns": patched_fqns}
 
-            # Build a fresh evidence pack using the latest DB state (dynamic + static)
+            # Build a fresh evidence pack using the latest DB state (dynamic + static + updated embedding predictions)
             new_evidence = assemble_evidence_pack(project, db_path)
             patched_fqns = [b.get("fqn") for b in bottlenecks if isinstance(b, dict)]
             return {
@@ -61,7 +61,7 @@ def main() -> None:
                 "patched_fqns": patched_fqns
             }
 
-
+        # Baseline scoring before first evidence pack.
         print(embedding_pipe.score_project(project))
         ea = assemble_evidence_pack(project, db_path)
 
