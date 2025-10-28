@@ -15,7 +15,7 @@ Your job:
 """
 
 
-def get_user_prompt(evidence_pack: str) -> str:
+def get_user_prompt(evidencepack: str) -> str:
     return f"""
 You will receive an evidence pack with:
 - All functions with static/dynamic metrics
@@ -40,7 +40,8 @@ Evidence Pack:
 {evidence_pack}
 """
 
-def get_source_code_prompt( code_bundle: Dict[str, str]) -> str:
+
+def get_source_code_prompt(code_bundle: Dict[str, str]) -> str:
     code_section = "\n\n".join(
         f"FQN: {fqn}\n--- CODE START ---\n{src}\n--- CODE END ---"
         for fqn, src in code_bundle.items()
