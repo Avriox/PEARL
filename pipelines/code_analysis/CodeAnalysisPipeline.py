@@ -134,11 +134,12 @@ class CodeAnalysisPipeline:
     def get_projects(self):
         return self.projects
 
-    def rerun_dynamic_analysis_for_project(self, project: "Project", bottlenecks: List[Dict[str, Any]], session_id: str = None, llm_model: str = None, round_idx: int = 0):
+    def rerun_dynamic_analysis_for_project(self, project: "Project", bottlenecks: List[Dict[str, Any]], session_id: str = None, llm_model: str = None, round_idx: int = 0, embedding_pipe=None):
         """
         - For each bottleneck with replacement_source: insert a new version row with recomputed static features.
         - Build patch specs (with file_path+start_line) so dynamic profilers attribute time correctly.
         - Re-run dynamic profiling with patches; then hotspots.
+        - If an EmbeddingPipeline is provided, re-score the project immediately so embedding_predictions reflect the patched code.
         """
         logging.info(f"=== Re-running dynamic analysis for {project.project_info.get('name')} with patches ===")
         project_id = project.project_info.get("id", "unknown")
@@ -204,6 +205,7 @@ class CodeAnalysisPipeline:
             new_version = int(prev.get("version", 0)) + 1
 
             # Insert new versioned row (no file edits)
+            # TODO is_slow should not be taken from prev but should be assumed to be 0 now.
             self.db.execute_write_sql("""
                                       INSERT INTO functions (
                                           fqn, project_id, function_name, module_name, class_name, source_code, signature,
@@ -260,4 +262,14 @@ class CodeAnalysisPipeline:
             return None
 
         hotspot_analyzer.compute_hotspots(project_id, run.run_id, top_n=50)
+
+        # Immediately re-score the project so embedding_predictions reflect the patched code
+        try:
+            if embedding_pipe is not None:
+                embedding_pipe.score_project(project)
+            else:
+                logging.info("No embedding pipeline provided; skipping re-scoring after patched run.")
+        except Exception as e:
+            logging.warning(f"Re-scoring failed after patched run for {project_id}: {e}")
+
         return run
