@@ -1,0 +1,392 @@
+[
+  {
+    "c0": "pyflakes.checker.Checker.YIELD",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def YIELD(self, node):\n        if isinstance(self.scope, (ClassScope, ModuleScope)):\n            self.report(messages.YieldOutsideFunction, node)\n            return\n\n        self.handleNode(node.value, node)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.isDocstring",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def isDocstring(self, node):\n        \"\"\"\n        Determine if the given node is a docstring, as long as it is at the\n        correct place in the node tree.\n        \"\"\"\n        return (\n            isinstance(node, ast.Expr) and\n            isinstance(node.value, ast.Constant) and\n            isinstance(node.value.value, str)\n        )"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.NAME",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def NAME(self, node):\n        \"\"\"\n        Handle occurrence of Name (which can be a load/store/delete access.)\n        \"\"\"\n        # Locate the name in locals / function / globals scopes.\n        if isinstance(node.ctx, ast.Load):\n            self.handleNodeLoad(node, self.getParent(node))\n            if (node.id == 'locals' and isinstance(self.scope, FunctionScope) and\n                    isinstance(node._pyflakes_parent, ast.Call)):\n                # we are doing locals() call in current scope\n                self.scope.usesLocals = True\n        elif isinstance(node.ctx, ast.Store):\n            self.handleNodeStore(node)\n        elif isinstance(node.ctx, ast.Del):\n            self.handleNodeDelete(node)\n        else:\n            # Unknown context\n            raise RuntimeError(f\"Got impossible expression context: {node.ctx!r}\")"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.IMPORTFROM",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def IMPORTFROM(self, node):\n        if node.module == '__future__':\n            if not self.futuresAllowed:\n                self.report(messages.LateFutureImport, node)\n        else:\n            self.futuresAllowed = False\n\n        module = ('.' * node.level) + (node.module or '')\n\n        for alias in node.names:\n            name = alias.asname or alias.name\n            if node.module == '__future__':\n                importation = FutureImportation(name, node, self.scope)\n                if alias.name not in __future__.all_feature_names:\n                    self.report(messages.FutureFeatureNotDefined,\n                                node, alias.name)\n                if alias.name == 'annotations':\n                    self.annotationsFutureEnabled = True\n            elif alias.name == '*':\n                if not isinstance(self.scope, ModuleScope):\n                    self.report(messages.ImportStarNotPermitted,\n                                node, module)\n                    continue\n\n                self.scope.importStarred = True\n                self.report(messages.ImportStarUsed, node, module)\n                importation = StarImportation(module, node)\n            else:\n                importation = ImportationFrom(name, node,\n                                              module, alias.name)\n            self.addBinding(node, importation)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.ASSERT",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def ASSERT(self, node):\n        if isinstance(node.test, ast.Tuple) and node.test.elts != []:\n            self.report(messages.AssertTuple, node)\n        self.handleChildren(node)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker._getAncestor",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def _getAncestor(self, node, ancestor_type):\n        parent = node\n        while True:\n            if parent is self.root:\n                return None\n            parent = self.getParent(parent)\n            if isinstance(parent, ancestor_type):\n                return parent"
+  },
+  {
+    "c0": "pyflakes.checker._is_typing",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def _is_typing(node, typing_attr, scope_stack):\n    \"\"\"\n    Determine whether `node` represents the member of a typing module specified\n    by `typing_attr`.\n\n    This is used as part of working out whether we are within a type annotation\n    context.\n    \"\"\"\n    return _is_typing_helper(node, lambda x: x == typing_attr, scope_stack)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.ARGUMENTS",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def ARGUMENTS(self, node):\n        self.handleChildren(node, omit=('defaults', 'kw_defaults'))"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.CONSTANT",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def CONSTANT(self, node):\n        if isinstance(node.value, str) and self._in_annotation:\n            fn = functools.partial(\n                self.handleStringAnnotation,\n                node.value,\n                node,\n                node.lineno,\n                node.col_offset,\n                messages.ForwardAnnotationSyntaxError,\n            )\n            self.deferFunction(fn)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.JOINEDSTR",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def JOINEDSTR(self, node):\n        if (\n                # the conversion / etc. flags are parsed as f-strings without\n                # placeholders\n                not self._in_fstring and\n                not any(isinstance(x, ast.FormattedValue) for x in node.values)\n        ):\n            self.report(messages.FStringMissingPlaceholders, node)\n\n        self._in_fstring, orig = True, self._in_fstring\n        try:\n            self.handleChildren(node)\n        finally:\n            self._in_fstring = orig"
+  },
+  {
+    "c0": "pyflakes.checker._is_singleton",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def _is_singleton(node):  # type: (ast.AST) -> bool\n    return (\n        isinstance(node, ast.Constant) and\n        isinstance(node.value, (bool, type(Ellipsis), type(None)))\n    )"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.TRY",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def TRY(self, node):\n        handler_names = []\n        # List the exception handlers\n        for i, handler in enumerate(node.handlers):\n            if isinstance(handler.type, ast.Tuple):\n                for exc_type in handler.type.elts:\n                    handler_names.append(getNodeName(exc_type))\n            elif handler.type:\n                handler_names.append(getNodeName(handler.type))\n\n            if handler.type is None and i < len(node.handlers) - 1:\n                self.report(messages.DefaultExceptNotLast, handler)\n        # Memorize the except handlers and process the body\n        self.exceptHandlers.append(handler_names)\n        for child in node.body:\n            self.handleNode(child, node)\n        self.exceptHandlers.pop()\n        # Process the other nodes: \"except:\", \"else:\", \"finally:\"\n        self.handleChildren(node, omit='body')"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.differentForks",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def differentForks(self, lnode, rnode):\n        \"\"\"True, if lnode and rnode are located on different forks of IF/TRY\"\"\"\n        ancestor = self.getCommonAncestor(lnode, rnode, self.root)\n        parts = getAlternatives(ancestor)\n        if parts:\n            for items in parts:\n                if self.descendantOf(lnode, items, ancestor) ^ \\\n                   self.descendantOf(rnode, items, ancestor):\n                    return True\n        return False"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.handleNodeStore",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def handleNodeStore(self, node):\n        name = getNodeName(node)\n        if not name:\n            return\n        # if the name hasn't already been defined in the current scope\n        if isinstance(self.scope, FunctionScope) and name not in self.scope:\n            # for each function or module scope above us\n            for scope in self.scopeStack[:-1]:\n                if not isinstance(scope, (FunctionScope, ModuleScope)):\n                    continue\n                # if the name was defined in that scope, and the name has\n                # been accessed already in the current scope, and hasn't\n                # been declared global\n                used = name in scope and scope[name].used\n                if used and used[0] is self.scope and name not in self.scope.globals:\n                    # then it's probably a mistake\n                    self.report(messages.UndefinedLocal,\n                                scope[name].used[1], name, scope[name].source)\n                    break\n\n        parent_stmt = self.getParent(node)\n        if isinstance(parent_stmt, ast.AnnAssign) and parent_stmt.value is None:\n            binding = Annotation(name, node)\n        elif isinstance(parent_stmt, (FOR_TYPES, ast.comprehension)) or (\n                parent_stmt != node._pyflakes_parent and\n                not self.isLiteralTupleUnpacking(parent_stmt)):\n            binding = Binding(name, node)\n        elif (\n                name == '__all__' and\n                isinstance(self.scope, ModuleScope) and\n                isinstance(\n                    node._pyflakes_parent,\n                    (ast.Assign, ast.AugAssign, ast.AnnAssign)\n                )\n        ):\n            binding = ExportBinding(name, node._pyflakes_parent, self.scope)\n        elif isinstance(parent_stmt, ast.NamedExpr):\n            binding = NamedExprAssignment(name, node)\n        else:\n            binding = Assignment(name, node)\n        self.addBinding(node, binding)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.handleNodeLoad",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def handleNodeLoad(self, node, parent):\n        name = getNodeName(node)\n        if not name:\n            return\n\n        # only the following can access class scoped variables (since classes\n        # aren't really a scope)\n        # - direct accesses (not within a nested scope)\n        # - generators\n        # - type annotations (for generics, etc.)\n        can_access_class_vars = None\n        importStarred = None\n\n        # try enclosing function scopes and global scope\n        for scope in self.scopeStack[-1::-1]:\n            if isinstance(scope, ClassScope):\n                if name == '__class__':\n                    return\n                elif can_access_class_vars is False:\n                    # only generators used in a class scope can access the\n                    # names of the class. this is skipped during the first\n                    # iteration\n                    continue\n\n            binding = scope.get(name, None)\n            if isinstance(binding, Annotation) and not self._in_postponed_annotation:\n                scope[name].used = (self.scope, node)\n                continue\n\n            if name == 'print' and isinstance(binding, Builtin):\n                if (isinstance(parent, ast.BinOp) and\n                        isinstance(parent.op, ast.RShift)):\n                    self.report(messages.InvalidPrintSyntax, node)\n\n            try:\n                scope[name].used = (self.scope, node)\n\n                # if the name of SubImportation is same as\n                # alias of other Importation and the alias\n                # is used, SubImportation also should be marked as used.\n                n = scope[name]\n                if isinstance(n, Importation) and n._has_alias():\n                    try:\n                        scope[n.fullName].used = (self.scope, node)\n                    except KeyError:\n                        pass\n            except KeyError:\n                pass\n            else:\n                return\n\n            importStarred = importStarred or scope.importStarred\n\n            if can_access_class_vars is not False:\n                can_access_class_vars = isinstance(\n                    scope, (TypeScope, GeneratorScope),\n                )\n\n        if importStarred:\n            from_list = []\n\n            for scope in self.scopeStack[-1::-1]:\n                for binding in scope.values():\n                    if isinstance(binding, StarImportation):\n                        # mark '*' imports as used for each scope\n                        binding.used = (self.scope, node)\n                        from_list.append(binding.fullName)\n\n            # report * usage, with a list of possible sources\n            from_list = ', '.join(sorted(from_list))\n            self.report(messages.ImportStarUsage, node, name, from_list)\n            return\n\n        if name == '__path__' and os.path.basename(self.filename) == '__init__.py':\n            # the special name __path__ is valid only in packages\n            return\n\n        if name in DetectClassScopedMagic.names and isinstance(self.scope, ClassScope):\n            return\n\n        # protected with a NameError handler?\n        if 'NameError' not in self.exceptHandlers[-1]:\n            self.report(messages.UndefinedName, node, name)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker._run_deferred",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def _run_deferred(self):\n        orig = (self.scopeStack, self.offset)\n\n        while self._deferred:\n            handler, scope, offset = self._deferred.popleft()\n            self.scopeStack, self.offset = scope, offset\n            handler()\n\n        self.scopeStack, self.offset = orig"
+  },
+  {
+    "c0": "pyflakes.checker._is_name_or_attr",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def _is_name_or_attr(node, name):  # type: (ast.AST, str) -> bool\n    return (\n        (isinstance(node, ast.Name) and node.id == name) or\n        (isinstance(node, ast.Attribute) and node.attr == name)\n    )"
+  },
+  {
+    "c0": "pyflakes.checker.FunctionScope.unused_assignments",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def unused_assignments(self):\n        \"\"\"\n        Return a generator for the assignments which have not been used.\n        \"\"\"\n        for name, binding in self.items():\n            if (not binding.used and\n                    name != '_' and  # see issue #202\n                    name not in self.globals and\n                    not self.usesLocals and\n                    isinstance(binding, Assignment)):\n                yield name, binding"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.DICT",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def DICT(self, node):\n        # Complain if there are duplicate keys with different values\n        # If they have the same value it's not going to cause potentially\n        # unexpected behaviour so we'll not complain.\n        keys = [\n            convert_to_value(key) for key in node.keys\n        ]\n\n        key_counts = collections.Counter(keys)\n        duplicate_keys = [\n            key for key, count in key_counts.items()\n            if count > 1\n        ]\n\n        for key in duplicate_keys:\n            key_indices = [i for i, i_key in enumerate(keys) if i_key == key]\n\n            values = collections.Counter(\n                convert_to_value(node.values[index])\n                for index in key_indices\n            )\n            if any(count == 1 for value, count in values.items()):\n                for key_index in key_indices:\n                    key_node = node.keys[key_index]\n                    if isinstance(key, VariableKey):\n                        self.report(messages.MultiValueRepeatedKeyVariable,\n                                    key_node,\n                                    key.name)\n                    else:\n                        self.report(\n                            messages.MultiValueRepeatedKeyLiteral,\n                            key_node,\n                            key,\n                        )\n        self.handleChildren(node)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.CALL",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def CALL(self, node):\n        if (\n                isinstance(node.func, ast.Attribute) and\n                isinstance(node.func.value, ast.Constant) and\n                isinstance(node.func.value.value, str) and\n                node.func.attr == 'format'\n        ):\n            self._handle_string_dot_format(node)\n\n        omit = []\n        annotated = []\n        not_annotated = []\n\n        if (\n            _is_typing(node.func, 'cast', self.scopeStack) and\n            len(node.args) >= 1\n        ):\n            with self._enter_annotation():\n                self.handleNode(node.args[0], node)\n\n        elif _is_typing(node.func, 'TypeVar', self.scopeStack):\n\n            # TypeVar(\"T\", \"int\", \"str\")\n            omit += [\"args\"]\n            annotated += [arg for arg in node.args[1:]]\n\n            # TypeVar(\"T\", bound=\"str\")\n            omit += [\"keywords\"]\n            annotated += [k.value for k in node.keywords if k.arg == \"bound\"]\n            not_annotated += [\n                (k, [\"value\"] if k.arg == \"bound\" else None)\n                for k in node.keywords\n            ]\n\n        elif _is_typing(node.func, \"TypedDict\", self.scopeStack):\n            # TypedDict(\"a\", {\"a\": int})\n            if len(node.args) > 1 and isinstance(node.args[1], ast.Dict):\n                omit += [\"args\"]\n                annotated += node.args[1].values\n                not_annotated += [\n                    (arg, [\"values\"] if i == 1 else None)\n                    for i, arg in enumerate(node.args)\n                ]\n\n            # TypedDict(\"a\", a=int)\n            omit += [\"keywords\"]\n            annotated += [k.value for k in node.keywords]\n            not_annotated += [(k, [\"value\"]) for k in node.keywords]\n\n        elif _is_typing(node.func, \"NamedTuple\", self.scopeStack):\n            # NamedTuple(\"a\", [(\"a\", int)])\n            if (\n                len(node.args) > 1 and\n                isinstance(node.args[1], (ast.Tuple, ast.List)) and\n                all(isinstance(x, (ast.Tuple, ast.List)) and\n                    len(x.elts) == 2 for x in node.args[1].elts)\n            ):\n                omit += [\"args\"]\n                annotated += [elt.elts[1] for elt in node.args[1].elts]\n                not_annotated += [(elt.elts[0], None) for elt in node.args[1].elts]\n                not_annotated += [\n                    (arg, [\"elts\"] if i == 1 else None)\n                    for i, arg in enumerate(node.args)\n                ]\n                not_annotated += [(elt, \"elts\") for elt in node.args[1].elts]\n\n            # NamedTuple(\"a\", a=int)\n            omit += [\"keywords\"]\n            annotated += [k.value for k in node.keywords]\n            not_annotated += [(k, [\"value\"]) for k in node.keywords]\n\n        if omit:\n            with self._enter_annotation(AnnotationState.NONE):\n                for na_node, na_omit in not_annotated:\n                    self.handleChildren(na_node, omit=na_omit)\n                self.handleChildren(node, omit=omit)\n\n            with self._enter_annotation():\n                for annotated_node in annotated:\n                    self.handleNode(annotated_node, node)\n        else:\n            self.handleChildren(node)"
+  },
+  {
+    "c0": "pyflakes.checker.ImportationFrom.__init__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def __init__(self, name, source, module, real_name=None):\n        self.module = module\n        self.real_name = real_name or name\n\n        if module.endswith('.'):\n            full_name = module + self.real_name\n        else:\n            full_name = module + '.' + self.real_name\n\n        super().__init__(name, source, full_name)"
+  },
+  {
+    "c0": "pyflakes.checker.Importation._has_alias",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def _has_alias(self):\n        \"\"\"Return whether importation needs an as clause.\"\"\"\n        return not self.fullName.split('.')[-1] == self.name"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.SUBSCRIPT",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def SUBSCRIPT(self, node):\n        if _is_name_or_attr(node.value, 'Literal'):\n            with self._enter_annotation(AnnotationState.NONE):\n                self.handleChildren(node)\n        elif _is_name_or_attr(node.value, 'Annotated'):\n            self.handleNode(node.value, node)\n\n            # py39+\n            if isinstance(node.slice, ast.Tuple):\n                slice_tuple = node.slice\n            # <py39\n            elif (\n                    isinstance(node.slice, ast.Index) and\n                    isinstance(node.slice.value, ast.Tuple)\n            ):\n                slice_tuple = node.slice.value\n            else:\n                slice_tuple = None\n\n            # not a multi-arg `Annotated`\n            if slice_tuple is None or len(slice_tuple.elts) < 2:\n                self.handleNode(node.slice, node)\n            else:\n                # the first argument is the type\n                self.handleNode(slice_tuple.elts[0], node)\n                # the rest of the arguments are not\n                with self._enter_annotation(AnnotationState.NONE):\n                    for arg in slice_tuple.elts[1:]:\n                        self.handleNode(arg, node)\n\n            self.handleNode(node.ctx, node)\n        else:\n            if _is_any_typing_member(node.value, self.scopeStack):\n                with self._enter_annotation():\n                    self.handleChildren(node)\n            else:\n                self.handleChildren(node)"
+  },
+  {
+    "c0": "pyflakes.checker.in_annotation",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def in_annotation(func):\n    @functools.wraps(func)\n    def in_annotation_func(self, *args, **kwargs):\n        with self._enter_annotation():\n            return func(self, *args, **kwargs)\n    return in_annotation_func"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.IF",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def IF(self, node):\n        if isinstance(node.test, ast.Tuple) and node.test.elts != []:\n            self.report(messages.IfTuple, node)\n        self.handleChildren(node)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.deferFunction",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def deferFunction(self, callable):\n        \"\"\"\n        Schedule a function handler to be called just before completion.\n\n        This is used for handling function bodies, which must be deferred\n        because code later in the file might modify the global scope. When\n        `callable` is called, the scope at the time this is called will be\n        restored, however it will contain any new bindings added to it.\n        \"\"\"\n        self._deferred.append((callable, self.scopeStack[:], self.offset))"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.getScopeNode",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def getScopeNode(self, node):\n        return self._getAncestor(node, tuple(Checker._ast_node_scope.keys()))"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.LAMBDA",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def LAMBDA(self, node):\n        args = []\n        annotations = []\n\n        for arg in node.args.posonlyargs:\n            args.append(arg.arg)\n            annotations.append(arg.annotation)\n        for arg in node.args.args + node.args.kwonlyargs:\n            args.append(arg.arg)\n            annotations.append(arg.annotation)\n        defaults = node.args.defaults + node.args.kw_defaults\n\n        has_annotations = not isinstance(node, ast.Lambda)\n\n        for arg_name in ('vararg', 'kwarg'):\n            wildcard = getattr(node.args, arg_name)\n            if not wildcard:\n                continue\n            args.append(wildcard.arg)\n            if has_annotations:\n                annotations.append(wildcard.annotation)\n\n        if has_annotations:\n            annotations.append(node.returns)\n\n        if len(set(args)) < len(args):\n            for (idx, arg) in enumerate(args):\n                if arg in args[:idx]:\n                    self.report(messages.DuplicateArgument, node, arg)\n\n        for annotation in annotations:\n            self.handleAnnotation(annotation, node)\n\n        for default in defaults:\n            self.handleNode(default, node)\n\n        def runFunction():\n            with self.in_scope(FunctionScope):\n                self.handleChildren(\n                    node,\n                    omit=('decorator_list', 'returns', 'type_params'),\n                )\n\n        self.deferFunction(runFunction)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.getCommonAncestor",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def getCommonAncestor(self, lnode, rnode, stop):\n        if (\n                stop in (lnode, rnode) or\n                not (\n                    hasattr(lnode, '_pyflakes_parent') and\n                    hasattr(rnode, '_pyflakes_parent')\n                )\n        ):\n            return None\n        if lnode is rnode:\n            return lnode\n\n        if (lnode._pyflakes_depth > rnode._pyflakes_depth):\n            return self.getCommonAncestor(lnode._pyflakes_parent, rnode, stop)\n        if (lnode._pyflakes_depth < rnode._pyflakes_depth):\n            return self.getCommonAncestor(lnode, rnode._pyflakes_parent, stop)\n        return self.getCommonAncestor(\n            lnode._pyflakes_parent,\n            rnode._pyflakes_parent,\n            stop,\n        )"
+  },
+  {
+    "c0": "pyflakes.checker._is_typing_helper",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def _is_typing_helper(node, is_name_match_fn, scope_stack):\n    \"\"\"\n    Internal helper to determine whether or not something is a member of a\n    typing module. This is used as part of working out whether we are within a\n    type annotation context.\n\n    Note: you probably don't want to use this function directly. Instead see the\n    utils below which wrap it (`_is_typing` and `_is_any_typing_member`).\n    \"\"\"\n\n    def _bare_name_is_attr(name):\n        for scope in reversed(scope_stack):\n            if name in scope:\n                return (\n                    isinstance(scope[name], ImportationFrom) and\n                    scope[name].module in TYPING_MODULES and\n                    is_name_match_fn(scope[name].real_name)\n                )\n\n        return False\n\n    def _module_scope_is_typing(name):\n        for scope in reversed(scope_stack):\n            if name in scope:\n                return (\n                    isinstance(scope[name], Importation) and\n                    scope[name].fullName in TYPING_MODULES\n                )\n\n        return False\n\n    return (\n        (\n            isinstance(node, ast.Name) and\n            _bare_name_is_attr(node.id)\n        ) or (\n            isinstance(node, ast.Attribute) and\n            isinstance(node.value, ast.Name) and\n            _module_scope_is_typing(node.value.id) and\n            is_name_match_fn(node.attr)\n        )\n    )"
+  },
+  {
+    "c0": "pyflakes.checker.parse_percent_format",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def parse_percent_format(s):\n    \"\"\"Parses the string component of a `'...' % ...` format call\n\n    Copied from https://github.com/asottile/pyupgrade at v1.20.1\n    \"\"\"\n\n    def _parse_inner():\n        string_start = 0\n        string_end = 0\n        in_fmt = False\n\n        i = 0\n        while i < len(s):\n            if not in_fmt:\n                try:\n                    i = s.index('%', i)\n                except ValueError:  # no more % fields!\n                    yield s[string_start:], None\n                    return\n                else:\n                    string_end = i\n                    i += 1\n                    in_fmt = True\n            else:\n                key_match = MAPPING_KEY_RE.match(s, i)\n                if key_match:\n                    key = key_match.group(1)\n                    i = key_match.end()\n                else:\n                    key = None\n\n                conversion_flag_match = _must_match(CONVERSION_FLAG_RE, s, i)\n                conversion_flag = conversion_flag_match.group() or None\n                i = conversion_flag_match.end()\n\n                width_match = _must_match(WIDTH_RE, s, i)\n                width = width_match.group() or None\n                i = width_match.end()\n\n                precision_match = _must_match(PRECISION_RE, s, i)\n                precision = precision_match.group() or None\n                i = precision_match.end()\n\n                # length modifier is ignored\n                i = _must_match(LENGTH_RE, s, i).end()\n\n                try:\n                    conversion = s[i]\n                except IndexError:\n                    raise ValueError('end-of-string while parsing format')\n                i += 1\n\n                fmt = (key, conversion_flag, width, precision, conversion)\n                yield s[string_start:string_end], fmt\n\n                in_fmt = False\n                string_start = i\n\n        if in_fmt:\n            raise ValueError('end-of-string while parsing format')\n\n    return tuple(_parse_inner())"
+  },
+  {
+    "c0": "pyflakes.reporter.Reporter.__init__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/reporter.py",
+    "c2": "    def __init__(self, warningStream, errorStream):\n        \"\"\"\n        Construct a L{Reporter}.\n\n        @param warningStream: A file-like object where warnings will be\n            written to.  The stream's C{write} method must accept unicode.\n            C{sys.stdout} is a good value.\n        @param errorStream: A file-like object where error output will be\n            written to.  The stream's C{write} method must accept unicode.\n            C{sys.stderr} is a good value.\n        \"\"\"\n        self._stdout = warningStream\n        self._stderr = errorStream"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.EXCEPTHANDLER",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def EXCEPTHANDLER(self, node):\n        if node.name is None:\n            self.handleChildren(node)\n            return\n\n        # If the name already exists in the scope, modify state of existing\n        # binding.\n        if node.name in self.scope:\n            self.handleNodeStore(node)\n\n        # 3.x: the name of the exception, which is not a Name node, but a\n        # simple string, creates a local that is only bound within the scope of\n        # the except: block. As such, temporarily remove the existing binding\n        # to more accurately determine if the name is used in the except:\n        # block.\n\n        try:\n            prev_definition = self.scope.pop(node.name)\n        except KeyError:\n            prev_definition = None\n\n        self.handleNodeStore(node)\n        self.handleChildren(node)\n\n        # See discussion on https://github.com/PyCQA/pyflakes/pull/59\n\n        # We're removing the local name since it's being unbound after leaving\n        # the except: block and it's always unbound if the except: block is\n        # never entered. This will cause an \"undefined name\" error raised if\n        # the checked code tries to use the name afterwards.\n        #\n        # Unless it's been removed already. Then do nothing.\n\n        try:\n            binding = self.scope.pop(node.name)\n        except KeyError:\n            pass\n        else:\n            if not binding.used:\n                self.report(messages.UnusedVariable, node, node.name)\n\n        # Restore.\n        if prev_definition:\n            self.scope[node.name] = prev_definition"
+  },
+  {
+    "c0": "pyflakes.checker._is_any_typing_member",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def _is_any_typing_member(node, scope_stack):\n    \"\"\"\n    Determine whether `node` represents any member of a typing module.\n\n    This is used as part of working out whether we are within a type annotation\n    context.\n    \"\"\"\n    return _is_typing_helper(node, lambda x: True, scope_stack)"
+  },
+  {
+    "c0": "main.main",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/main.py",
+    "c2": "def main():\n    base = os.path.join(os.path.dirname(__file__), \"pyflakes\")\n\n    files_to_check = [\n        os.path.join(base, \"checker.py\"),\n        os.path.join(base, \"messages.py\"),\n        os.path.join(base, \"reporter.py\"),\n        os.path.join(base, \"api.py\"),\n    ]\n\n    devnull = open(os.devnull, \"w\")\n    reporter = Reporter(devnull, devnull)\n\n    for _ in range(2):  # adjust upward until runtime feels good\n        for f in files_to_check:\n            checkPath(f, reporter)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.descendantOf",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def descendantOf(self, node, ancestors, stop):\n        for a in ancestors:\n            if self.getCommonAncestor(node, a, stop):\n                return True\n        return False"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.checkDeadScopes",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def checkDeadScopes(self):\n        \"\"\"\n        Look at scopes which have been fully examined and report names in them\n        which were imported but unused.\n        \"\"\"\n        for scope in self.deadScopes:\n            if isinstance(scope, (ClassScope, FunctionScope)):\n                for name, node in scope.indirect_assignments.items():\n                    self.report(messages.UnusedIndirectAssignment, node, name)\n\n            # imports in classes are public members\n            if isinstance(scope, ClassScope):\n                continue\n\n            if isinstance(scope, FunctionScope):\n                for name, binding in scope.unused_assignments():\n                    self.report(messages.UnusedVariable, binding.source, name)\n                for name, binding in scope.unused_annotations():\n                    self.report(messages.UnusedAnnotation, binding.source, name)\n\n            all_binding = scope.get('__all__')\n            if all_binding and not isinstance(all_binding, ExportBinding):\n                all_binding = None\n\n            if all_binding:\n                all_names = set(all_binding.names)\n                undefined = [\n                    name for name in all_binding.names\n                    if name not in scope\n                ]\n            else:\n                all_names = undefined = []\n\n            if undefined:\n                if not scope.importStarred and \\\n                   os.path.basename(self.filename) != '__init__.py':\n                    # Look for possible mistakes in the export list\n                    for name in undefined:\n                        self.report(messages.UndefinedExport,\n                                    scope['__all__'].source, name)\n\n                # mark all import '*' as used by the undefined in __all__\n                if scope.importStarred:\n                    from_list = []\n                    for binding in scope.values():\n                        if isinstance(binding, StarImportation):\n                            binding.used = all_binding\n                            from_list.append(binding.fullName)\n                    # report * usage, with a list of possible sources\n                    from_list = ', '.join(sorted(from_list))\n                    for name in undefined:\n                        self.report(messages.ImportStarUsage,\n                                    scope['__all__'].source, name, from_list)\n\n            # Look for imported names that aren't used.\n            for value in scope.values():\n                if isinstance(value, Importation):\n                    used = value.used or value.name in all_names\n                    if not used:\n                        messg = messages.UnusedImport\n                        self.report(messg, value.source, str(value))\n                    for node in value.redefined:\n                        if isinstance(self.getParent(node), FOR_TYPES):\n                            messg = messages.ImportShadowedByLoopVar\n                        elif used:\n                            continue\n                        else:\n                            messg = messages.RedefinedWhileUnused\n                        self.report(messg, node, value.name, value.source)"
+  },
+  {
+    "c0": "pyflakes.checker._is_const_non_singleton",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def _is_const_non_singleton(node):  # type: (ast.AST) -> bool\n    return _is_constant(node) and not _is_singleton(node)"
+  },
+  {
+    "c0": "pyflakes.api.check",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/api.py",
+    "c2": "def check(codeString, filename, reporter=None):\n    \"\"\"\n    Check the Python source given by C{codeString} for flakes.\n\n    @param codeString: The Python source to check.\n    @type codeString: C{str}\n\n    @param filename: The name of the file the source came from, used to report\n        errors.\n    @type filename: C{str}\n\n    @param reporter: A L{Reporter} instance, where errors and warnings will be\n        reported.\n\n    @return: The number of warnings emitted.\n    @rtype: C{int}\n    \"\"\"\n    if reporter is None:\n        reporter = modReporter._makeDefaultReporter()\n    # First, compile into an AST and handle syntax errors.\n    try:\n        tree = ast.parse(codeString, filename=filename)\n    except SyntaxError as e:\n        reporter.syntaxError(filename, e.args[0], e.lineno, e.offset, e.text)\n        return 1\n    except Exception:\n        reporter.unexpectedError(filename, 'problem decoding source')\n        return 1\n    # Okay, it's syntactically valid.  Now check it.\n    w = checker.Checker(tree, filename=filename)\n    w.messages.sort(key=lambda m: m.lineno)\n    for warning in w.messages:\n        reporter.flake(warning)\n    return len(w.messages)"
+  },
+  {
+    "c0": "pyflakes.api.checkPath",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/api.py",
+    "c2": "def checkPath(filename, reporter=None):\n    \"\"\"\n    Check the given path, printing out any warnings detected.\n\n    @param reporter: A L{Reporter} instance, where errors and warnings will be\n        reported.\n\n    @return: the number of warnings printed\n    \"\"\"\n    if reporter is None:\n        reporter = modReporter._makeDefaultReporter()\n    try:\n        with open(filename, 'rb') as f:\n            codestr = f.read()\n    except OSError as e:\n        reporter.unexpectedError(filename, e.args[1])\n        return 1\n    return check(codestr, filename, reporter)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.TUPLE",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def TUPLE(self, node):\n        if isinstance(node.ctx, ast.Store):\n            # Python 3 advanced tuple unpacking: a, *b, c = d.\n            # Only one starred expression is allowed, and no more than 1<<8\n            # assignments are allowed before a stared expression. There is\n            # also a limit of 1<<24 expressions after the starred expression,\n            # which is impossible to test due to memory restrictions, but we\n            # add it here anyway\n            has_starred = False\n            star_loc = -1\n            for i, n in enumerate(node.elts):\n                if isinstance(n, ast.Starred):\n                    if has_starred:\n                        self.report(messages.TwoStarredExpressions, node)\n                        # The SyntaxError doesn't distinguish two from more\n                        # than two.\n                        break\n                    has_starred = True\n                    star_loc = i\n            if star_loc >= 1 << 8 or len(node.elts) - star_loc - 1 >= 1 << 24:\n                self.report(messages.TooManyExpressionsInStarredAssignment, node)\n        self.handleChildren(node)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.ARG",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def ARG(self, node):\n        self.addBinding(node, Argument(node.arg, self.getScopeNode(node)))"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.IMPORT",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def IMPORT(self, node):\n        for alias in node.names:\n            if '.' in alias.name and not alias.asname:\n                importation = SubmoduleImportation(alias.name, node)\n            else:\n                name = alias.asname or alias.name\n                importation = Importation(name, node, alias.name)\n            self.addBinding(node, importation)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.addBinding",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def addBinding(self, node, value):\n        \"\"\"\n        Called when a binding is altered.\n\n        - `node` is the statement responsible for the change\n        - `value` is the new value, a Binding instance\n        \"\"\"\n        # assert value.source in (node, node._pyflakes_parent):\n        for scope in self.scopeStack[::-1]:\n            if value.name in scope:\n                break\n        existing = scope.get(value.name)\n\n        if (existing and not isinstance(existing, Builtin) and\n                not self.differentForks(node, existing.source)):\n\n            parent_stmt = self.getParent(value.source)\n            if isinstance(existing, Importation) and isinstance(parent_stmt, FOR_TYPES):\n                self.report(messages.ImportShadowedByLoopVar,\n                            node, value.name, existing.source)\n\n            elif scope is self.scope:\n                if (\n                        (not existing.used and value.redefines(existing)) and\n                        (value.name != '_' or isinstance(existing, Importation)) and\n                        not is_typing_overload(existing, self.scopeStack)\n                ):\n                    self.report(messages.RedefinedWhileUnused,\n                                node, value.name, existing.source)\n\n                if isinstance(scope, (ClassScope, FunctionScope)):\n                    scope.indirect_assignments.pop(value.name, None)\n\n            elif isinstance(existing, Importation) and value.redefines(existing):\n                existing.redefined.append(node)\n\n        if value.name in self.scope:\n            # then assume the rebound name is used as a global or within a loop\n            value.used = self.scope[value.name].used\n\n        # don't treat annotations as assignments if there is an existing value\n        # in scope\n        if value.name not in self.scope or not isinstance(value, Annotation):\n            if isinstance(value, NamedExprAssignment):\n                # PEP 572: use scope in which outermost generator is defined\n                scope = next(\n                    scope\n                    for scope in reversed(self.scopeStack)\n                    if not isinstance(scope, GeneratorScope)\n                )\n                if value.name in scope and isinstance(scope[value.name], Annotation):\n                    # re-assignment to name that was previously only an annotation\n                    scope[value.name] = value\n                else:\n                    # it may be a re-assignment to an already existing name\n                    scope.setdefault(value.name, value)\n            else:\n                self.scope[value.name] = value"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.isLiteralTupleUnpacking",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def isLiteralTupleUnpacking(self, node):\n        if isinstance(node, ast.Assign):\n            for child in node.targets + [node.value]:\n                if not hasattr(child, 'elts'):\n                    return False\n            return True"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.CONTINUE",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def CONTINUE(self, node):\n        # Walk the tree up until we see a loop (OK), a function or class\n        # definition (not OK), for 'continue', a finally block (not OK), or\n        # the top module scope (not OK)\n        n = node\n        while hasattr(n, '_pyflakes_parent'):\n            n, n_child = n._pyflakes_parent, n\n            if isinstance(n, (ast.While, ast.For, ast.AsyncFor)):\n                # Doesn't apply unless it's in the loop itself\n                if n_child not in n.orelse:\n                    return\n            if isinstance(n, (ast.FunctionDef, ast.ClassDef)):\n                break\n        if isinstance(node, ast.Continue):\n            self.report(messages.ContinueOutsideLoop, node)\n        else:  # ast.Break\n            self.report(messages.BreakOutsideLoop, node)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.handleNodeDelete",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def handleNodeDelete(self, node):\n\n        def on_conditional_branch():\n            \"\"\"\n            Return `True` if node is part of a conditional body.\n            \"\"\"\n            current = getattr(node, '_pyflakes_parent', None)\n            while current:\n                if isinstance(current, (ast.If, ast.While, ast.IfExp)):\n                    return True\n                current = getattr(current, '_pyflakes_parent', None)\n            return False\n\n        name = getNodeName(node)\n        if not name:\n            return\n\n        if on_conditional_branch():\n            # We cannot predict if this conditional branch is going to\n            # be executed.\n            return\n\n        if isinstance(self.scope, (ClassScope, FunctionScope)):\n            self.scope.indirect_assignments.pop(name, None)\n\n        if isinstance(self.scope, FunctionScope) and name in self.scope.globals:\n            self.scope.globals.remove(name)\n        else:\n            try:\n                del self.scope[name]\n            except KeyError:\n                self.report(messages.UndefinedName, node, name)"
+  },
+  {
+    "c0": "pyflakes.checker.FunctionScope.unused_annotations",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def unused_annotations(self):\n        \"\"\"\n        Return a generator for the annotations which have not been used.\n        \"\"\"\n        for name, binding in self.items():\n            if not binding.used and isinstance(binding, Annotation):\n                yield name, binding"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.AUGASSIGN",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def AUGASSIGN(self, node):\n        self.handleNodeLoad(node.target, node)\n        self.handleNode(node.value, node)\n        self.handleNode(node.target, node)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.CLASSDEF",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def CLASSDEF(self, node):\n        \"\"\"\n        Check names used in a class definition, including its decorators, base\n        classes, and the body of its definition.  Additionally, add its name to\n        the current scope.\n        \"\"\"\n        for deco in node.decorator_list:\n            self.handleNode(deco, node)\n\n        with self._type_param_scope(node):\n            for baseNode in node.bases:\n                self.handleNode(baseNode, node)\n            for keywordNode in node.keywords:\n                self.handleNode(keywordNode, node)\n            with self.in_scope(ClassScope):\n                # doctest does not process doctest within a doctest\n                # classes within classes are processed.\n                if (self.withDoctest and\n                        not self._in_doctest() and\n                        not isinstance(self.scope, FunctionScope)):\n                    self.deferFunction(lambda: self.handleDoctests(node))\n                for stmt in node.body:\n                    self.handleNode(stmt, node)\n\n        self.addBinding(node, ClassDefinition(node.name, node))"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.getParent",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def getParent(self, node):\n        # Lookup the first parent which is not Tuple, List or Starred\n        while True:\n            node = node._pyflakes_parent\n            if not hasattr(node, 'elts') and not hasattr(node, 'ctx'):\n                return node"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.futuresAllowed",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def futuresAllowed(self, value):\n        assert value is False\n        if isinstance(self.scope, ModuleScope):\n            self.scope._futures_allowed = False"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.RETURN",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def RETURN(self, node):\n        if isinstance(self.scope, (ClassScope, ModuleScope)):\n            self.report(messages.ReturnOutsideFunction, node)\n            return\n\n        self.handleNode(node.value, node)"
+  },
+  {
+    "c0": "pyflakes.checker.is_notimplemented_name_node",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def is_notimplemented_name_node(node):\n    return isinstance(node, ast.Name) and getNodeName(node) == 'NotImplemented'"
+  },
+  {
+    "c0": "pyflakes.checker.Binding.redefines",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def redefines(self, other):\n        return isinstance(other, Definition) and self.name == other.name"
+  },
+  {
+    "c0": "pyflakes.checker.getAlternatives",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def getAlternatives(n):\n    if isinstance(n, ast.If):\n        return [n.body]\n    elif isinstance(n, ast.Try):\n        return [n.body + n.orelse] + [[hdl] for hdl in n.handlers]\n    elif sys.version_info >= (3, 10) and isinstance(n, ast.Match):\n        return [mc.body for mc in n.cases]"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.GLOBAL",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def GLOBAL(self, node):\n        \"\"\"\n        Keep track of globals declarations.\n        \"\"\"\n        global_scope_index = 1 if self._in_doctest() else 0\n        global_scope = self.scopeStack[global_scope_index]\n\n        # Ignore 'global' statement in global scope.\n        if self.scope is not global_scope:\n\n            # One 'global' statement can bind multiple (comma-delimited) names.\n            for node_name in node.names:\n                node_value = Assignment(node_name, node)\n\n                # Remove UndefinedName messages already reported for this name.\n                # TODO: if the global is not used in this scope, it does not\n                # become a globally defined name.  See test_unused_global.\n                self.messages = [\n                    m for m in self.messages if not\n                    isinstance(m, messages.UndefinedName) or\n                    m.message_args[0] != node_name]\n\n                # Bind name to global scope if it doesn't exist already.\n                global_scope.setdefault(node_name, node_value)\n\n                # Bind name to non-global scopes, but as already \"used\".\n                node_value.used = (global_scope, node)\n                for scope in self.scopeStack[global_scope_index + 1:]:\n                    scope[node_name] = node_value\n\n                self.scope.indirect_assignments[node_name] = node"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.handleNode",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def handleNode(self, node, parent):\n        if node is None:\n            return\n        if self.offset and getattr(node, 'lineno', None) is not None:\n            node.lineno += self.offset[0]\n            node.col_offset += self.offset[1]\n        if (\n                self.futuresAllowed and\n                self.nodeDepth == 0 and\n                not isinstance(node, ast.ImportFrom) and\n                not self.isDocstring(node)\n        ):\n            self.futuresAllowed = False\n        self.nodeDepth += 1\n        node._pyflakes_depth = self.nodeDepth\n        node._pyflakes_parent = parent\n        try:\n            handler = self.getNodeHandler(node.__class__)\n            handler(node)\n        finally:\n            self.nodeDepth -= 1"
+  },
+  {
+    "c0": "pyflakes.checker._is_tuple_constant",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def _is_tuple_constant(node):  # type: (ast.AST) -> bool\n    return (\n        isinstance(node, ast.Tuple) and\n        all(_is_constant(elt) for elt in node.elts)\n    )"
+  },
+  {
+    "c0": "pyflakes.checker.convert_to_value",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def convert_to_value(item):\n    if isinstance(item, ast.Constant):\n        return item.value\n    elif isinstance(item, ast.Tuple):\n        return tuple(convert_to_value(i) for i in item.elts)\n    elif isinstance(item, ast.Name):\n        return VariableKey(item=item)\n    else:\n        return UnhandledKeyType()"
+  },
+  {
+    "c0": "pyflakes.checker.ExportBinding.__init__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def __init__(self, name, source, scope):\n        if '__all__' in scope and isinstance(source, ast.AugAssign):\n            self.names = list(scope['__all__'].names)\n        else:\n            self.names = []\n\n        def _add_to_names(container):\n            for node in container.elts:\n                if isinstance(node, ast.Constant) and isinstance(node.value, str):\n                    self.names.append(node.value)\n\n        if isinstance(source.value, (ast.List, ast.Tuple)):\n            _add_to_names(source.value)\n        # If concatenating lists or tuples\n        elif isinstance(source.value, ast.BinOp):\n            currentValue = source.value\n            while isinstance(currentValue.right, (ast.List, ast.Tuple)):\n                left = currentValue.left\n                right = currentValue.right\n                _add_to_names(right)\n                # If more lists are being added\n                if isinstance(left, ast.BinOp):\n                    currentValue = left\n                # If just two lists are being added\n                elif isinstance(left, (ast.List, ast.Tuple)):\n                    _add_to_names(left)\n                    # All lists accounted for - done\n                    break\n                # If not list concatenation\n                else:\n                    break\n        super().__init__(name, source)"
+  },
+  {
+    "c0": "pyflakes.checker._is_constant",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def _is_constant(node):\n    return isinstance(node, ast.Constant) or _is_tuple_constant(node)"
+  },
+  {
+    "c0": "pyflakes.checker._must_match",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def _must_match(regex, string, pos):\n    match = regex.match(string, pos)\n    assert match is not None\n    return match"
+  },
+  {
+    "c0": "pyflakes.checker._FieldsOrder.__missing__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def __missing__(self, node_class):\n        self[node_class] = fields = self._get_fields(node_class)\n        return fields"
+  },
+  {
+    "c0": "pyflakes.checker._FieldsOrder._get_fields",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def _get_fields(self, node_class):\n        # handle iter before target, and generators before element\n        fields = node_class._fields\n        if 'iter' in fields:\n            key_first = 'iter'.find\n        elif 'generators' in fields:\n            key_first = 'generators'.find\n        else:\n            key_first = 'value'.find\n        return tuple(sorted(fields, key=key_first, reverse=True))"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.BINOP",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def BINOP(self, node):\n        if (\n                isinstance(node.op, ast.Mod) and\n                isinstance(node.left, ast.Constant) and\n                isinstance(node.left.value, str)\n        ):\n            self._handle_percent_format(node)\n        self.handleChildren(node)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker._in_doctest",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def _in_doctest(self):\n        return (len(self.scopeStack) >= 2 and\n                isinstance(self.scopeStack[1], DoctestScope))"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.COMPARE",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def COMPARE(self, node):\n        left = node.left\n        for op, right in zip(node.ops, node.comparators):\n            if (\n                    isinstance(op, (ast.Is, ast.IsNot)) and (\n                        _is_const_non_singleton(left) or\n                        _is_const_non_singleton(right)\n                    )\n            ):\n                self.report(messages.IsLiteral, node)\n            left = right\n\n        self.handleChildren(node)"
+  },
+  {
+    "c0": "pyflakes.checker.getNodeName",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def getNodeName(node):\n    # Returns node.id, or node.name, or None\n    if hasattr(node, 'id'):     # One of the many nodes with an id\n        return node.id\n    if hasattr(node, 'name'):   # an ExceptHandler node\n        return node.name\n    if hasattr(node, 'rest'):   # a MatchMapping node\n        return node.rest"
+  },
+  {
+    "c0": "pyflakes.checker.iter_child_nodes",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "def iter_child_nodes(node, omit=None, _fields_order=_FieldsOrder()):\n    \"\"\"\n    Yield all direct child nodes of *node*, that is, all fields that\n    are nodes and all items of fields that are lists of nodes.\n\n    :param node:          AST node to be iterated upon\n    :param omit:          String or tuple of strings denoting the\n                          attributes of the node to be omitted from\n                          further parsing\n    :param _fields_order: Order of AST node fields\n    \"\"\"\n    for name in _fields_order[node.__class__]:\n        if omit and name in omit:\n            continue\n        field = getattr(node, name, None)\n        if isinstance(field, ast.AST):\n            yield field\n        elif isinstance(field, list):\n            for item in field:\n                if isinstance(item, ast.AST):\n                    yield item"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.ignore",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def ignore(self, node):\n        pass"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.GENERATOREXP",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def GENERATOREXP(self, node):\n        with self.in_scope(GeneratorScope):\n            self.handleChildren(node)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker._handle_percent_format",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def _handle_percent_format(self, node):\n        try:\n            placeholders = parse_percent_format(node.left.value)\n        except ValueError:\n            self.report(\n                messages.PercentFormatInvalidFormat,\n                node,\n                'incomplete format',\n            )\n            return\n\n        named = set()\n        positional_count = 0\n        positional = None\n        for _, placeholder in placeholders:\n            if placeholder is None:\n                continue\n            name, _, width, precision, conversion = placeholder\n\n            if conversion == '%':\n                continue\n\n            if conversion not in VALID_CONVERSIONS:\n                self.report(\n                    messages.PercentFormatUnsupportedFormatCharacter,\n                    node,\n                    conversion,\n                )\n\n            if positional is None and conversion:\n                positional = name is None\n\n            for part in (width, precision):\n                if part is not None and '*' in part:\n                    if not positional:\n                        self.report(\n                            messages.PercentFormatStarRequiresSequence,\n                            node,\n                        )\n                    else:\n                        positional_count += 1\n\n            if positional and name is not None:\n                self.report(\n                    messages.PercentFormatMixedPositionalAndNamed,\n                    node,\n                )\n                return\n            elif not positional and name is None:\n                self.report(\n                    messages.PercentFormatMixedPositionalAndNamed,\n                    node,\n                )\n                return\n\n            if positional:\n                positional_count += 1\n            else:\n                named.add(name)\n\n        if (\n                isinstance(node.right, (ast.List, ast.Tuple)) and\n                # does not have any *splats (py35+ feature)\n                not any(\n                    isinstance(elt, ast.Starred)\n                    for elt in node.right.elts\n                )\n        ):\n            substitution_count = len(node.right.elts)\n            if positional and positional_count != substitution_count:\n                self.report(\n                    messages.PercentFormatPositionalCountMismatch,\n                    node,\n                    positional_count,\n                    substitution_count,\n                )\n            elif not positional:\n                self.report(messages.PercentFormatExpectedMapping, node)\n\n        if (\n                isinstance(node.right, ast.Dict) and\n                all(\n                    isinstance(k, ast.Constant) and isinstance(k.value, str)\n                    for k in node.right.keys\n                )\n        ):\n            if positional and positional_count > 1:\n                self.report(messages.PercentFormatExpectedSequence, node)\n                return\n\n            substitution_keys = {k.value for k in node.right.keys}\n            extra_keys = substitution_keys - named\n            missing_keys = named - substitution_keys\n            if not positional and extra_keys:\n                self.report(\n                    messages.PercentFormatExtraNamedArguments,\n                    node,\n                    ', '.join(sorted(extra_keys)),\n                )\n            if not positional and missing_keys:\n                self.report(\n                    messages.PercentFormatMissingArgument,\n                    node,\n                    ', '.join(sorted(missing_keys)),\n                )"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.handleChildren",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def handleChildren(self, tree, omit=None):\n        for node in iter_child_nodes(tree, omit=omit):\n            self.handleNode(node, tree)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.RAISE",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def RAISE(self, node):\n        self.handleChildren(node)\n\n        arg = node.exc\n\n        if isinstance(arg, ast.Call):\n            if is_notimplemented_name_node(arg.func):\n                # Handle \"raise NotImplemented(...)\"\n                self.report(messages.RaiseNotImplemented, node)\n        elif is_notimplemented_name_node(arg):\n            # Handle \"raise NotImplemented\"\n            self.report(messages.RaiseNotImplemented, node)"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.FUNCTIONDEF",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def FUNCTIONDEF(self, node):\n        for deco in node.decorator_list:\n            self.handleNode(deco, node)\n\n        with self._type_param_scope(node):\n            self.LAMBDA(node)\n\n        self.addBinding(node, FunctionDefinition(node.name, node))\n        # doctest does not process doctest within a doctest,\n        # or in nested functions.\n        if (self.withDoctest and\n                not self._in_doctest() and\n                not isinstance(self.scope, FunctionScope)):\n            self.deferFunction(lambda: self.handleDoctests(node))"
+  },
+  {
+    "c0": "pyflakes.checker.Checker._handle_string_dot_format",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def _handle_string_dot_format(self, node):\n        try:\n            placeholders = tuple(parse_format_string(node.func.value.value))\n        except ValueError as e:\n            self.report(messages.StringDotFormatInvalidFormat, node, e)\n            return\n\n        auto = None\n        next_auto = 0\n\n        placeholder_positional = set()\n        placeholder_named = set()\n\n        def _add_key(fmtkey):\n            \"\"\"Returns True if there is an error which should early-exit\"\"\"\n            nonlocal auto, next_auto\n\n            if fmtkey is None:  # end of string or `{` / `}` escapes\n                return False\n\n            # attributes / indices are allowed in `.format(...)`\n            fmtkey, _, _ = fmtkey.partition('.')\n            fmtkey, _, _ = fmtkey.partition('[')\n\n            try:\n                fmtkey = int(fmtkey)\n            except ValueError:\n                pass\n            else:  # fmtkey was an integer\n                if auto is True:\n                    self.report(messages.StringDotFormatMixingAutomatic, node)\n                    return True\n                else:\n                    auto = False\n\n            if fmtkey == '':\n                if auto is False:\n                    self.report(messages.StringDotFormatMixingAutomatic, node)\n                    return True\n                else:\n                    auto = True\n\n                fmtkey = next_auto\n                next_auto += 1\n\n            if isinstance(fmtkey, int):\n                placeholder_positional.add(fmtkey)\n            else:\n                placeholder_named.add(fmtkey)\n\n            return False\n\n        for _, fmtkey, spec, _ in placeholders:\n            if _add_key(fmtkey):\n                return\n\n            # spec can also contain format specifiers\n            if spec is not None:\n                try:\n                    spec_placeholders = tuple(parse_format_string(spec))\n                except ValueError as e:\n                    self.report(messages.StringDotFormatInvalidFormat, node, e)\n                    return\n\n                for _, spec_fmtkey, spec_spec, _ in spec_placeholders:\n                    # can't recurse again\n                    if spec_spec is not None and '{' in spec_spec:\n                        self.report(\n                            messages.StringDotFormatInvalidFormat,\n                            node,\n                            'Max string recursion exceeded',\n                        )\n                        return\n                    if _add_key(spec_fmtkey):\n                        return\n\n        # bail early if there is *args or **kwargs\n        if (\n                # *args\n                any(isinstance(arg, ast.Starred) for arg in node.args) or\n                # **kwargs\n                any(kwd.arg is None for kwd in node.keywords)\n        ):\n            return\n\n        substitution_positional = set(range(len(node.args)))\n        substitution_named = {kwd.arg for kwd in node.keywords}\n\n        extra_positional = substitution_positional - placeholder_positional\n        extra_named = substitution_named - placeholder_named\n\n        missing_arguments = (\n            (placeholder_positional | placeholder_named) -\n            (substitution_positional | substitution_named)\n        )\n\n        if extra_positional:\n            self.report(\n                messages.StringDotFormatExtraPositionalArguments,\n                node,\n                ', '.join(sorted(str(x) for x in extra_positional)),\n            )\n        if extra_named:\n            self.report(\n                messages.StringDotFormatExtraNamedArguments,\n                node,\n                ', '.join(sorted(extra_named)),\n            )\n        if missing_arguments:\n            self.report(\n                messages.StringDotFormatMissingArgument,\n                node,\n                ', '.join(sorted(str(x) for x in missing_arguments)),\n            )"
+  },
+  {
+    "c0": "pyflakes.checker.Checker.getNodeHandler",
+    "c1": "/home/jakob/coding/PEARL/test-projects/pyflakes-main/pyflakes/checker.py",
+    "c2": "    def getNodeHandler(self, node_class):\n        try:\n            return self._nodeHandlers[node_class]\n        except KeyError:\n            nodeType = node_class.__name__.upper()\n        self._nodeHandlers[node_class] = handler = getattr(\n            self, nodeType, self._unknown_handler,\n        )\n        return handler"
+  }
+]

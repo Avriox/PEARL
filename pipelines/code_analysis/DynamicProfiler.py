@@ -853,6 +853,10 @@ class DynamicProfiler:
                 chosen_key = candidate_keys[0]
 
             if chosen_key:
+                # Defensive check: key might have been deleted in a previous iteration
+                if chosen_key not in func_metrics:
+                    continue
+
                 # Update the chosen existing entry with authoritative cProfile numbers
                 m = func_metrics[chosen_key]
                 m.inclusive_time_ms = incl_ms

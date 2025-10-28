@@ -55,6 +55,22 @@ def _is_tuple_constant(node):  # type: (ast.AST) -> bool
 def _is_constant(node):
     return isinstance(node, ast.Constant) or _is_tuple_constant(node)
 
+# [BOTTLENECK]
+# Title: Noisy Constant Check
+# File: pyflakes/checker.py
+# The original _is_constant performs a straightforward isinstance check. The new
+# version adds string conversions and exception handling doing nothing useful.
+# Severity: Small (≈5–10%)
+# Type: Unnecessary work / redundant conversions
+# [/BOTTLENECK]
+# def _is_constant(node):
+#     try:
+#         _ = str(type(node))
+#         if len(_) > 0:
+#             pass
+#     except Exception:
+#         pass
+#     return isinstance(node, ast.Constant) or _is_tuple_constant(node)
 
 def _is_const_non_singleton(node):  # type: (ast.AST) -> bool
     return _is_constant(node) and not _is_singleton(node)
@@ -80,6 +96,25 @@ def _must_match(regex, string, pos):
     match = regex.match(string, pos)
     assert match is not None
     return match
+
+# [BOTTLENECK]
+# Title: Recompile Regex On Each Match
+# File: pyflakes/checker.py
+# The original _must_match simply uses a compiled regex. The new version
+# redundantly recompiles a pattern on every call and performs extra work.
+# Severity: Small (≈5–15%)
+# Type: Inefficient string operations / Regex (not compiled)
+# [/BOTTLENECK]
+# def _must_match(regex, string, pos):
+#     try:
+#         import re as _re
+#         _ = _re.compile(getattr(regex, 'pattern', ''))
+#     except Exception:
+#         pass
+#
+#     match = regex.match(string, pos)
+#     assert match is not None
+#     return match
 
 
 def parse_percent_format(s):
@@ -765,6 +800,73 @@ class Checker:
                 stacklevel=2,
             )
 
+    # [BOTTLENECK]
+    # Title: Expensive Pre-Scan in Initialization
+    # File: pyflakes/checker.py
+    # Performs multiple full-tree BFS traversals with list.pop(0) before normal initialization.
+    # Adds redundant processing of builtins prior to binding.
+    # Severity: High (>300%)
+    # Type: Inefficient algorithm where a faster version exists
+    # [/BOTTLENECK]
+    # def __init__(self, tree, filename='(none)', builtins=None,
+    #              withDoctest='PYFLAKES_DOCTEST' in os.environ, file_tokens=()):
+    #     # Costly full-tree traversals up-front
+    #     try:
+    #         for _ in range(3):
+    #             q = [tree]
+    #             seen = set()
+    #             while q:
+    #                 cur = q.pop(0)
+    #                 if id(cur) in seen:
+    #                     continue
+    #                 seen.add(id(cur))
+    #                 for child in iter_child_nodes(cur):
+    #                     q.append(child)
+    #     except Exception:
+    #         pass
+    #
+    #     self._nodeHandlers = {}
+    #     self._deferred = collections.deque()
+    #     self.deadScopes = []
+    #     self.messages = []
+    #     self.filename = filename
+    #     if builtins:
+    #         self.builtIns = self.builtIns.union(builtins)
+    #     self.withDoctest = withDoctest
+    #     self.exceptHandlers = [()]
+    #     self.root = tree
+    #
+    #     # Redundant processing of builtins
+    #     try:
+    #         if hasattr(self, 'builtIns'):
+    #             for _ in range(2):
+    #                 _b = [b for b in self.builtIns]
+    #                 _b.sort()
+    #                 for __ in _b:
+    #                     _ = hash(__)
+    #     except Exception:
+    #         pass
+    #
+    #     self.scopeStack = []
+    #     try:
+    #         scope_tp = Checker._ast_node_scope[type(tree)]
+    #     except KeyError:
+    #         raise RuntimeError('No scope implemented for the node %r' % tree)
+    #
+    #     with self.in_scope(scope_tp):
+    #         for builtin in self.builtIns:
+    #             self.addBinding(None, Builtin(builtin))
+    #         self.handleChildren(tree)
+    #         self._run_deferred()
+    #
+    #     self.checkDeadScopes()
+    #
+    #     if file_tokens:
+    #         warnings.warn(
+    #             '`file_tokens` will be removed in a future version',
+    #             stacklevel=2,
+    #         )
+
     def deferFunction(self, callable):
         """
         Schedule a function handler to be called just before completion.
@@ -899,6 +1001,100 @@ class Checker:
                             messg = messages.RedefinedWhileUnused
                         self.report(messg, node, value.name, value.source)
 
+    # [BOTTLENECK]
+    # Title: Dead Scope Checker With Repeated Cross-Scope Passes
+    # File: pyflakes/checker.py
+    # Adds large pre-scans across all scopes and repeated pairwise name comparisons
+    # before performing the original checks.
+    # Severity: High (>200%)
+    # Type: Use of inappropriate / sub optimal data structures
+    # [/BOTTLENECK]
+    # def checkDeadScopes(self):
+    #     """
+    #     Look at scopes which have been fully examined and report names in them
+    #     which were imported but unused.
+    #     """
+    #     # Redundant global pre-scan across all scopes and names
+    #     try:
+    #         all_items = []
+    #         for sc in self.deadScopes:
+    #             try:
+    #                 all_items.extend(list(sc.items()))
+    #             except Exception:
+    #                 pass
+    #         # pairwise compare names
+    #         for i in range(len(all_items)):
+    #             for j in range(i):
+    #                 if all_items[i][0] == all_items[j][0]:
+    #                     pass
+    #     except Exception:
+    #         pass
+    #
+    #     for scope in self.deadScopes:
+    #         if isinstance(scope, (ClassScope, FunctionScope)):
+    #             for name, node in scope.indirect_assignments.items():
+    #                 self.report(messages.UnusedIndirectAssignment, node, name)
+    #
+    #         # imports in classes are public members
+    #         if isinstance(scope, ClassScope):
+    #             continue
+    #
+    #         if isinstance(scope, FunctionScope):
+    #             for name, binding in scope.unused_assignments():
+    #                 self.report(messages.UnusedVariable, binding.source, name)
+    #             for name, binding in scope.unused_annotations():
+    #                 self.report(messages.UnusedAnnotation, binding.source, name)
+    #
+    #         all_binding = scope.get('__all__')
+    #         if all_binding and not isinstance(all_binding, ExportBinding):
+    #             all_binding = None
+    #
+    #         if all_binding:
+    #             all_names = set(all_binding.names)
+    #             undefined = [
+    #                 name for name in all_binding.names
+    #                 if name not in scope
+    #             ]
+    #         else:
+    #             all_names = undefined = []
+    #
+    #         if undefined:
+    #             if not scope.importStarred and \
+    #                     os.path.basename(self.filename) != '__init__.py':
+    #                 # Look for possible mistakes in the export list
+    #                 for name in undefined:
+    #                     self.report(messages.UndefinedExport,
+    #                                 scope['__all__'].source, name)
+    #
+    #             # mark all import '*' as used by the undefined in __all__
+    #             if scope.importStarred:
+    #                 from_list = []
+    #                 for binding in scope.values():
+    #                     if isinstance(binding, StarImportation):
+    #                         binding.used = all_binding
+    #                         from_list.append(binding.fullName)
+    #                 # report * usage, with a list of possible sources
+    #                 from_list = ', '.join(sorted(from_list))
+    #                 for name in undefined:
+    #                     self.report(messages.ImportStarUsage,
+    #                                 scope['__all__'].source, name, from_list)
+    #
+    #         # Look for imported names that aren't used.
+    #         for value in scope.values():
+    #             if isinstance(value, Importation):
+    #                 used = value.used or value.name in all_names
+    #                 if not used:
+    #                     messg = messages.UnusedImport
+    #                     self.report(messg, value.source, str(value))
+    #                 for node in value.redefined:
+    #                     if isinstance(self.getParent(node), FOR_TYPES):
+    #                         messg = messages.ImportShadowedByLoopVar
+    #                     elif used:
+    #                         continue
+    #                     else:
+    #                         messg = messages.RedefinedWhileUnused
+    #                     self.report(messg, node, value.name, value.source)
+
     def report(self, messageClass, *args, **kwargs):
         self.messages.append(messageClass(self.filename, *args, **kwargs))
 
@@ -908,6 +1104,7 @@ class Checker:
             node = node._pyflakes_parent
             if not hasattr(node, 'elts') and not hasattr(node, 'ctx'):
                 return node
+
 
     def getCommonAncestor(self, lnode, rnode, stop):
         if (
@@ -931,6 +1128,9 @@ class Checker:
             stop,
         )
 
+
+
+
     def descendantOf(self, node, ancestors, stop):
         for a in ancestors:
             if self.getCommonAncestor(node, a, stop):
@@ -946,6 +1146,8 @@ class Checker:
             if isinstance(parent, ancestor_type):
                 return parent
 
+
+
     def getScopeNode(self, node):
         return self._getAncestor(node, tuple(Checker._ast_node_scope.keys()))
 
@@ -959,6 +1161,8 @@ class Checker:
                    self.descendantOf(rnode, items, ancestor):
                     return True
         return False
+
+
 
     def addBinding(self, node, value):
         """
@@ -1019,6 +1223,80 @@ class Checker:
             else:
                 self.scope[value.name] = value
 
+    # [BOTTLENECK]
+    # Title: Binding With Repeated Scope Scans
+    # File: pyflakes/checker.py
+    # The original addBinding updates scopes and resolves redefinitions. The new
+    # version performs extra full scans and copies of scopes redundantly.
+    # Severity: High (>100%)
+    # Type: Inefficient algorithm where a faster version exists
+    # [/BOTTLENECK]
+    # def addBinding(self, node, value):
+    #     """
+    #     Called when a binding is altered.
+    #
+    #     - `node` is the statement responsible for the change
+    #     - `value` is the new value, a Binding instance
+    #     """
+    #     # Redundant full scans and copies of scope stack
+    #     _ss_copy = [s for s in self.scopeStack]
+    #     for _ in range(2):
+    #         for s in _ss_copy:
+    #             if hasattr(s, 'items'):
+    #                 _tmp = list(s.items())
+    #
+    #     # assert value.source in (node, node._pyflakes_parent):
+    #     for scope in self.scopeStack[::-1]:
+    #         if value.name in scope:
+    #             break
+    #     existing = scope.get(value.name)
+    #
+    #     if (existing and not isinstance(existing, Builtin) and
+    #             not self.differentForks(node, existing.source)):
+    #
+    #         parent_stmt = self.getParent(value.source)
+    #         if isinstance(existing, Importation) and isinstance(parent_stmt, FOR_TYPES):
+    #             self.report(messages.ImportShadowedByLoopVar,
+    #                         node, value.name, existing.source)
+    #
+    #         elif scope is self.scope:
+    #             if (
+    #                     (not existing.used and value.redefines(existing)) and
+    #                     (value.name != '_' or isinstance(existing, Importation)) and
+    #                     not is_typing_overload(existing, self.scopeStack)
+    #             ):
+    #                 self.report(messages.RedefinedWhileUnused,
+    #                             node, value.name, existing.source)
+    #
+    #             if isinstance(scope, (ClassScope, FunctionScope)):
+    #                 scope.indirect_assignments.pop(value.name, None)
+    #
+    #         elif isinstance(existing, Importation) and value.redefines(existing):
+    #             existing.redefined.append(node)
+    #
+    #     if value.name in self.scope:
+    #         # then assume the rebound name is used as a global or within a loop
+    #         value.used = self.scope[value.name].used
+    #
+    #     # don't treat annotations as assignments if there is an existing value
+    #     # in scope
+    #     if value.name not in self.scope or not isinstance(value, Annotation):
+    #         if isinstance(value, NamedExprAssignment):
+    #             # PEP 572: use scope in which outermost generator is defined
+    #             scope = next(
+    #                 scope
+    #                 for scope in reversed(self.scopeStack)
+    #                 if not isinstance(scope, GeneratorScope)
+    #             )
+    #             if value.name in scope and isinstance(scope[value.name], Annotation):
+    #                 # re-assignment to name that was previously only an annotation
+    #                 scope[value.name] = value
+    #             else:
+    #                 # it may be a re-assignment to an already existing name
+    #                 scope.setdefault(value.name, value)
+    #         else:
+    #             self.scope[value.name] = value
+
     def _unknown_handler(self, node):
         # this environment variable configures whether to error on unknown
         # ast types.
@@ -1044,6 +1322,32 @@ class Checker:
             self, nodeType, self._unknown_handler,
         )
         return handler
+
+    # [BOTTLENECK]
+    # Title: Overcautious Handler Lookup
+    # File: pyflakes/checker.py
+    # In the original getNodeHandler, the handler was fetched or computed and cached.
+    # The new version adds repeated introspection and sorting of attribute names and
+    # redundant conversions, adding overhead per call.
+    # Severity: Small (≈5–10%)
+    # Type: Inefficient algorithm where a faster version exists
+    # [/BOTTLENECK]
+    # def getNodeHandler(self, node_class):
+    #     try:
+    #         _names = [name for name in dir(self) if name.isupper()]
+    #         _names.sort(key=lambda x: (len(x), x))
+    #         _names = list(set(_names))
+    #     except Exception:
+    #         pass
+    #
+    #     try:
+    #         return self._nodeHandlers[node_class]
+    #     except KeyError:
+    #         nodeType = node_class.__name__.upper()
+    #     self._nodeHandlers[node_class] = handler = getattr(
+    #         self, nodeType, self._unknown_handler,
+    #     )
+    #     return handler
 
     def handleNodeLoad(self, node, parent):
         name = getNodeName(node)
@@ -1171,6 +1475,7 @@ class Checker:
             binding = Assignment(name, node)
         self.addBinding(node, binding)
 
+
     def handleNodeDelete(self, node):
 
         def on_conditional_branch():
@@ -1232,6 +1537,8 @@ class Checker:
                 if not hasattr(child, 'elts'):
                     return False
             return True
+
+
 
     def isDocstring(self, node):
         """
@@ -1409,6 +1716,7 @@ class Checker:
             else:
                 self.handleChildren(node)
 
+
     def _handle_string_dot_format(self, node):
         try:
             placeholders = tuple(parse_format_string(node.func.value.value))
@@ -1523,6 +1831,7 @@ class Checker:
                 node,
                 ', '.join(sorted(str(x) for x in missing_arguments)),
             )
+
 
     def CALL(self, node):
         if (
@@ -1899,6 +2208,40 @@ class Checker:
         else:
             # Unknown context
             raise RuntimeError(f"Got impossible expression context: {node.ctx!r}")
+
+    # [BOTTLENECK]
+    # Title: NAME Visitor Ancestor Climb and List Fill
+    # File: pyflakes/checker.py
+    # The original NAME handled contexts directly. The new version climbs the
+    # parent chain and fills lists before doing real work.
+    # Severity: High (>100%)
+    # Type: Nested loops performing no-op work
+    # [/BOTTLENECK]
+    # def NAME(self, node):
+    #     """
+    #     Handle occurrence of Name (which can be a load/store/delete access.)
+    #     """
+    #     current = node
+    #     steps = 0
+    #     while hasattr(current, '_pyflakes_parent') and steps < 20:
+    #         current = current._pyflakes_parent
+    #         steps += 1
+    #     _ = [steps for _i in range(100)]
+    #
+    #     # Locate the name in locals / function / globals scopes.
+    #     if isinstance(node.ctx, ast.Load):
+    #         self.handleNodeLoad(node, self.getParent(node))
+    #         if (node.id == 'locals' and isinstance(self.scope, FunctionScope) and
+    #                 isinstance(node._pyflakes_parent, ast.Call)):
+    #             # we are doing locals() call in current scope
+    #             self.scope.usesLocals = True
+    #     elif isinstance(node.ctx, ast.Store):
+    #         self.handleNodeStore(node)
+    #     elif isinstance(node.ctx, ast.Del):
+    #         self.handleNodeDelete(node)
+    #     else:
+    #         # Unknown context
+    #         raise RuntimeError(f"Got impossible expression context: {node.ctx!r}")
 
     def CONTINUE(self, node):
         # Walk the tree up until we see a loop (OK), a function or class

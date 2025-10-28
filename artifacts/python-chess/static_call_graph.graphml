@@ -881,6 +881,9 @@
     <node id="test.CrazyhouseTestCase.test_zh_is_irreversible" />
     <node id="test.GiveawayTestCase.test_antichess_pgn" />
     <node id="test.GiveawayTestCase.assertEqual" />
+    <node id="main.main" />
+    <node id="main.StringIO" />
+    <node id="main.range" />
     <node id="chess.__init__.piece_symbol" />
     <node id="typing.cast" />
     <node id="chess.__init__.piece_name" />
@@ -1997,6 +2000,8 @@
     <node id="chess.pgn.GameNode.mainline" />
     <node id="chess.pgn.Mainline" />
     <node id="chess.pgn.GameNode.mainline_moves" />
+    <node id="chess.pgn.getattr" />
+    <node id="chess.pgn.range" />
     <node id="chess.pgn.GameNode.add_line" />
     <node id="node.comments.extend" />
     <node id="node.nags.update" />
@@ -2024,7 +2029,6 @@
     <node id="arrow.pgn" />
     <node id="chess.pgn.filter" />
     <node id="chess.pgn.list" />
-    <node id="chess.pgn.range" />
     <node id="self.comments.insert" />
     <node id="chess.pgn.GameNode.clock" />
     <node id="CLOCK_REGEX.search" />
@@ -9253,6 +9257,33 @@
     <edge source="test.GiveawayTestCase.test_antichess_pgn" target="test.open">
       <data key="d0">1</data>
     </edge>
+    <edge source="main.main" target="board.attackers">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="board.is_check">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="board.legal_moves.count">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="board.push">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="chess.pgn.read_game">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="game.board">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="game.mainline_moves">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="main.StringIO">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="main.range">
+      <data key="d0">1</data>
+    </edge>
     <edge source="chess.__init__.piece_symbol" target="typing.cast">
       <data key="d0">1</data>
     </edge>
@@ -14213,6 +14244,15 @@
       <data key="d0">1</data>
     </edge>
     <edge source="chess.pgn.GameNode.mainline_moves" target="chess.pgn.Mainline">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="chess.pgn.GameNode.mainline_moves" target="chess.pgn.getattr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="chess.pgn.GameNode.mainline_moves" target="chess.pgn.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="chess.pgn.GameNode.mainline_moves" target="chess.pgn.range">
       <data key="d0">1</data>
     </edge>
     <edge source="chess.pgn.GameNode.add_line" target="chess.pgn._standardize_comments">

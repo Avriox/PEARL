@@ -12,6 +12,12 @@
     <node id="&quot;&quot;&quot;&#10;&#10;&quot;&quot;&quot;.join" />
     <node id="descr.append" />
     <node id="f.read" />
+    <node id="main.main" />
+    <node id="main.Reporter" />
+    <node id="main.checkPath" />
+    <node id="main.open" />
+    <node id="main.range" />
+    <node id="os.path.dirname" />
     <node id="pyflakes.api.check" />
     <node id="ast.parse" />
     <node id="checker.Checker" />
@@ -145,6 +151,7 @@
     <node id="pyflakes.checker.func" />
     <node id="pyflakes.checker.in_string_annotation" />
     <node id="pyflakes.checker.Checker.__init__" />
+    <node id="_b.sort" />
     <node id="collections.deque" />
     <node id="pyflakes.checker.Builtin" />
     <node id="pyflakes.checker.Checker._run_deferred" />
@@ -153,6 +160,11 @@
     <node id="pyflakes.checker.Checker.handleChildren" />
     <node id="pyflakes.checker.Checker.in_scope" />
     <node id="pyflakes.checker.RuntimeError" />
+    <node id="pyflakes.checker.range" />
+    <node id="pyflakes.checker.set" />
+    <node id="q.append" />
+    <node id="q.pop" />
+    <node id="seen.add" />
     <node id="self.builtIns.union" />
     <node id="warnings.warn" />
     <node id="pyflakes.checker.Checker.deferFunction" />
@@ -172,7 +184,6 @@
     <node id="os.path.basename" />
     <node id="pyflakes.checker.Checker.getParent" />
     <node id="pyflakes.checker.Checker.report" />
-    <node id="pyflakes.checker.set" />
     <node id="pyflakes.checker.str" />
     <node id="scope.get" />
     <node id="scope.indirect_assignments.items" />
@@ -232,7 +243,6 @@
     <node id="pyflakes.checker._add_key" />
     <node id="pyflakes.checker.int" />
     <node id="pyflakes.checker.parse_format_string" />
-    <node id="pyflakes.checker.range" />
     <node id="pyflakes.checker.Checker.CALL" />
     <node id="pyflakes.checker.enumerate" />
     <node id="pyflakes.checker.Checker._handle_percent_format" />
@@ -444,7 +454,6 @@
     <node id="pyflakes.test.test_api.IntegrationTests.setUp" />
     <node id="pyflakes.test.test_api.IntegrationTests.tearDown" />
     <node id="pyflakes.test.test_api.IntegrationTests.getPyflakesBinary" />
-    <node id="os.path.dirname" />
     <node id="pyflakes.test.test_api.IntegrationTests.runPyflakes" />
     <node id="command.extend" />
     <node id="os.pathsep.join" />
@@ -1039,6 +1048,24 @@
     <edge source="setup.get_long_description" target="setup.open">
       <data key="d0">1</data>
     </edge>
+    <edge source="main.main" target="main.Reporter">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="main.checkPath">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="main.open">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="main.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="os.path.dirname">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="os.path.join">
+      <data key="d0">1</data>
+    </edge>
     <edge source="pyflakes.api.check" target="ast.parse">
       <data key="d0">1</data>
     </edge>
@@ -1474,6 +1501,9 @@
     <edge source="pyflakes.checker.in_string_annotation" target="pyflakes.checker.func">
       <data key="d0">1</data>
     </edge>
+    <edge source="pyflakes.checker.Checker.__init__" target="_b.sort">
+      <data key="d0">1</data>
+    </edge>
     <edge source="pyflakes.checker.Checker.__init__" target="collections.deque">
       <data key="d0">1</data>
     </edge>
@@ -1498,7 +1528,34 @@
     <edge source="pyflakes.checker.Checker.__init__" target="pyflakes.checker.RuntimeError">
       <data key="d0">1</data>
     </edge>
+    <edge source="pyflakes.checker.Checker.__init__" target="pyflakes.checker.hasattr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="pyflakes.checker.Checker.__init__" target="pyflakes.checker.hash">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="pyflakes.checker.Checker.__init__" target="pyflakes.checker.id">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="pyflakes.checker.Checker.__init__" target="pyflakes.checker.iter_child_nodes">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="pyflakes.checker.Checker.__init__" target="pyflakes.checker.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="pyflakes.checker.Checker.__init__" target="pyflakes.checker.set">
+      <data key="d0">1</data>
+    </edge>
     <edge source="pyflakes.checker.Checker.__init__" target="pyflakes.checker.type">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="pyflakes.checker.Checker.__init__" target="q.append">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="pyflakes.checker.Checker.__init__" target="q.pop">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="pyflakes.checker.Checker.__init__" target="seen.add">
       <data key="d0">1</data>
     </edge>
     <edge source="pyflakes.checker.Checker.__init__" target="self.builtIns.union">

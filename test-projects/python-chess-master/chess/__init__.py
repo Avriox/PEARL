@@ -411,6 +411,23 @@ def scan_forward(bb: Bitboard) -> Iterator[Square]:
 def msb(bb: Bitboard) -> int:
     return bb.bit_length() - 1
 
+# [BOTTLENECK]
+# Title: Inefficient Bit Counting
+# File: chess/__init__.py
+# The original msb function used bit_length() which is O(1). The bottleneck introduces
+# a loop-based bit counting approach that iterates through all bits. This is a small issue
+# (10-15% runtime increase) of type "inefficient algorithm where a faster version exists".
+# [/BOTTLENECK]
+# def msb(bb: Bitboard) -> int:
+#     if bb == 0:
+#         return -1
+#     position = 0
+#     temp = bb
+#     while temp > 1:
+#         temp >>= 1
+#         position += 1
+#     return position
+
 def scan_reversed(bb: Bitboard) -> Iterator[Square]:
     while bb:
         r = bb.bit_length() - 1
@@ -3437,6 +3454,89 @@ class Board(BaseBoard):
 
             # Done.
             return black_a_side | black_h_side | white_a_side | white_h_side
+
+    # [BOTTLENECK]
+    # Title: Inefficient Castling Rights Cleaning
+    # File: /home/jakob/coding/PEARL/test-projects/python-chess-master/chess/__init__.py
+    # In the original clean_castling_rights method, bitmasks were directly manipulated. The bottleneck iterates over all squares to check conditions, introducing loops over 64 elements. This is a small issue (5-20% runtime increase) of type "inefficient string operations / Regex (not compiled)" but adapted to bit operations.
+    # [/BOTTLENECK]
+    # def clean_castling_rights(self) -> Bitboard:
+    #     """
+    #     Returns valid castling rights filtered from
+    #     :data:`~chess.Board.castling_rights`.
+    #     """
+    #     if self._stack:
+    #         # No new castling rights are assigned in a game, so we can assume
+    #         # they were filtered already.
+    #         return self.castling_rights
+    #
+    #     castling = self.castling_rights & self.rooks
+    #     white_castling = 0
+    #     for sq in range(64):
+    #         if (castling & (1 << sq)) and (BB_RANK_1 & (1 << sq)) and (self.occupied_co[WHITE] & (1 << sq)):
+    #             white_castling |= (1 << sq)
+    #     black_castling = 0
+    #     for sq in range(64):
+    #         if (castling & (1 << sq)) and (BB_RANK_8 & (1 << sq)) and (self.occupied_co[BLACK] & (1 << sq)):
+    #             black_castling |= (1 << sq)
+    #
+    #     if not self.chess960:
+    #         # The rooks must be on a1, h1, a8 or h8.
+    #         white_castling &= (BB_A1 | BB_H1)
+    #         black_castling &= (BB_A8 | BB_H8)
+    #
+    #         # The kings must be on e1 or e8.
+    #         white_king_on_e1 = False
+    #         for sq in range(64):
+    #             if (self.occupied_co[WHITE] & self.kings & ~(self.promoted) & (1 << sq)) and sq == 4:
+    #                 white_king_on_e1 = True
+    #         if not white_king_on_e1:
+    #             white_castling = 0
+    #         black_king_on_e8 = False
+    #         for sq in range(64):
+    #             if (self.occupied_co[BLACK] & self.kings & ~(self.promoted) & (1 << sq)) and sq == 60:
+    #                 black_king_on_e8 = True
+    #         if not black_king_on_e8:
+    #             black_castling = 0
+    #
+    #         return white_castling | black_castling
+    #     else:
+    #         # The kings must be on the back rank.
+    #         white_king_mask = 0
+    #         for sq in range(64):
+    #             if (self.occupied_co[WHITE] & self.kings & BB_RANK_1 & ~(self.promoted) & (1 << sq)):
+    #                 white_king_mask |= (1 << sq)
+    #         black_king_mask = 0
+    #         for sq in range(64):
+    #             if (self.occupied_co[BLACK] & self.kings & BB_RANK_8 & ~(self.promoted) & (1 << sq)):
+    #                 black_king_mask |= (1 << sq)
+    #         if not white_king_mask:
+    #             white_castling = 0
+    #         if not black_king_mask:
+    #             black_castling = 0
+    #
+    #         # There are only two ways of castling, a-side and h-side, and the
+    #         # king must be between the rooks.
+    #         white_a_side = white_castling & -white_castling
+    #         white_h_side = BB_SQUARES[msb(white_castling)] if white_castling else 0
+    #
+    #         if white_a_side and msb(white_a_side) > msb(white_king_mask):
+    #             white_a_side = 0
+    #         if white_h_side and msb(white_h_side) < msb(white_king_mask):
+    #             white_h_side = 0
+    #
+    #         black_a_side = black_castling & -black_castling
+    #         black_h_side = BB_SQUARES[msb(black_castling)] if black_castling else BB_EMPTY
+    #
+    #         if black_a_side and msb(black_a_side) > msb(black_king_mask):
+    #             black_a_side = 0
+    #         if black_h_side and msb(black_h_side) < msb(black_king_mask):
+    #             black_h_side = 0
+    #
+    #         # Done.
+    #         return black_a_side | black_h_side | white_a_side | white_h_side
+
+
 
     def has_castling_rights(self, color: Color) -> bool:
         """Checks if the given side has castling rights."""

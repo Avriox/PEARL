@@ -7,8 +7,6 @@
     <node id="rng.randint" />
     <node id="selection_sorter.range" />
     <node id="selection_sorter.selection_sort" />
-    <node id="copy.deepcopy" />
-    <node id="selection_sorter.list" />
     <node id="selection_sorter.sorted" />
     <node id="selection_sorter.timed_call" />
     <node id="selection_sorter.fn" />
@@ -28,12 +26,6 @@
       <data key="d0">1</data>
     </edge>
     <edge source="selection_sorter.generate_numbers" target="selection_sorter.range">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="selection_sorter.selection_sort" target="copy.deepcopy">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="selection_sorter.selection_sort" target="selection_sorter.list">
       <data key="d0">1</data>
     </edge>
     <edge source="selection_sorter.selection_sort" target="selection_sorter.sorted">

@@ -15,8 +15,8 @@ def generate_numbers(n: int, seed: Optional[int] = None) -> List[int]:
     return [rng.randint(0, 10_000) for _ in range(n)]
 
 
-# def selection_sort(nums: List[int]) -> List[int]:
-#     return sorted(nums)
+def selection_sort(nums: List[int]) -> List[int]:
+    return sorted(nums)
 
 
 # [BOTTLENECK]
@@ -44,13 +44,13 @@ def generate_numbers(n: int, seed: Optional[int] = None) -> List[int]:
 # Severity: MEDIUM
 # Type: Copying large data structures unnecessarily
 # [/BOTTLENECK]
-def selection_sort(nums: List[int]) -> List[int]:
-    import copy
-
-    temp_list = copy.deepcopy(nums)
-    another_copy = list(temp_list)
-    working_copy = another_copy[:]
-    return sorted(working_copy)
+# def selection_sort(nums: List[int]) -> List[int]:
+#     import copy
+#
+#     temp_list = copy.deepcopy(nums)
+#     another_copy = list(temp_list)
+#     working_copy = another_copy[:]
+#     return sorted(working_copy)
 
 
 # [BOTTLENECK]

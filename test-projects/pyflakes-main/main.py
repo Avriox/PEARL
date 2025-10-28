@@ -3,7 +3,7 @@ import os
 from pyflakes.api import checkPath
 from pyflakes.reporter import Reporter
 
-if __name__ == "__main__":
+def main():
     base = os.path.join(os.path.dirname(__file__), "pyflakes")
 
     files_to_check = [
@@ -16,7 +16,10 @@ if __name__ == "__main__":
     devnull = open(os.devnull, "w")
     reporter = Reporter(devnull, devnull)
 
-    for _ in range(10):  # adjust upward until runtime feels good
+    for _ in range(2):  # adjust upward until runtime feels good
         for f in files_to_check:
             checkPath(f, reporter)
+
+if __name__ == "__main__":
+   main()
 

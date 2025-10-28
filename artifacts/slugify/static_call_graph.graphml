@@ -2,6 +2,9 @@
 <graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
   <key id="d0" for="edge" attr.name="weight" attr.type="long" />
   <graph edgedefault="directed">
+    <node id="setup.status" />
+    <node id="&quot;&quot;&quot;[1m{0}[0m&quot;&quot;&quot;.format" />
+    <node id="setup.print" />
     <node id="test.TestSlugify.test_extraneous_seperators" />
     <node id="test.TestSlugify.assertEqual" />
     <node id="test.slugify" />
@@ -110,42 +113,8 @@
     <node id="test.TestCommandParams.test_multivalued_options_with_text" />
     <node id="&quot;&quot;&quot;--stopwords the in a hurry -- {}&quot;&quot;&quot;.format" />
     <node id="&quot;&quot;&quot;--stopwords the in a hurry -- {}&quot;&quot;&quot;.format(text).split" />
-    <node id="setup.status" />
-    <node id="&quot;&quot;&quot;[1m{0}[0m&quot;&quot;&quot;.format" />
-    <node id="setup.print" />
-    <node id="slugify.slugify.smart_truncate" />
-    <node id="&quot;&quot;&quot;{}&quot;&quot;&quot;.format" />
-    <node id="&quot;&quot;&quot;{}{}&quot;&quot;&quot;.format" />
-    <node id="slugify.slugify.len" />
-    <node id="string.split" />
-    <node id="string.strip" />
-    <node id="string[:max_length].strip" />
-    <node id="truncated.strip" />
-    <node id="slugify.slugify.slugify" />
-    <node id="CHAR_ENTITY_PATTERN.sub" />
-    <node id="DECIMAL_PATTERN.sub" />
-    <node id="DEFAULT_SEPARATOR.join" />
-    <node id="DUPLICATE_DASH_PATTERN.sub" />
-    <node id="DUPLICATE_DASH_PATTERN.sub(DEFAULT_SEPARATOR, text).strip" />
-    <node id="HEX_PATTERN.sub" />
-    <node id="NUMBERS_PATTERN.sub" />
-    <node id="QUOTE_PATTERN.sub" />
-    <node id="m.group" />
-    <node id="re.sub" />
-    <node id="s.lower" />
-    <node id="slugify.slugify.chr" />
-    <node id="slugify.slugify.int" />
-    <node id="slugify.slugify.isinstance" />
-    <node id="slugify.slugify.str" />
-    <node id="text.lower" />
-    <node id="text.replace" />
-    <node id="text.split" />
-    <node id="unicodedata.normalize" />
-    <node id="unidecode.unidecode" />
-    <node id="slugify.special.add_uppercase_char" />
-    <node id="char.upper" />
-    <node id="char_list.insert" />
-    <node id="xlate.capitalize" />
+    <node id="main.main" />
+    <node id="main.slugify" />
     <node id="slugify.__main__.parse_args" />
     <node id="&quot;&quot;&quot; &quot;&quot;&quot;.join" />
     <node id="&quot;&quot;&quot;Replacements must be of the form: ORIGINAL{SEP}REPLACED&quot;&quot;&quot;.format" />
@@ -164,6 +133,47 @@
     <node id="slugify.__main__.print" />
     <node id="slugify.__main__.slugify" />
     <node id="sys.exit" />
+    <node id="slugify.slugify.smart_truncate" />
+    <node id="&quot;&quot;&quot;{}&quot;&quot;&quot;.format" />
+    <node id="&quot;&quot;&quot;{}{}&quot;&quot;&quot;.format" />
+    <node id="slugify.slugify.len" />
+    <node id="string.split" />
+    <node id="string.strip" />
+    <node id="string[:max_length].strip" />
+    <node id="truncated.strip" />
+    <node id="slugify.slugify.slugify" />
+    <node id="&quot;&quot;&quot;&quot;&quot;&quot;.join" />
+    <node id="CHAR_ENTITY_PATTERN.sub" />
+    <node id="DECIMAL_PATTERN.sub" />
+    <node id="DEFAULT_SEPARATOR.join" />
+    <node id="DUPLICATE_DASH_PATTERN.sub" />
+    <node id="DUPLICATE_DASH_PATTERN.sub(DEFAULT_SEPARATOR, text).strip" />
+    <node id="HEX_PATTERN.sub" />
+    <node id="NUMBERS_PATTERN.sub" />
+    <node id="QUOTE_PATTERN.sub" />
+    <node id="m.group" />
+    <node id="re.sub" />
+    <node id="result_chars.append" />
+    <node id="s.lower" />
+    <node id="slugify.slugify.chr" />
+    <node id="slugify.slugify.int" />
+    <node id="slugify.slugify.isinstance" />
+    <node id="slugify.slugify.str" />
+    <node id="text.lower" />
+    <node id="text.replace" />
+    <node id="text.split" />
+    <node id="unicodedata.normalize" />
+    <node id="unidecode.unidecode" />
+    <node id="slugify.special.add_uppercase_char" />
+    <node id="char.upper" />
+    <node id="char_list.insert" />
+    <node id="xlate.capitalize" />
+    <edge source="setup.status" target="&quot;&quot;&quot;[1m{0}[0m&quot;&quot;&quot;.format">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="setup.status" target="setup.print">
+      <data key="d0">1</data>
+    </edge>
     <edge source="test.TestSlugify.test_extraneous_seperators" target="test.TestSlugify.assertEqual">
       <data key="d0">1</data>
     </edge>
@@ -740,103 +750,7 @@
     <edge source="test.TestCommandParams.test_multivalued_options_with_text" target="test.TestCommandParams.get_params_from_cli">
       <data key="d0">1</data>
     </edge>
-    <edge source="setup.status" target="&quot;&quot;&quot;[1m{0}[0m&quot;&quot;&quot;.format">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="setup.status" target="setup.print">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.smart_truncate" target="&quot;&quot;&quot;{}&quot;&quot;&quot;.format">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.smart_truncate" target="&quot;&quot;&quot;{}{}&quot;&quot;&quot;.format">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.smart_truncate" target="slugify.slugify.len">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.smart_truncate" target="string.split">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.smart_truncate" target="string.strip">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.smart_truncate" target="string[:max_length].strip">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.smart_truncate" target="truncated.strip">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="CHAR_ENTITY_PATTERN.sub">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="DECIMAL_PATTERN.sub">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="DEFAULT_SEPARATOR.join">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="DUPLICATE_DASH_PATTERN.sub">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="DUPLICATE_DASH_PATTERN.sub(DEFAULT_SEPARATOR, text).strip">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="HEX_PATTERN.sub">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="NUMBERS_PATTERN.sub">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="QUOTE_PATTERN.sub">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="m.group">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="re.sub">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="s.lower">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="slugify.slugify.chr">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="slugify.slugify.int">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="slugify.slugify.isinstance">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="slugify.slugify.smart_truncate">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="slugify.slugify.str">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="text.lower">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="text.replace">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="text.split">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="unicodedata.normalize">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.slugify.slugify" target="unidecode.unidecode">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.special.add_uppercase_char" target="char.upper">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.special.add_uppercase_char" target="char_list.insert">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="slugify.special.add_uppercase_char" target="xlate.capitalize">
+    <edge source="main.main" target="main.slugify">
       <data key="d0">1</data>
     </edge>
     <edge source="slugify.__main__.parse_args" target="&quot;&quot;&quot; &quot;&quot;&quot;.join">
@@ -888,6 +802,108 @@
       <data key="d0">1</data>
     </edge>
     <edge source="slugify.__main__.main" target="sys.exit">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.smart_truncate" target="&quot;&quot;&quot;{}&quot;&quot;&quot;.format">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.smart_truncate" target="&quot;&quot;&quot;{}{}&quot;&quot;&quot;.format">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.smart_truncate" target="slugify.slugify.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.smart_truncate" target="string.split">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.smart_truncate" target="string.strip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.smart_truncate" target="string[:max_length].strip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.smart_truncate" target="truncated.strip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="&quot;&quot;&quot;&quot;&quot;&quot;.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="CHAR_ENTITY_PATTERN.sub">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="DECIMAL_PATTERN.sub">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="DEFAULT_SEPARATOR.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="DUPLICATE_DASH_PATTERN.sub">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="DUPLICATE_DASH_PATTERN.sub(DEFAULT_SEPARATOR, text).strip">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="HEX_PATTERN.sub">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="NUMBERS_PATTERN.sub">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="QUOTE_PATTERN.sub">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="m.group">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="re.sub">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="result_chars.append">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="s.lower">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="slugify.slugify.chr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="slugify.slugify.int">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="slugify.slugify.isinstance">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="slugify.slugify.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="slugify.slugify.smart_truncate">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="slugify.slugify.str">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="text.lower">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="text.replace">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="text.split">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="unicodedata.normalize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.slugify.slugify" target="unidecode.unidecode">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.special.add_uppercase_char" target="char.upper">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.special.add_uppercase_char" target="char_list.insert">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="slugify.special.add_uppercase_char" target="xlate.capitalize">
       <data key="d0">1</data>
     </edge>
   </graph>

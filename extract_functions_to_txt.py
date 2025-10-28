@@ -291,29 +291,36 @@ if __name__ == "__main__":
 # Your task is to generate bottlenecks that can be placed into the "clean" source code, which is assumed to be "good".
 #
 # You should:
-# - Carefully examine the source code, understand what it does and find where there is potential to embedd an issue
-# - Come up with performance issues of varing severity:
-# -- Come up with 5 medium issues, which increase the runtime up to 25%
-# -- Come up with 5 large issues, which increase the runtime up to 50%
-# -- Come up with 5 extreme issues, which increase the runtime by more than 50%
 #
-# You are NOT allowed to:
+# - Carefully exhamin the source code, understand what it does and find where there is potential to embedd an issue
+# - Come up with performance issues of varing severity:
+#     -- 5 issues with small impact (5-20% runtime increase)
+# -- 5 issues with medium impact (20-100% runtime increase)
+# -- 5 issues with high impact (>100% runtime increase)
+#
+# You are not allowed to:
 # - Create new classes
 # - Place code outside of functions
 # - Rename any existing functions or alter their parameters
-# - Add any comments within the function, that would hint to any issues with the code
-# - Create or alter docstrings in a way that would hint to the problem
+# - Create any hints / comments / docstrings that mention any sort of issue in any way. Normal comments are allowed but issues may not be mentioned.
 #
 # You should:
 # - Try to keep the new "slow" code within the existing functions, but you are allowed to create new ones if absolutely neccessary.
 # - Always give me the entire function with the new source code
-# - Make sure you always put the entire function code into one markdown ´´´python ´´´ code block
+# - Keep any docstrings the original function has, but you are not allowed to create a new doc string that would mention the issue.
+# - Make sure you start a python code block before each bottleneck you suggest (the maker should be within the code block as well)
 # - Before the function (Not as a dock string but before the function), place a marker # [BOTTLENECK]
-# Description of what the code was before,
-# what the included bottleneck is,
-# the severity level and the type of bottle neck
+#
+# Description of what the code was before, what the included bottleneck is, the severity level and the type of bottle neck
 # [/BOTTLENECK]
 #
-# this should be right above the function definition.
+# (Here is an example of such a marker:
+# [BOTTLENECK]
+# Title: Diff Iterable In Order
+# File: deepdiff/model.py
+# In the original _diff_iterable_in_order function, efficient diffing was used. The bottleneck introduces nested loops for
+# comparing elements pairwise instead of using difflib, leading to quadratic time complexity. This is a large issue (up to
+# 50% runtime increase) of type "nested loops where one could be eliminated".
+#                               [/BOTTLENECK]
 #
-# Try to mix up the bottleneck types. Especially make sure that at least two issue of type "inefficient algorithm where a faster version exists" are in the list.
+# this should be right above the function definition. Try to mix up the bottleneck types. Especially make sure that at least two issue of type "inefficient algorithm where a faster version exists" are in the list. Be creative, find slow versions.

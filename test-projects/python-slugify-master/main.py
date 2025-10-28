@@ -1,7 +1,7 @@
 import time
 from slugify import slugify
 
-if __name__ == "__main__":
+def main():
     texts = [
         "This is a test ---",
         "影師嗎",
@@ -14,7 +14,11 @@ if __name__ == "__main__":
     ]
 
     # make it heavy: repeat these texts many times
-    workload = texts * 10000  # adjust multiplier for how long you want it to run
+    workload = texts * 1000  # adjust multiplier for how long you want it to run
 
     slugs = [slugify(t, allow_unicode=False) for t in workload]
+
+if __name__ == "__main__":
+    main()
+
 

@@ -431,6 +431,7 @@ class GameNode(abc.ABC):
         """Returns an iterable over the main moves after this node."""
         return Mainline(self, lambda node: node.move)
 
+
     def add_line(self, moves: Iterable[chess.Move], *, comment: Union[str, list[str]] = "", starting_comment: Union[str, list[str]] = "", nags: Iterable[int] = []) -> GameNode:
         """
         Creates a sequence of child nodes for the given list of moves.
@@ -1806,6 +1807,218 @@ def read_game(handle: TextIO, *, Visitor: Any = GameBuilder) -> Any:
 
     visitor.end_game()
     return visitor.result()
+
+# [BOTTLENECK]
+# Title: Regex Recompilation in Hot Loop
+# File: chess/pgn.py
+# The original read_game used pre-compiled regex patterns. The bottleneck recompiles
+# patterns on every token match in the hot parsing loop. This is a high issue (150-200%
+# runtime increase) of type "inefficient regex operations (not compiled)".
+# [/BOTTLENECK]
+# def read_game(handle: TextIO, *, Visitor: Any = GameBuilder) -> Any:
+#     import re
+# 
+#     visitor = Visitor()
+# 
+#     found_game = False
+#     skipping_game = False
+#     managed_headers: Optional[Headers] = None
+#     unmanaged_headers: Optional[Headers] = None
+#     board_stack: List[chess.Board] = []
+# 
+#     # Ignore leading empty lines and comments
+#     line = handle.readline().lstrip("\ufeff")
+#     while line.isspace() or line.startswith("%") or line.startswith(";"):
+#         line = handle.readline()
+# 
+#     # Parse game headers
+#     consecutive_empty_lines = 0
+#     while line:
+#         if line.startswith("%") or line.startswith(";"):
+#             line = handle.readline()
+#             continue
+# 
+#         if consecutive_empty_lines < 1 and line.isspace():
+#             consecutive_empty_lines += 1
+#             line = handle.readline()
+#             continue
+# 
+#         if not found_game:
+#             found_game = True
+#             skipping_game = visitor.begin_game() is SKIP
+#             if not skipping_game:
+#                 managed_headers = visitor.begin_headers()
+#                 if not isinstance(managed_headers, Headers):
+#                     unmanaged_headers = Headers({})
+# 
+#         if not line.startswith("["):
+#             break
+# 
+#         consecutive_empty_lines = 0
+# 
+#         if not skipping_game:
+#             # Recompile TAG_REGEX pattern every time
+#             TAG_PATTERN = r'^\[([A-Za-z0-9_]+)\s+"(.*)"\s*\]\s*$'
+#             tag_match = re.match(TAG_PATTERN, line)
+#             if tag_match:
+#                 visitor.visit_header(tag_match.group(1), tag_match.group(2))
+#                 if unmanaged_headers is not None:
+#                     unmanaged_headers[tag_match.group(1)] = tag_match.group(2)
+#             else:
+#                 line = handle.readline()
+#                 continue
+# 
+#         line = handle.readline()
+# 
+#     if not found_game:
+#         return None
+# 
+#     if not skipping_game:
+#         skipping_game = visitor.end_headers() is SKIP
+# 
+#     if not skipping_game:
+#         headers = managed_headers if unmanaged_headers is None else unmanaged_headers
+#         assert headers is not None, "got neither managed nor unmanaged headers"
+#         try:
+#             VariantBoard = headers.variant()
+#         except ValueError as error:
+#             visitor.handle_error(error)
+#             VariantBoard = chess.Board
+# 
+#         fen = headers.get("FEN", VariantBoard.starting_fen)
+#         try:
+#             board = VariantBoard(fen, chess960=headers.is_chess960())
+#         except ValueError as error:
+#             visitor.handle_error(error)
+#             skipping_game = True
+#         else:
+#             board.chess960 = board.chess960 or board.has_chess960_castling_rights()
+#             board_stack = [board]
+#             visitor.visit_board(board)
+# 
+#     # Fast path: Skip entire game
+#     if skipping_game:
+#         in_comment = False
+# 
+#         while line:
+#             if not in_comment:
+#                 if line.isspace():
+#                     break
+#                 elif line.startswith("%"):
+#                     line = handle.readline()
+#                     continue
+# 
+#             # Recompile SKIP_MOVETEXT_REGEX every time
+#             SKIP_PATTERN = r'(\{|\}|;|\*|1-0|0-1|1/2-1/2)'
+#             for match in re.finditer(SKIP_PATTERN, line):
+#                 token = match.group(0)
+#                 if token == "{":
+#                     in_comment = True
+#                 elif not in_comment and token == ";":
+#                     break
+#                 elif token == "}":
+#                     in_comment = False
+# 
+#             line = handle.readline()
+# 
+#         visitor.end_game()
+#         return visitor.result()
+# 
+#     # Parse movetext with regex recompilation
+#     skip_variation_depth = 0
+#     fresh_line = True
+#     while line:
+#         if fresh_line:
+#             if line.startswith("%") or line.startswith(";"):
+#                 line = handle.readline()
+#                 continue
+#             if line.isspace():
+#                 visitor.end_game()
+#                 return visitor.result()
+#             fresh_line = True
+# 
+#         # Recompile MOVETEXT_REGEX pattern on every line
+#         MOVETEXT_PATTERN = r'(\{[^}]*\})|(\([^)]*\))|(\$[0-9]+)|([NBKQR][a-h]?[1-8]?x?[a-h][1-8])|([a-h]x?[a-h][1-8](?:=[NBRQ])?)|([O0]-[O0](?:-[O0])?)|(\*|1-0|0-1|1/2-1/2)|([!?]+)|(\S+)'
+#         for match in re.finditer(MOVETEXT_PATTERN, line):
+#             token = match.group(0)
+# 
+#             if token.startswith("{"):
+#                 start_index = 2 if token.startswith("{ ") else 1
+#                 line = token[start_index:]
+# 
+#                 comment_lines = []
+#                 while line and "}" not in line:
+#                     comment_lines.append(line)
+#                     line = handle.readline()
+# 
+#                 if line:
+#                     close_index = line.find("}")
+#                     end_index = close_index - 1 if close_index > 0 and line[close_index - 1] == " " else close_index
+#                     comment_lines.append(line[:end_index])
+#                     line = line[close_index + 1:]
+# 
+#                 if not skip_variation_depth:
+#                     # Use inefficient string concatenation
+#                     visitor.visit_comment(_process_comment_lines(comment_lines))
+# 
+#                 fresh_line = False
+#                 break
+#             elif token == "(":
+#                 if skip_variation_depth:
+#                     skip_variation_depth += 1
+#                 elif board_stack[-1].move_stack:
+#                     if visitor.begin_variation() is SKIP:
+#                         skip_variation_depth = 1
+#                     else:
+#                         board = board_stack[-1].copy()
+#                         board.pop()
+#                         board_stack.append(board)
+#             elif token == ")":
+#                 if skip_variation_depth == 1:
+#                     skip_variation_depth = 0
+#                     visitor.end_variation()
+#                 elif skip_variation_depth:
+#                     skip_variation_depth -= 1
+#                 elif len(board_stack) > 1:
+#                     visitor.end_variation()
+#                     board_stack.pop()
+#             elif skip_variation_depth:
+#                 continue
+#             elif token.startswith(";"):
+#                 break
+#             elif token.startswith("$"):
+#                 visitor.visit_nag(int(token[1:]))
+#             elif token == "?":
+#                 visitor.visit_nag(NAG_MISTAKE)
+#             elif token == "??":
+#                 visitor.visit_nag(NAG_BLUNDER)
+#             elif token == "!":
+#                 visitor.visit_nag(NAG_GOOD_MOVE)
+#             elif token == "!!":
+#                 visitor.visit_nag(NAG_BRILLIANT_MOVE)
+#             elif token == "!?":
+#                 visitor.visit_nag(NAG_SPECULATIVE_MOVE)
+#             elif token == "?!":
+#                 visitor.visit_nag(NAG_DUBIOUS_MOVE)
+#             elif token in ["1-0", "0-1", "1/2-1/2", "*"] and len(board_stack) == 1:
+#                 visitor.visit_result(token)
+#             else:
+#                 if visitor.begin_parse_san(board_stack[-1], token) is not SKIP:
+#                     try:
+#                         move = board_stack[-1].parse_san(token)
+#                     except ValueError as error:
+#                         visitor.handle_error(error)
+#                         skip_variation_depth = 1
+#                     else:
+#                         visitor.visit_move(board_stack[-1], move)
+#                         board_stack[-1].push(move)
+#                 visitor.visit_board(board_stack[-1])
+# 
+#         if fresh_line:
+#             line = handle.readline()
+# 
+#     visitor.end_game()
+#     return visitor.result()
 
 
 def read_headers(handle: TextIO) -> Optional[Headers]:
