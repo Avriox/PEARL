@@ -40,7 +40,7 @@ class CodeAnalysisPipeline:
         logging.info(f"Found {len(directories)} directories")
 
         for directory in directories:
-            if directory != Path("test-projects/01-selection-sorter"):
+            if directory != Path("test-projects/python-chess-master"):
                 continue
 
             # exclude : textdistance mccabe slugify sumy sortedcontainers
@@ -107,7 +107,7 @@ class CodeAnalysisPipeline:
             args = run_config.get("default_args") if run_config else None
             # Profile (writes to DB)
             run = profiler.profile_function_timing(
-                args=args, warmup_runs=1, profiled_runs=1
+                args=args, warmup_runs=5, profiled_runs=20
             )
 
             print(
@@ -245,7 +245,7 @@ class CodeAnalysisPipeline:
         try:
             run = profiler.profile_function_timing(
                 args=project.config.get("run", {}).get("default_args"),
-                warmup_runs=2,              # keep warmups, now using patched code
+                warmup_runs=5,              # keep warmups, now using patched code
                 profiled_runs=10,           # keep your baseline multi-run default
                 top_k_for_lines=10,
                 patches=patches

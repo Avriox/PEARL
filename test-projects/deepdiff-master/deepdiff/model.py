@@ -873,93 +873,105 @@ class DiffLevel:
             output = result
         return output
 
-    # Slow Version
-    # def path(
-    #     self,
-    #     root: str = "root",
-    #     force: Optional[str] = None,
-    #     get_parent_too: bool = False,
-    #     use_t2: bool = False,
-    #     output_format: Literal["str", "list"] = "str",
-    #     reporting_move: bool = False,
-    # ) -> Any:
-    #     # Recreating cache key every time even when not needed
-    #     cache_key_parts = []
-    #     cache_key_parts.append(str(force))
-    #     cache_key_parts.append(str(get_parent_too))
-    #     cache_key_parts.append(str(use_t2))
-    #     cache_key_parts.append(str(output_format))
-    #     cache_key = "".join(cache_key_parts)
-    #
-    #     # Not checking cache first
-    #     if output_format == "str":
-    #         result = parent = param = ""
-    #     else:
-    #         result = []
-    #
-    #     level = self.all_up
-    #
-    #     while level and level is not self:
-    #         if level.additional.get("moved") and not reporting_move:
-    #             level_use_t2 = not use_t2
-    #         else:
-    #             level_use_t2 = use_t2
-    #
-    #         if level_use_t2:
-    #             next_rel = level.t2_child_rel or level.t1_child_rel
-    #         else:
-    #             next_rel = level.t1_child_rel or level.t2_child_rel
-    #
-    #         if next_rel is None:
-    #             break
-    #
-    #         if output_format == "str":
-    #             item = next_rel.get_param_repr(force)
-    #             if item:
-    #                 parent = result
-    #                 param = next_rel.param
-    #                 result = result + item  # String concatenation instead of using list
-    #             else:
-    #                 result = None
-    #                 break
-    #         elif output_format == "list":
-    #             result.append(next_rel.param)
-    #
-    #         level = level.down
-    #
-    #     # Only checking cache at the end
-    #     if cache_key in self._path:
-    #         cached = self._path[cache_key]
-    #         if get_parent_too:
-    #             parent, param, result = cached
-    #             return (
-    #                 self._format_result(root, parent),
-    #                 param,
-    #                 self._format_result(root, result),
-    #             )
-    #         else:
-    #             return self._format_result(root, cached)
-    #
-    #     if output_format == "str":
-    #         if get_parent_too:
-    #             self._path[cache_key] = (parent, param, result)
-    #             output = (
-    #                 self._format_result(root, parent),
-    #                 param,
-    #                 self._format_result(root, result),
-    #             )
-    #         else:
-    #             self._path[cache_key] = result
-    #             output = (
-    #                 self._format_result(root, result)
-    #                 if isinstance(result, (str, type(None)))
-    #                 else None
-    #             )
-    #     else:
-    #         output = result
-    #     return output
+    # [BOTTLENECK]
+    # Title: Path
+    # Original: Single path calculation with caching
+    #     Bottleneck: Calculating path multiple times without using cache effectively
+    # Severity: Small but noticeable
+    # Type: Missing caching
+    # [/BOTTLENECK]
+#     def path(
+#         self,
+#         root: str = "root",
+#         force: Optional[str] = None,
+#         get_parent_too: bool = False,
+#         use_t2: bool = False,
+#         output_format: Literal["str", "list"] = "str",
+#         reporting_move: bool = False,
+#     ) -> Any:
+#         # Recreating cache key every time even when not needed
+#         cache_key_parts = []
+#         cache_key_parts.append(str(force))
+#         cache_key_parts.append(str(get_parent_too))
+#         cache_key_parts.append(str(use_t2))
+#         cache_key_parts.append(str(output_format))
+#         cache_key = "".join(cache_key_parts)
+#
+#         # Not checking cache first
+#         if output_format == "str":
+#             result = parent = param = ""
+#         else:
+#             result = []
+#
+#         level = self.all_up
+#
+#         while level and level is not self:
+#             if level.additional.get("moved") and not reporting_move:
+#                 level_use_t2 = not use_t2
+#             else:
+#                 level_use_t2 = use_t2
+#
+#             if level_use_t2:
+#                 next_rel = level.t2_child_rel or level.t1_child_rel
+#             else:
+#                 next_rel = level.t1_child_rel or level.t2_child_rel
+#
+#             if next_rel is None:
+#                 break
+#
+#             if output_format == "str":
+#                 item = next_rel.get_param_repr(force)
+#                 if item:
+#                     parent = result
+#                     param = next_rel.param
+#                     result = result + item  # String concatenation instead of using list
+#                 else:
+#                     result = None
+#                     break
+#             elif output_format == "list":
+#                 result.append(next_rel.param)
+#
+#             level = level.down
+#
+#         # Only checking cache at the end
+#         if cache_key in self._path:
+#             cached = self._path[cache_key]
+#             if get_parent_too:
+#                 parent, param, result = cached
+#                 return (
+#                     self._format_result(root, parent),
+#                     param,
+#                     self._format_result(root, result),
+#                 )
+#             else:
+#                 return self._format_result(root, cached)
+#
+#         if output_format == "str":
+#             if get_parent_too:
+#                 self._path[cache_key] = (parent, param, result)
+#                 output = (
+#                     self._format_result(root, parent),
+#                     param,
+#                     self._format_result(root, result),
+#                 )
+#             else:
+#                 self._path[cache_key] = result
+#                 output = (
+#                     self._format_result(root, result)
+#                     if isinstance(result, (str, type(None)))
+#                     else None
+#                 )
+#         else:
+#             output = result
+#         return output
 
-    # Slow Version Path2
+    # [BOTTLENECK]
+    # Title Path2
+    # In the original path method of DiffLevel, the path was built efficiently. The bottleneck introduces an inefficient
+    # algorithm by using a slow, recursive rebuild of the path string on every call instead of caching properly, simulating a
+    # worse-than-linear approach. This is an extreme issue (>50% runtime increase) of type "inefficient algorithm where a
+    # faster version exists".
+    # [/BOTTLENECK]
     # def path(
     #     self,
     #     root: str = "root",
@@ -1272,7 +1284,13 @@ class ChildRelationship:
 
         return result
 
-    # Slow Version
+    # [BOTTLENECK]
+    # Title Stringify Param
+    # Original: Efficient parameter representation
+    # Bottleneck: Multiple string operations and repeated evaluations
+    # Severity: Medium
+    # Type: Inefficient string operations
+    # [/BOTTLENECK]
     # def stringify_param(self, force: Optional[str] = None) -> Optional[str]:
     #     param = self.param
     #     if isinstance(param, strings):

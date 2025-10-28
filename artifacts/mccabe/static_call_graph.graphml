@@ -4,100 +4,112 @@
   <graph edgedefault="directed">
     <node id="mccabe.ASTVisitor.__init__" />
     <node id="mccabe.ASTVisitor.default" />
-    <node id="mccabe.iter_child_nodes" />
-    <node id="self.dispatch" />
     <node id="mccabe.ASTVisitor.dispatch" />
-    <node id="mccabe.meth" />
+    <node id="mccabe.iter_child_nodes" />
     <node id="mccabe.getattr" />
+    <node id="mccabe.meth" />
+    <node id="self._cache.get" />
     <node id="mccabe.ASTVisitor.preorder" />
     <node id="mccabe.PathNode.__init__" />
     <node id="mccabe.PathNode.to_dot" />
-    <node id="self.dot_id" />
-    <node id="mccabe.print" />
     <node id="mccabe.PathNode.dot_id" />
+    <node id="mccabe.print" />
     <node id="mccabe.id" />
     <node id="mccabe.PathGraph.__init__" />
     <node id="mccabe.defaultdict" />
     <node id="mccabe.PathGraph.connect" />
+    <node id="self.nodes[n1].append" />
     <node id="mccabe.PathGraph.to_dot" />
     <node id="next.dot_id" />
-    <node id="node.to_dot" />
     <node id="node.dot_id" />
+    <node id="node.to_dot" />
+    <node id="self.nodes.items" />
     <node id="mccabe.PathGraph.complexity" />
     <node id="mccabe.len" />
     <node id="mccabe.sum" />
+    <node id="self.nodes.values" />
     <node id="mccabe.PathGraphingAstVisitor.__init__" />
-    <node id="mccabe.super" />
-    <node id="self.reset" />
     <node id="mccabe.PathGraphingAstVisitor.reset" />
+    <node id="mccabe.super" />
     <node id="mccabe.PathGraphingAstVisitor.dispatch_list" />
+    <node id="mccabe.PathGraphingAstVisitor.dispatch" />
     <node id="mccabe.PathGraphingAstVisitor.visitFunctionDef" />
-    <node id="mccabe.PathNode" />
     <node id="mccabe.PathGraph" />
-    <node id="self.dispatch_list" />
-    <node id="self.appendPathNode" />
-    <node id="mccabe.PathGraphingAstVisitor.visitClassDef" />
     <node id="mccabe.PathGraphingAstVisitor.appendPathNode" />
+    <node id="mccabe.PathNode" />
+    <node id="self.graph.connect" />
+    <node id="mccabe.PathGraphingAstVisitor.visitClassDef" />
     <node id="mccabe.PathGraphingAstVisitor.visitSimpleStatement" />
     <node id="mccabe.PathGraphingAstVisitor.default" />
     <node id="mccabe.isinstance" />
-    <node id="self.visitSimpleStatement" />
     <node id="mccabe.PathGraphingAstVisitor.visitLoop" />
-    <node id="self._subgraph" />
-    <node id="mccabe.PathGraphingAstVisitor.visitIf" />
     <node id="mccabe.PathGraphingAstVisitor._subgraph" />
-    <node id="self._subgraph_parse" />
+    <node id="mccabe.PathGraphingAstVisitor.visitIf" />
     <node id="mccabe.PathGraphingAstVisitor._subgraph_parse" />
     <node id="loose_ends.append" />
+    <node id="mccabe.PathGraphingAstVisitor._build_path_string" />
+    <node id="mccabe._build_path_string" />
+    <node id="mccabe.hasattr" />
+    <node id="mccabe.range" />
+    <node id="mccabe.str" />
     <node id="mccabe.PathGraphingAstVisitor.visitTryExcept" />
     <node id="mccabe.PathGraphingAstVisitor.visitWith" />
     <node id="mccabe.McCabeChecker.__init__" />
     <node id="mccabe.McCabeChecker.add_options" />
     <node id="kwargs.pop" />
     <node id="parser.add_option" />
+    <node id="parser.config_options.append" />
     <node id="mccabe.McCabeChecker.parse_options" />
     <node id="mccabe.int" />
     <node id="mccabe.McCabeChecker.run" />
-    <node id="mccabe.type" />
-    <node id="mccabe.PathGraphingAstVisitor" />
-    <node id="visitor.preorder" />
     <node id="graph.complexity" />
+    <node id="mccabe.PathGraphingAstVisitor" />
+    <node id="mccabe.type" />
+    <node id="visitor.graphs.values" />
+    <node id="visitor.preorder" />
     <node id="mccabe.get_code_complexity" />
-    <node id="mccabe.compile" />
+    <node id="&quot;&quot;&quot;&#10;&quot;&quot;&quot;.join" />
+    <node id="McCabeChecker(tree, filename).run" />
     <node id="complx.append" />
     <node id="mccabe.McCabeChecker" />
+    <node id="mccabe.compile" />
     <node id="sys.exc_info" />
+    <node id="sys.stderr.write" />
     <node id="mccabe.get_module_complexity" />
     <node id="mccabe._read" />
     <node id="f.read" />
-    <node id="tokenize.detect_encoding" />
     <node id="mccabe.open" />
+    <node id="tokenize.detect_encoding" />
     <node id="mccabe.main" />
     <node id="graph.to_dot" />
-    <node id="opar.print_help" />
-    <node id="opar.parse_args" />
     <node id="opar.add_option" />
-    <node id="optparse.OptionParser" />
     <node id="opar.exit" />
+    <node id="opar.parse_args" />
+    <node id="opar.print_help" />
+    <node id="optparse.OptionParser" />
     <node id="setup.get_version" />
-    <node id="setup.open" />
     <node id="line.split" />
-    <node id="setup.eval" />
     <node id="line.startswith" />
+    <node id="setup.eval" />
+    <node id="setup.open" />
     <node id="setup.get_long_description" />
+    <node id="&quot;&quot;&quot;&#10;&#10;&quot;&quot;&quot;.join" />
     <node id="descr.append" />
     <node id="test_mccabe.get_complexity_number" />
     <node id="strio.getvalue" />
-    <node id="test_mccabe.int" />
     <node id="strio_val.split" />
+    <node id="strio_val.split()[-1].strip" />
     <node id="test_mccabe.get_code_complexity" />
+    <node id="test_mccabe.int" />
     <node id="test_mccabe.McCabeTestCase.setUp" />
     <node id="test_mccabe.StringIO" />
     <node id="test_mccabe.McCabeTestCase.tearDown" />
+    <node id="self.strio.close" />
     <node id="test_mccabe.McCabeTestCase.assert_complexity" />
     <node id="snippet.replace" />
-    <node id="self.assertEqual" />
+    <node id="test_mccabe.McCabeTestCase.assertEqual" />
     <node id="test_mccabe.McCabeTestCase.test_print_message" />
+    <node id="self.strio.getvalue" />
     <node id="test_mccabe.McCabeTestCase.test_sequential_snippet" />
     <node id="test_mccabe.McCabeTestCase.test_sequential_unencapsulated_snippet" />
     <node id="test_mccabe.McCabeTestCase.test_if_elif_else_dead_path_snippet" />
@@ -108,38 +120,42 @@
     <node id="test_mccabe.McCabeTestCase.test_trivial" />
     <node id="test_mccabe.McCabeTestCase.test_expr_as_statement" />
     <node id="test_mccabe.McCabeTestCase.test_try_else" />
-    <node id="self.assert_complexity" />
     <node id="test_mccabe.McCabeTestCase.test_async_keywords" />
+    <node id="pytest.mark.skipif" />
     <node id="test_mccabe.McCabeTestCase.test_annotated_assignment" />
     <node id="test_mccabe.RegressionTests.setUp" />
     <node id="test_mccabe.RegressionTests.tearDown" />
     <node id="test_mccabe.RegressionTests.test_max_complexity_is_always_an_int" />
+    <node id="test_mccabe.RegressionTests.assertEqual" />
     <node id="test_mccabe._options" />
     <node id="test_mccabe.RegressionTests.test_get_module_complexity" />
     <node id="test_mccabe.test_idempotent_any_syntatically_valid_python" />
-    <node id="st.integers" />
     <node id="HealthCheck.all" />
-    <node id="test_mccabe.given" />
     <node id="hypothesmith.from_grammar" />
     <node id="hypothesmith.from_node" />
+    <node id="st.integers" />
     <node id="test_mccabe.compile" />
+    <node id="test_mccabe.given" />
     <node id="test_mccabe.settings" />
+    <edge source="mccabe.ASTVisitor.default" target="mccabe.ASTVisitor.dispatch">
+      <data key="d0">1</data>
+    </edge>
     <edge source="mccabe.ASTVisitor.default" target="mccabe.iter_child_nodes">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.ASTVisitor.default" target="self.dispatch">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.ASTVisitor.dispatch" target="mccabe.meth">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.ASTVisitor.dispatch" target="mccabe.getattr">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.ASTVisitor.preorder" target="self.dispatch">
+    <edge source="mccabe.ASTVisitor.dispatch" target="mccabe.meth">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathNode.to_dot" target="self.dot_id">
+    <edge source="mccabe.ASTVisitor.dispatch" target="self._cache.get">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.ASTVisitor.preorder" target="mccabe.ASTVisitor.dispatch">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathNode.to_dot" target="mccabe.PathNode.dot_id">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.PathNode.to_dot" target="mccabe.print">
@@ -151,16 +167,22 @@
     <edge source="mccabe.PathGraph.__init__" target="mccabe.defaultdict">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraph.to_dot" target="next.dot_id">
+    <edge source="mccabe.PathGraph.connect" target="self.nodes[n1].append">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraph.to_dot" target="node.to_dot">
+    <edge source="mccabe.PathGraph.to_dot" target="mccabe.print">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraph.to_dot" target="next.dot_id">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.PathGraph.to_dot" target="node.dot_id">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraph.to_dot" target="mccabe.print">
+    <edge source="mccabe.PathGraph.to_dot" target="node.to_dot">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraph.to_dot" target="self.nodes.items">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.PathGraph.complexity" target="mccabe.len">
@@ -169,130 +191,181 @@
     <edge source="mccabe.PathGraph.complexity" target="mccabe.sum">
       <data key="d0">1</data>
     </edge>
+    <edge source="mccabe.PathGraph.complexity" target="self.nodes.values">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor.__init__" target="mccabe.PathGraphingAstVisitor.__init__">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor.__init__" target="mccabe.PathGraphingAstVisitor.reset">
+      <data key="d0">1</data>
+    </edge>
     <edge source="mccabe.PathGraphingAstVisitor.__init__" target="mccabe.super">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor.__init__" target="self.reset">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.PathGraphingAstVisitor.dispatch_list" target="self.dispatch">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.PathGraphingAstVisitor.visitFunctionDef" target="mccabe.PathNode">
+    <edge source="mccabe.PathGraphingAstVisitor.dispatch_list" target="mccabe.PathGraphingAstVisitor.dispatch">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.PathGraphingAstVisitor.visitFunctionDef" target="mccabe.PathGraph">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor.visitFunctionDef" target="self.dispatch_list">
+    <edge source="mccabe.PathGraphingAstVisitor.visitFunctionDef" target="mccabe.PathGraphingAstVisitor.appendPathNode">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor.visitFunctionDef" target="self.appendPathNode">
+    <edge source="mccabe.PathGraphingAstVisitor.visitFunctionDef" target="mccabe.PathGraphingAstVisitor.dispatch_list">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor.visitFunctionDef" target="self.reset">
+    <edge source="mccabe.PathGraphingAstVisitor.visitFunctionDef" target="mccabe.PathGraphingAstVisitor.reset">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor.visitClassDef" target="self.dispatch_list">
+    <edge source="mccabe.PathGraphingAstVisitor.visitFunctionDef" target="mccabe.PathNode">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor.visitFunctionDef" target="self.graph.connect">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.PathGraphingAstVisitor.appendPathNode" target="mccabe.PathNode">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor.visitSimpleStatement" target="self.appendPathNode">
+    <edge source="mccabe.PathGraphingAstVisitor.appendPathNode" target="self.graph.connect">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor.visitClassDef" target="mccabe.PathGraphingAstVisitor.dispatch_list">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor.visitSimpleStatement" target="mccabe.PathGraphingAstVisitor.appendPathNode">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor.default" target="mccabe.PathGraphingAstVisitor.default">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor.default" target="mccabe.PathGraphingAstVisitor.visitSimpleStatement">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.PathGraphingAstVisitor.default" target="mccabe.isinstance">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor.default" target="self.visitSimpleStatement">
-      <data key="d0">1</data>
-    </edge>
     <edge source="mccabe.PathGraphingAstVisitor.default" target="mccabe.super">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor.visitLoop" target="self._subgraph">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.PathGraphingAstVisitor.visitIf" target="self._subgraph">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.PathGraphingAstVisitor._subgraph" target="mccabe.PathNode">
+    <edge source="mccabe.PathGraphingAstVisitor.visitLoop" target="mccabe.PathGraphingAstVisitor._subgraph">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.PathGraphingAstVisitor._subgraph" target="mccabe.PathGraph">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor._subgraph" target="self._subgraph_parse">
+    <edge source="mccabe.PathGraphingAstVisitor._subgraph" target="mccabe.PathGraphingAstVisitor._subgraph_parse">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor._subgraph" target="self.appendPathNode">
+    <edge source="mccabe.PathGraphingAstVisitor._subgraph" target="mccabe.PathGraphingAstVisitor.appendPathNode">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor._subgraph" target="self.reset">
+    <edge source="mccabe.PathGraphingAstVisitor._subgraph" target="mccabe.PathGraphingAstVisitor.reset">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor._subgraph" target="mccabe.PathNode">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor.visitIf" target="mccabe.PathGraphingAstVisitor._subgraph">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.PathGraphingAstVisitor._subgraph_parse" target="loose_ends.append">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor._subgraph_parse" target="self.dispatch_list">
+    <edge source="mccabe.PathGraphingAstVisitor._subgraph_parse" target="mccabe.PathGraphingAstVisitor._build_path_string">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor._subgraph_parse" target="mccabe.PathGraphingAstVisitor.dispatch_list">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.PathGraphingAstVisitor._subgraph_parse" target="mccabe.PathNode">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor.visitTryExcept" target="self._subgraph">
+    <edge source="mccabe.PathGraphingAstVisitor._subgraph_parse" target="mccabe._build_path_string">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor.visitWith" target="self.appendPathNode">
+    <edge source="mccabe.PathGraphingAstVisitor._subgraph_parse" target="mccabe.hasattr">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.PathGraphingAstVisitor.visitWith" target="self.dispatch_list">
+    <edge source="mccabe.PathGraphingAstVisitor._subgraph_parse" target="mccabe.len">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.McCabeChecker.add_options" target="mccabe.isinstance">
+    <edge source="mccabe.PathGraphingAstVisitor._subgraph_parse" target="mccabe.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor._subgraph_parse" target="mccabe.str">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor._subgraph_parse" target="self.graph.connect">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor.visitTryExcept" target="mccabe.PathGraphingAstVisitor._subgraph">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor.visitWith" target="mccabe.PathGraphingAstVisitor.appendPathNode">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.PathGraphingAstVisitor.visitWith" target="mccabe.PathGraphingAstVisitor.dispatch_list">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.McCabeChecker.add_options" target="kwargs.pop">
       <data key="d0">1</data>
     </edge>
+    <edge source="mccabe.McCabeChecker.add_options" target="mccabe.getattr">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.McCabeChecker.add_options" target="mccabe.isinstance">
+      <data key="d0">1</data>
+    </edge>
     <edge source="mccabe.McCabeChecker.add_options" target="parser.add_option">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.McCabeChecker.add_options" target="mccabe.getattr">
+    <edge source="mccabe.McCabeChecker.add_options" target="parser.config_options.append">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.McCabeChecker.parse_options" target="mccabe.int">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.McCabeChecker.run" target="mccabe.type">
+    <edge source="mccabe.McCabeChecker.run" target="graph.complexity">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.McCabeChecker.run" target="mccabe.PathGraphingAstVisitor">
       <data key="d0">1</data>
     </edge>
+    <edge source="mccabe.McCabeChecker.run" target="mccabe.type">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.McCabeChecker.run" target="visitor.graphs.values">
+      <data key="d0">1</data>
+    </edge>
     <edge source="mccabe.McCabeChecker.run" target="visitor.preorder">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.McCabeChecker.run" target="graph.complexity">
+    <edge source="mccabe.get_code_complexity" target="&quot;&quot;&quot;&#10;&quot;&quot;&quot;.join">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.get_code_complexity" target="mccabe.print">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.get_code_complexity" target="mccabe.compile">
+    <edge source="mccabe.get_code_complexity" target="McCabeChecker(tree, filename).run">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.get_code_complexity" target="complx.append">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.get_code_complexity" target="mccabe.len">
-      <data key="d0">1</data>
-    </edge>
     <edge source="mccabe.get_code_complexity" target="mccabe.McCabeChecker">
       <data key="d0">1</data>
     </edge>
+    <edge source="mccabe.get_code_complexity" target="mccabe.compile">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.get_code_complexity" target="mccabe.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.get_code_complexity" target="mccabe.print">
+      <data key="d0">1</data>
+    </edge>
     <edge source="mccabe.get_code_complexity" target="sys.exc_info">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.get_code_complexity" target="sys.stderr.write">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.get_module_complexity" target="mccabe._read">
@@ -304,58 +377,67 @@
     <edge source="mccabe._read" target="f.read">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe._read" target="tokenize.detect_encoding">
-      <data key="d0">1</data>
-    </edge>
     <edge source="mccabe._read" target="mccabe.open">
       <data key="d0">1</data>
     </edge>
-    <edge source="mccabe.main" target="graph.to_dot">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.main" target="mccabe.print">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.main" target="opar.print_help">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.main" target="opar.parse_args">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.main" target="opar.add_option">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.main" target="mccabe.compile">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.main" target="mccabe._read">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.main" target="optparse.OptionParser">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.main" target="visitor.preorder">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.main" target="mccabe.PathGraphingAstVisitor">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="mccabe.main" target="opar.exit">
+    <edge source="mccabe._read" target="tokenize.detect_encoding">
       <data key="d0">1</data>
     </edge>
     <edge source="mccabe.main" target="graph.complexity">
       <data key="d0">1</data>
     </edge>
-    <edge source="setup.get_version" target="setup.open">
+    <edge source="mccabe.main" target="graph.to_dot">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.main" target="mccabe.PathGraphingAstVisitor">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.main" target="mccabe._read">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.main" target="mccabe.compile">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.main" target="mccabe.print">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.main" target="opar.add_option">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.main" target="opar.exit">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.main" target="opar.parse_args">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.main" target="opar.print_help">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.main" target="optparse.OptionParser">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.main" target="visitor.graphs.values">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="mccabe.main" target="visitor.preorder">
       <data key="d0">1</data>
     </edge>
     <edge source="setup.get_version" target="line.split">
       <data key="d0">1</data>
     </edge>
+    <edge source="setup.get_version" target="line.startswith">
+      <data key="d0">1</data>
+    </edge>
     <edge source="setup.get_version" target="setup.eval">
       <data key="d0">1</data>
     </edge>
-    <edge source="setup.get_version" target="line.startswith">
+    <edge source="setup.get_version" target="setup.open">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="setup.get_long_description" target="&quot;&quot;&quot;&#10;&#10;&quot;&quot;&quot;.join">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="setup.get_long_description" target="descr.append">
       <data key="d0">1</data>
     </edge>
     <edge source="setup.get_long_description" target="f.read">
@@ -364,130 +446,139 @@
     <edge source="setup.get_long_description" target="setup.open">
       <data key="d0">1</data>
     </edge>
-    <edge source="setup.get_long_description" target="descr.append">
-      <data key="d0">1</data>
-    </edge>
     <edge source="test_mccabe.get_complexity_number" target="strio.getvalue">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="test_mccabe.get_complexity_number" target="test_mccabe.int">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.get_complexity_number" target="strio_val.split">
       <data key="d0">1</data>
     </edge>
+    <edge source="test_mccabe.get_complexity_number" target="strio_val.split()[-1].strip">
+      <data key="d0">1</data>
+    </edge>
     <edge source="test_mccabe.get_complexity_number" target="test_mccabe.get_code_complexity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test_mccabe.get_complexity_number" target="test_mccabe.int">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.McCabeTestCase.setUp" target="test_mccabe.StringIO">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.assert_complexity" target="test_mccabe.get_complexity_number">
+    <edge source="test_mccabe.McCabeTestCase.tearDown" target="self.strio.close">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.McCabeTestCase.assert_complexity" target="snippet.replace">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.assert_complexity" target="self.assertEqual">
+    <edge source="test_mccabe.McCabeTestCase.assert_complexity" target="test_mccabe.McCabeTestCase.assertEqual">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test_mccabe.McCabeTestCase.assert_complexity" target="test_mccabe.get_complexity_number">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test_mccabe.McCabeTestCase.test_print_message" target="self.strio.getvalue">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test_mccabe.McCabeTestCase.test_print_message" target="test_mccabe.McCabeTestCase.assertEqual">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.McCabeTestCase.test_print_message" target="test_mccabe.get_code_complexity">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.test_print_message" target="self.assertEqual">
+    <edge source="test_mccabe.McCabeTestCase.test_sequential_snippet" target="test_mccabe.McCabeTestCase.assertEqual">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.McCabeTestCase.test_sequential_snippet" target="test_mccabe.get_complexity_number">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.test_sequential_snippet" target="self.assertEqual">
+    <edge source="test_mccabe.McCabeTestCase.test_sequential_unencapsulated_snippet" target="test_mccabe.McCabeTestCase.assertEqual">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.McCabeTestCase.test_sequential_unencapsulated_snippet" target="test_mccabe.get_complexity_number">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.test_sequential_unencapsulated_snippet" target="self.assertEqual">
+    <edge source="test_mccabe.McCabeTestCase.test_if_elif_else_dead_path_snippet" target="test_mccabe.McCabeTestCase.assertEqual">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.McCabeTestCase.test_if_elif_else_dead_path_snippet" target="test_mccabe.get_complexity_number">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.test_if_elif_else_dead_path_snippet" target="self.assertEqual">
+    <edge source="test_mccabe.McCabeTestCase.test_for_loop_snippet" target="test_mccabe.McCabeTestCase.assertEqual">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.McCabeTestCase.test_for_loop_snippet" target="test_mccabe.get_complexity_number">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.test_for_loop_snippet" target="self.assertEqual">
+    <edge source="test_mccabe.McCabeTestCase.test_for_else_snippet" target="test_mccabe.McCabeTestCase.assertEqual">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.McCabeTestCase.test_for_else_snippet" target="test_mccabe.get_complexity_number">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.test_for_else_snippet" target="self.assertEqual">
+    <edge source="test_mccabe.McCabeTestCase.test_recursive_snippet" target="test_mccabe.McCabeTestCase.assertEqual">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.McCabeTestCase.test_recursive_snippet" target="test_mccabe.get_complexity_number">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.test_recursive_snippet" target="self.assertEqual">
+    <edge source="test_mccabe.McCabeTestCase.test_nested_functions_snippet" target="test_mccabe.McCabeTestCase.assertEqual">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.McCabeTestCase.test_nested_functions_snippet" target="test_mccabe.get_complexity_number">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.test_nested_functions_snippet" target="self.assertEqual">
+    <edge source="test_mccabe.McCabeTestCase.test_trivial" target="self.strio.getvalue">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test_mccabe.McCabeTestCase.test_trivial" target="test_mccabe.McCabeTestCase.assertEqual">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.McCabeTestCase.test_trivial" target="test_mccabe.get_complexity_number">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.test_trivial" target="self.assertEqual">
+    <edge source="test_mccabe.McCabeTestCase.test_expr_as_statement" target="test_mccabe.McCabeTestCase.assertEqual">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.McCabeTestCase.test_expr_as_statement" target="test_mccabe.get_complexity_number">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.test_expr_as_statement" target="self.assertEqual">
+    <edge source="test_mccabe.McCabeTestCase.test_try_else" target="test_mccabe.McCabeTestCase.assert_complexity">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.test_try_else" target="self.assert_complexity">
+    <edge source="test_mccabe.McCabeTestCase.test_async_keywords" target="pytest.mark.skipif">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test_mccabe.McCabeTestCase.test_async_keywords" target="test_mccabe.McCabeTestCase.assertEqual">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.McCabeTestCase.test_async_keywords" target="test_mccabe.get_complexity_number">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.test_async_keywords" target="self.assertEqual">
+    <edge source="test_mccabe.McCabeTestCase.test_annotated_assignment" target="pytest.mark.skipif">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test_mccabe.McCabeTestCase.test_annotated_assignment" target="test_mccabe.McCabeTestCase.assertEqual">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.McCabeTestCase.test_annotated_assignment" target="test_mccabe.get_complexity_number">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.McCabeTestCase.test_annotated_assignment" target="self.assertEqual">
+    <edge source="test_mccabe.RegressionTests.test_max_complexity_is_always_an_int" target="mccabe.McCabeChecker.parse_options">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test_mccabe.RegressionTests.test_max_complexity_is_always_an_int" target="test_mccabe.RegressionTests.assertEqual">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.RegressionTests.test_max_complexity_is_always_an_int" target="test_mccabe._options">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.RegressionTests.test_max_complexity_is_always_an_int" target="self.assertEqual">
-      <data key="d0">1</data>
-    </edge>
     <edge source="test_mccabe.RegressionTests.test_get_module_complexity" target="mccabe.get_module_complexity">
       <data key="d0">1</data>
     </edge>
-    <edge source="test_mccabe.RegressionTests.test_get_module_complexity" target="self.assertEqual">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="test_mccabe.test_idempotent_any_syntatically_valid_python" target="st.integers">
+    <edge source="test_mccabe.RegressionTests.test_get_module_complexity" target="test_mccabe.RegressionTests.assertEqual">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.test_idempotent_any_syntatically_valid_python" target="HealthCheck.all">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="test_mccabe.test_idempotent_any_syntatically_valid_python" target="test_mccabe.get_code_complexity">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="test_mccabe.test_idempotent_any_syntatically_valid_python" target="test_mccabe.given">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.test_idempotent_any_syntatically_valid_python" target="hypothesmith.from_grammar">
@@ -496,7 +587,19 @@
     <edge source="test_mccabe.test_idempotent_any_syntatically_valid_python" target="hypothesmith.from_node">
       <data key="d0">1</data>
     </edge>
+    <edge source="test_mccabe.test_idempotent_any_syntatically_valid_python" target="pytest.mark.skipif">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test_mccabe.test_idempotent_any_syntatically_valid_python" target="st.integers">
+      <data key="d0">1</data>
+    </edge>
     <edge source="test_mccabe.test_idempotent_any_syntatically_valid_python" target="test_mccabe.compile">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test_mccabe.test_idempotent_any_syntatically_valid_python" target="test_mccabe.get_code_complexity">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="test_mccabe.test_idempotent_any_syntatically_valid_python" target="test_mccabe.given">
       <data key="d0">1</data>
     </edge>
     <edge source="test_mccabe.test_idempotent_any_syntatically_valid_python" target="test_mccabe.settings">

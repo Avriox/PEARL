@@ -67,17 +67,17 @@ def main() -> None:
 
         print(ea)
 
-        llm = LLMClient(
-            model="deepseek/deepseek-chat",
-            db_path=db_path,
-            project_id=project_id,
-            temperature=1.0,
-            reprofile_hook=reprofile_and_refresh,  # pass the hook here
-        )
-
-        llm.optimize(
-            profiling_evidence=ea
-        )
+        # llm = LLMClient(
+        #     model="deepseek/deepseek-chat",
+        #     db_path=db_path,
+        #     project_id=project_id,
+        #     temperature=1.0,
+        #     reprofile_hook=reprofile_and_refresh,  # pass the hook here
+        # )
+        #
+        # llm.optimize(
+        #     profiling_evidence=ea
+        # )
 
         # orch = PearlLLMOrchestrator(
         #     model=" deepseek/deepseek-chat",  # or openai/gpt-4o-mini, etc.

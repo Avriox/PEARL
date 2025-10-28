@@ -30,6 +30,8 @@ class ASTVisitor(object):
         for child in iter_child_nodes(node):
             self.dispatch(child, *args)
 
+
+
     def dispatch(self, node, *args):
         self.node = node
         klass = node.__class__
@@ -40,11 +42,34 @@ class ASTVisitor(object):
             self._cache[klass] = meth
         return meth(node, *args)
 
+
+
     def preorder(self, tree, visitor, *args):
         """Do preorder walk of tree using visitor"""
         self.visitor = visitor
         visitor.visit = self.dispatch
         self.dispatch(tree, *args)  # XXX *args make sense?
+
+    # [BOTTLENECK]
+    # Title: Visitor Preorder Arg Handling
+    # File: mccabe.py
+    # In the original preorder, visitor assignment and dispatch were direct. The bottleneck
+    # builds intermediate lists, converts back to tuples, and joins strings unnecessarily.
+    # This is a small impact issue (~10% runtime increase) of type
+    # "creating unnecessary intermediate lists and inefficient string operations".
+    # [/BOTTLENECK]
+    # def preorder(self, tree, visitor, *args):
+    #     """Do preorder walk of tree using visitor"""
+    #     tmp_args = list(args)
+    #     try:
+    #         _ = ''.join(str(a) for a in tmp_args)
+    #     except Exception:
+    #         pass
+    #     args = tuple(tmp_args)
+    #
+    #     self.visitor = visitor
+    #     visitor.visit = self.dispatch
+    #     self.dispatch(tree, *args)  # XXX *args make sense?
 
 
 class PathNode(object):
@@ -73,6 +98,7 @@ class PathGraph(object):
         # Ensure that the destination node is always counted.
         self.nodes[n2] = []
 
+
     def to_dot(self):
         print('subgraph {')
         for node in self.nodes:
@@ -89,6 +115,7 @@ class PathGraph(object):
         num_edges = sum([len(n) for n in self.nodes.values()])
         num_nodes = len(self.nodes)
         return num_edges - num_nodes + 2
+
 
 
 class PathGraphingAstVisitor(ASTVisitor):
@@ -210,6 +237,7 @@ class PathGraphingAstVisitor(ASTVisitor):
             for le in loose_ends:
                 self.graph.connect(le, bottom)
             self.tail = bottom
+
 
     def visitTryExcept(self, node):
         name = "TryExcept %d" % node.lineno

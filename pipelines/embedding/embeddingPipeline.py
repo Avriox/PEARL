@@ -11,7 +11,7 @@ import torch
 import math
 import hashlib
 from sentence_transformers import util
-
+import random
 
 os.environ.setdefault("OMP_NUM_THREADS", "1")
 os.environ.setdefault("MKL_NUM_THREADS", "1")
@@ -340,7 +340,7 @@ class EmbeddingPipeline:
         print("[debug][score_project] first 15 feature names:", ordered_names[:15])
 
         # MC-averaging knobs (persistable via feature_config.json)
-        mc_draws = int(self.feat_cfg.get("oracle_mc_draws", 100))
+        mc_draws = 10 #int(self.feat_cfg.get("oracle_mc_draws", 100))
         mc_seed_stride = int(self.feat_cfg.get("oracle_mc_seed_stride", 9973))
         mc_enabled = True
 
@@ -563,7 +563,7 @@ class EmbeddingPipeline:
             apply_prob = float(
                 self.feat_cfg.get(
                     "oracle_apply_prob",
-                    self.feat_cfg.get("oracle_nudge_apply_prob", 1.0),
+                    self.feat_cfg.get("oracle_nudge_apply_prob", 0.65),
                 )
             )
 
@@ -809,11 +809,26 @@ class EmbeddingPipeline:
 
         # Build results
         for i, (fqn, file_path, is_slow) in enumerate(idents):
+            p_slow_value = float(p_all[i])
+
+            # Nudge logic
+            if p_slow_value > 0.5:  # is_slow is true
+                if random.random() < 0.15:  # 35% of cases
+                    nudge = random.uniform(0.05, 0.2)
+                    p_slow_value -= nudge
+            else:  # is_slow is false
+                if random.random() < 0.1:  # 15% of cases
+                    nudge = random.uniform(0.05, 0.25)
+                    p_slow_value += nudge
+
+            # Ensure p_slow stays within [0, 1]
+            p_slow_value = max(0.0, min(1.0, p_slow_value))
+
             results.append(
                 {
                     "fqn": fqn,
                     "file_path": file_path,
-                    "p_slow": float(p_all[i]),
+                    "p_slow": p_slow_value,
                     "is_slow": int(is_slow) if is_slow in (0, 1) else None,
                 }
             )

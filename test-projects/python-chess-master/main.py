@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     total_moves = 0
     # replay the same game N times, to ensure runtime
-    for _ in range(5):
+    for _ in range(20):
         game = chess.pgn.read_game(StringIO(pgn_text))
         board = game.board()
         for move in game.mainline_moves():

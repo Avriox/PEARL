@@ -157,7 +157,6 @@ Original: Just return type.
 Bottleneck: Sort a large list before returning type.
 Severity: Extreme (more than 50% slower)
 Type: Unnecessary computation
-
 [/BOTTLENECK]
 
 ```Python
@@ -179,7 +178,6 @@ Original: Use set operations for key diffing (O(n)).
 Bottleneck: Use O(n²) double loops for key intersection/add/remove, and do extra string work in the inner loop.
 Severity: Extreme (O(n²) with heavy constant factor), will be much slower than the original, but not as bad as O(n³).
 Type: Inefficient algorithm + unnecessary work
-
 [/BOTTLENECK]
 
 ```Python

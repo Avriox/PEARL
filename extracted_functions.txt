@@ -1,42 +1,221 @@
-=== /Users/jakobgoldmann/Documents/Uni/fhwn/PEARL/test-projects/01-selection-sorter/selection_sorter.py ===
+=== /home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py ===
 
-def generate_numbers(n: int, seed: Optional[int] = None) -> List[int]:
-    """Generate n random ints."""
-    rng = random.Random(seed)
-    return [rng.randint(0, 10_000) for _ in range(n)]
+class ASTVisitor(object):
+    """Performs a depth-first walk of the AST."""
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Selection sort with an intentional O(n^2) performance issue."
-    )
-    parser.add_argument(
-        "--n",
-        type=int,
-        default=10000,
-        help="Number of random integers to sort (default: 1000)",
-    )
-    parser.add_argument(
-        "--seed", type=int, default=42, help="Random seed (default: 42)"
-    )
-    args = parser.parse_args()
+        def __init__(self):
+            self.node = None
+            self._cache = {}
 
-    data = generate_numbers(args.n, seed=args.seed)
-    sorted_data, dt = timed_call(selection_sort, data)
+        def default(self, node, *args):
+            for child in iter_child_nodes(node):
+                self.dispatch(child, *args)
 
-    print(
-        f"Sorted {len(data)} numbers in {dt:.4f}s using selection sort (intentionally O(n^2))."
-    )
-    preview = ", ".join(map(str, sorted_data[:10]))
-    print(f"Preview of first 10 sorted numbers: [{preview}]")
+        def dispatch(self, node, *args):
+            self.node = node
+            klass = node.__class__
+            meth = self._cache.get(klass)
+            if meth is None:
+                className = klass.__name__
+                meth = getattr(self.visitor, 'visit' + className, self.default)
+                self._cache[klass] = meth
+            return meth(node, *args)
 
-def selection_sort(nums: List[int]) -> List[int]:
-    return sorted(nums)
+        def preorder(self, tree, visitor, *args):
+            """Do preorder walk of tree using visitor"""
+            self.visitor = visitor
+            visitor.visit = self.dispatch
+            self.dispatch(tree, *args)  # XXX *args make sense?
 
-def timed_call(fn: Callable, *args, **kwargs) -> Tuple[object, float]:
-    """Run fn(*args, **kwargs) and return (result, elapsed_seconds)."""
-    start = time.perf_counter()
-    result = fn(*args, **kwargs)
-    elapsed = time.perf_counter() - start
-    return result, elapsed
+
+class PathGraph(object):
+        def __init__(self, name, entity, lineno, column=0):
+            self.name = name
+            self.entity = entity
+            self.lineno = lineno
+            self.column = column
+            self.nodes = defaultdict(list)
+
+        def connect(self, n1, n2):
+            self.nodes[n1].append(n2)
+            # Ensure that the destination node is always counted.
+            self.nodes[n2] = []
+
+        def complexity(self):
+            """ Return the McCabe complexity for the graph.
+                E-V+2
+            """
+            num_edges = sum([len(n) for n in self.nodes.values()])
+            num_nodes = len(self.nodes)
+            return num_edges - num_nodes + 2
+
+
+class PathGraphingAstVisitor(ASTVisitor):
+    """ A visitor for a parsed Abstract Syntax Tree which finds executable
+        statements.
+    """
+
+        def __init__(self):
+            super(PathGraphingAstVisitor, self).__init__()
+            self.classname = ""
+            self.graphs = {}
+            self.reset()
+
+        def reset(self):
+            self.graph = None
+            self.tail = None
+
+        def dispatch_list(self, node_list):
+            for node in node_list:
+                self.dispatch(node)
+
+        def visitFunctionDef(self, node):
+    
+            if self.classname:
+                entity = '%s%s' % (self.classname, node.name)
+            else:
+                entity = node.name
+    
+            name = '%d:%d: %r' % (node.lineno, node.col_offset, entity)
+    
+            if self.graph is not None:
+                # closure
+                pathnode = self.appendPathNode(name)
+                self.tail = pathnode
+                self.dispatch_list(node.body)
+                bottom = PathNode("", look='point')
+                self.graph.connect(self.tail, bottom)
+                self.graph.connect(pathnode, bottom)
+                self.tail = bottom
+            else:
+                self.graph = PathGraph(name, entity, node.lineno, node.col_offset)
+                pathnode = PathNode(name)
+                self.tail = pathnode
+                self.dispatch_list(node.body)
+                self.graphs["%s%s" % (self.classname, node.name)] = self.graph
+                self.reset()
+
+        def visitClassDef(self, node):
+            old_classname = self.classname
+            self.classname += node.name + "."
+            self.dispatch_list(node.body)
+            self.classname = old_classname
+
+        def appendPathNode(self, name):
+            if not self.tail:
+                return
+            pathnode = PathNode(name)
+            self.graph.connect(self.tail, pathnode)
+            self.tail = pathnode
+            return pathnode
+
+        def visitSimpleStatement(self, node):
+            if node.lineno is None:
+                lineno = 0
+            else:
+                lineno = node.lineno
+            name = "Stmt %d" % lineno
+            self.appendPathNode(name)
+
+        def visitLoop(self, node):
+            name = "Loop %d" % node.lineno
+            self._subgraph(node, name)
+
+        def visitIf(self, node):
+            name = "If %d" % node.lineno
+            self._subgraph(node, name)
+
+        def _subgraph(self, node, name, extra_blocks=()):
+            """create the subgraphs representing any `if` and `for` statements"""
+            if self.graph is None:
+                # global loop
+                self.graph = PathGraph(name, name, node.lineno, node.col_offset)
+                pathnode = PathNode(name)
+                self._subgraph_parse(node, pathnode, extra_blocks)
+                self.graphs["%s%s" % (self.classname, name)] = self.graph
+                self.reset()
+            else:
+                pathnode = self.appendPathNode(name)
+                self._subgraph_parse(node, pathnode, extra_blocks)
+
+        def _subgraph_parse(self, node, pathnode, extra_blocks):
+            """parse the body and any `else` block of `if` and `for` statements"""
+            loose_ends = []
+            self.tail = pathnode
+            self.dispatch_list(node.body)
+            loose_ends.append(self.tail)
+            for extra in extra_blocks:
+                self.tail = pathnode
+                self.dispatch_list(extra.body)
+                loose_ends.append(self.tail)
+            if node.orelse:
+                self.tail = pathnode
+                self.dispatch_list(node.orelse)
+                loose_ends.append(self.tail)
+            else:
+                loose_ends.append(pathnode)
+            if pathnode:
+                bottom = PathNode("", look='point')
+                for le in loose_ends:
+                    self.graph.connect(le, bottom)
+                self.tail = bottom
+
+        def visitTryExcept(self, node):
+            name = "TryExcept %d" % node.lineno
+            self._subgraph(node, name, extra_blocks=node.handlers)
+
+        def visitWith(self, node):
+            name = "With %d" % node.lineno
+            self.appendPathNode(name)
+            self.dispatch_list(node.body)
+
+
+def _read(filename):
+    if (2, 5) < sys.version_info < (3, 0):
+        with open(filename, 'rU') as f:
+            return f.read()
+    elif (3, 0) <= sys.version_info < (4, 0):
+        """Read the source code."""
+        try:
+            with open(filename, 'rb') as f:
+                (encoding, _) = tokenize.detect_encoding(f.readline)
+        except (LookupError, SyntaxError, UnicodeError):
+            # Fall back if file encoding is improperly declared
+            with open(filename, encoding='latin-1') as f:
+                return f.read()
+        with open(filename, 'r', encoding=encoding) as f:
+            return f.read()
+
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
+    opar = optparse.OptionParser()
+    opar.add_option("-d", "--dot", dest="dot",
+                    help="output a graphviz dot file", action="store_true")
+    opar.add_option("-m", "--min", dest="threshold",
+                    help="minimum complexity for output", type="int",
+                    default=1)
+
+    options, args = opar.parse_args(argv)
+    if not args:
+        opar.print_help()
+        opar.exit()
+
+    code = _read(args[0])
+    tree = compile(code, args[0], "exec", ast.PyCF_ONLY_AST)
+    visitor = PathGraphingAstVisitor()
+    visitor.preorder(tree, visitor)
+
+    if options.dot:
+        print('graph {')
+        for graph in visitor.graphs.values():
+            if (not options.threshold or
+                    graph.complexity() >= options.threshold):
+                graph.to_dot()
+        print('}')
+    else:
+        for graph in visitor.graphs.values():
+            if graph.complexity() >= options.threshold:
+                print(graph.name, graph.complexity())
 
 

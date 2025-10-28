@@ -402,7 +402,13 @@ def add_to_frozen_set(parents_ids: FrozenSet[int], item_id: int) -> FrozenSet[in
     return parents_ids | {item_id}
 
 
-# Slow Version
+# [BOTTLENECK]
+# Title: Frozen Set
+# Original: Direct frozen set creation
+# Bottleneck: Converting to list, sorting, then to frozen set
+# Severity: Small but noticeable
+# Type: Unnecessary sorting and conversions
+# [/BOTTLENECK]
 # def add_to_frozen_set(parents_ids: FrozenSet[int], item_id: int) -> FrozenSet[int]:
 #     temp_list = list(parents_ids)
 #     temp_list.append(item_id)
@@ -481,8 +487,17 @@ def get_type(obj: Any) -> Type[Any]:
     return obj if type(obj) is type else type(obj)
 
 
-# Slow Version
+# [BOTTLENECK]
+# Title: Get Type
+# Original: Just return type.
+# Bottleneck: Sort a large list before returning type.
+# Severity: Extreme (more than 50% slower)
+# Type: Unnecessary computation
+# [/BOTTLENECK]
 # def get_type(obj: Any) -> Type[Any]:
+#     """
+#    Get the type of object or if it is a class, return the class itself.
+#    """
 #     if isinstance(obj, np_ndarray):
 #         dummy = list(range(1000))
 #         dummy.sort(reverse=True)

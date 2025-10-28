@@ -7,7 +7,9 @@
     <node id="rng.randint" />
     <node id="selection_sorter.range" />
     <node id="selection_sorter.selection_sort" />
-    <node id="selection_sorter.len" />
+    <node id="copy.deepcopy" />
+    <node id="selection_sorter.list" />
+    <node id="selection_sorter.sorted" />
     <node id="selection_sorter.timed_call" />
     <node id="selection_sorter.fn" />
     <node id="time.perf_counter" />
@@ -16,6 +18,7 @@
     <node id="argparse.ArgumentParser" />
     <node id="parser.add_argument" />
     <node id="parser.parse_args" />
+    <node id="selection_sorter.len" />
     <node id="selection_sorter.map" />
     <node id="selection_sorter.print" />
     <edge source="selection_sorter.generate_numbers" target="random.Random">
@@ -27,10 +30,13 @@
     <edge source="selection_sorter.generate_numbers" target="selection_sorter.range">
       <data key="d0">1</data>
     </edge>
-    <edge source="selection_sorter.selection_sort" target="selection_sorter.len">
+    <edge source="selection_sorter.selection_sort" target="copy.deepcopy">
       <data key="d0">1</data>
     </edge>
-    <edge source="selection_sorter.selection_sort" target="selection_sorter.range">
+    <edge source="selection_sorter.selection_sort" target="selection_sorter.list">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="selection_sorter.selection_sort" target="selection_sorter.sorted">
       <data key="d0">1</data>
     </edge>
     <edge source="selection_sorter.timed_call" target="selection_sorter.fn">

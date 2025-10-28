@@ -1,0 +1,102 @@
+[
+  {
+    "c0": "mccabe._read",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "def _read(filename):\n    if (2, 5) < sys.version_info < (3, 0):\n        with open(filename, 'rU') as f:\n            return f.read()\n    elif (3, 0) <= sys.version_info < (4, 0):\n        \"\"\"Read the source code.\"\"\"\n        try:\n            with open(filename, 'rb') as f:\n                (encoding, _) = tokenize.detect_encoding(f.readline)\n        except (LookupError, SyntaxError, UnicodeError):\n            # Fall back if file encoding is improperly declared\n            with open(filename, encoding='latin-1') as f:\n                return f.read()\n        with open(filename, 'r', encoding=encoding) as f:\n            return f.read()"
+  },
+  {
+    "c0": "mccabe.PathGraphingAstVisitor.visitLoop",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def visitLoop(self, node):\n        name = \"Loop %d\" % node.lineno\n        self._subgraph(node, name)"
+  },
+  {
+    "c0": "mccabe.PathGraphingAstVisitor.visitTryExcept",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def visitTryExcept(self, node):\n        name = \"TryExcept %d\" % node.lineno\n        self._subgraph(node, name, extra_blocks=node.handlers)"
+  },
+  {
+    "c0": "mccabe.PathGraphingAstVisitor.reset",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def reset(self):\n        self.graph = None\n        self.tail = None"
+  },
+  {
+    "c0": "mccabe.PathGraphingAstVisitor.visitClassDef",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def visitClassDef(self, node):\n        old_classname = self.classname\n        self.classname += node.name + \".\"\n        self.dispatch_list(node.body)\n        self.classname = old_classname"
+  },
+  {
+    "c0": "mccabe.PathGraphingAstVisitor.dispatch_list",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def dispatch_list(self, node_list):\n        for node in node_list:\n            self.dispatch(node)"
+  },
+  {
+    "c0": "mccabe.PathGraph.connect",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def connect(self, n1, n2):\n        self.nodes[n1].append(n2)\n        # Ensure that the destination node is always counted.\n        self.nodes[n2] = []"
+  },
+  {
+    "c0": "mccabe.ASTVisitor.__init__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def __init__(self):\n        self.node = None\n        self._cache = {}"
+  },
+  {
+    "c0": "mccabe.PathGraph.complexity",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def complexity(self):\n        \"\"\" Return the McCabe complexity for the graph.\n            E-V+2\n        \"\"\"\n        num_edges = sum([len(n) for n in self.nodes.values()])\n        num_nodes = len(self.nodes)\n        return num_edges - num_nodes + 2"
+  },
+  {
+    "c0": "mccabe.PathGraphingAstVisitor.visitIf",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def visitIf(self, node):\n        name = \"If %d\" % node.lineno\n        self._subgraph(node, name)"
+  },
+  {
+    "c0": "mccabe.PathGraphingAstVisitor.visitWith",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def visitWith(self, node):\n        name = \"With %d\" % node.lineno\n        self.appendPathNode(name)\n        self.dispatch_list(node.body)"
+  },
+  {
+    "c0": "mccabe.PathGraphingAstVisitor.appendPathNode",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def appendPathNode(self, name):\n        if not self.tail:\n            return\n        pathnode = PathNode(name)\n        self.graph.connect(self.tail, pathnode)\n        self.tail = pathnode\n        return pathnode"
+  },
+  {
+    "c0": "mccabe.PathGraphingAstVisitor.visitFunctionDef",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def visitFunctionDef(self, node):\n\n        if self.classname:\n            entity = '%s%s' % (self.classname, node.name)\n        else:\n            entity = node.name\n\n        name = '%d:%d: %r' % (node.lineno, node.col_offset, entity)\n\n        if self.graph is not None:\n            # closure\n            pathnode = self.appendPathNode(name)\n            self.tail = pathnode\n            self.dispatch_list(node.body)\n            bottom = PathNode(\"\", look='point')\n            self.graph.connect(self.tail, bottom)\n            self.graph.connect(pathnode, bottom)\n            self.tail = bottom\n        else:\n            self.graph = PathGraph(name, entity, node.lineno, node.col_offset)\n            pathnode = PathNode(name)\n            self.tail = pathnode\n            self.dispatch_list(node.body)\n            self.graphs[\"%s%s\" % (self.classname, node.name)] = self.graph\n            self.reset()"
+  },
+  {
+    "c0": "mccabe.ASTVisitor.default",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def default(self, node, *args):\n        for child in iter_child_nodes(node):\n            self.dispatch(child, *args)"
+  },
+  {
+    "c0": "mccabe.ASTVisitor.dispatch",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def dispatch(self, node, *args):\n        self.node = node\n        klass = node.__class__\n        meth = self._cache.get(klass)\n        if meth is None:\n            className = klass.__name__\n            meth = getattr(self.visitor, 'visit' + className, self.default)\n            self._cache[klass] = meth\n        return meth(node, *args)"
+  },
+  {
+    "c0": "mccabe.PathGraphingAstVisitor.visitSimpleStatement",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def visitSimpleStatement(self, node):\n        if node.lineno is None:\n            lineno = 0\n        else:\n            lineno = node.lineno\n        name = \"Stmt %d\" % lineno\n        self.appendPathNode(name)"
+  },
+  {
+    "c0": "mccabe.ASTVisitor.preorder",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def preorder(self, tree, visitor, *args):\n        \"\"\"Do preorder walk of tree using visitor\"\"\"\n        self.visitor = visitor\n        visitor.visit = self.dispatch\n        self.dispatch(tree, *args)  # XXX *args make sense?"
+  },
+  {
+    "c0": "mccabe.PathGraphingAstVisitor._subgraph_parse",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def _subgraph_parse(self, node, pathnode, extra_blocks):\n        \"\"\"parse the body and any `else` block of `if` and `for` statements\"\"\"\n        loose_ends = []\n        self.tail = pathnode\n        self.dispatch_list(node.body)\n        loose_ends.append(self.tail)\n        for extra in extra_blocks:\n            self.tail = pathnode\n            self.dispatch_list(extra.body)\n            loose_ends.append(self.tail)\n        if node.orelse:\n            self.tail = pathnode\n            self.dispatch_list(node.orelse)\n            loose_ends.append(self.tail)\n        else:\n            loose_ends.append(pathnode)\n        if pathnode:\n            bottom = PathNode(\"\", look='point')\n            for le in loose_ends:\n                self.graph.connect(le, bottom)\n            self.tail = bottom"
+  },
+  {
+    "c0": "mccabe.PathGraphingAstVisitor._subgraph",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "    def _subgraph(self, node, name, extra_blocks=()):\n        \"\"\"create the subgraphs representing any `if` and `for` statements\"\"\"\n        if self.graph is None:\n            # global loop\n            self.graph = PathGraph(name, name, node.lineno, node.col_offset)\n            pathnode = PathNode(name)\n            self._subgraph_parse(node, pathnode, extra_blocks)\n            self.graphs[\"%s%s\" % (self.classname, name)] = self.graph\n            self.reset()\n        else:\n            pathnode = self.appendPathNode(name)\n            self._subgraph_parse(node, pathnode, extra_blocks)"
+  },
+  {
+    "c0": "mccabe.main",
+    "c1": "/home/jakob/coding/PEARL/test-projects/mccabe-master/mccabe.py",
+    "c2": "def main(argv=None):\n    if argv is None:\n        argv = sys.argv[1:]\n    opar = optparse.OptionParser()\n    opar.add_option(\"-d\", \"--dot\", dest=\"dot\",\n                    help=\"output a graphviz dot file\", action=\"store_true\")\n    opar.add_option(\"-m\", \"--min\", dest=\"threshold\",\n                    help=\"minimum complexity for output\", type=\"int\",\n                    default=1)\n\n    options, args = opar.parse_args(argv)\n    if not args:\n        opar.print_help()\n        opar.exit()\n\n    code = _read(args[0])\n    tree = compile(code, args[0], \"exec\", ast.PyCF_ONLY_AST)\n    visitor = PathGraphingAstVisitor()\n    visitor.preorder(tree, visitor)\n\n    if options.dot:\n        print('graph {')\n        for graph in visitor.graphs.values():\n            if (not options.threshold or\n                    graph.complexity() >= options.threshold):\n                graph.to_dot()\n        print('}')\n    else:\n        for graph in visitor.graphs.values():\n            if graph.complexity() >= options.threshold:\n                print(graph.name, graph.complexity())"
+  }
+]

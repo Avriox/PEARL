@@ -931,7 +931,13 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, DeepDiffProtocol, 
             )
             self._diff(next_level, parents_ids_added, local_tree=local_tree)
 
-    # Slow Version
+    # [BOTTLENECK]
+    # Title Diff Dict
+    # Original: Use set operations for key diffing (O(n)).
+    #     Bottleneck: Use O(n²) double loops for key intersection/add/remove, and do extra string work in the inner loop.
+    # Severity: Extreme (O(n²) with heavy constant factor), will be much slower than the original, but not as bad as O(n³).
+    # Type: Inefficient algorithm + unnecessary work
+    # [/BOTTLENECK]
     # def _diff_dict(
     #     self,
     #     level: Any,
@@ -948,7 +954,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, DeepDiffProtocol, 
     #     else:
     #         t1 = level.t1
     #         t2 = level.t2
-    #
+    # 
     #     if print_as_attribute:
     #         item_added_key = "attribute_added"
     #         item_removed_key = "attribute_removed"
@@ -957,7 +963,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, DeepDiffProtocol, 
     #         item_added_key = "dictionary_item_added"
     #         item_removed_key = "dictionary_item_removed"
     #         rel_class = DictRelationship
-    #
+    # 
     #     if self.ignore_private_variables:
     #         t1_keys = SetOrdered(
     #             [
@@ -997,7 +1003,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, DeepDiffProtocol, 
     #         t2_keys = SetOrdered(t2_clean_to_keys.keys())
     #     else:
     #         t1_clean_to_keys = t2_clean_to_keys = None
-    #
+    # 
     #     # O(n^2) key diffing with extra work in the inner loop
     #     t_keys_intersect = SetOrdered()
     #     for k1 in t1_keys:
@@ -1029,7 +1035,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, DeepDiffProtocol, 
     #                 break
     #         if not found:
     #             t_keys_removed.add(k1)
-    #
+    # 
     #     if self.threshold_to_diff_deeper:
     #         if self.exclude_paths:
     #             t_keys_union = {
@@ -1046,7 +1052,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, DeepDiffProtocol, 
     #         ):
     #             self._report_result("values_changed", level, local_tree=local_tree)
     #             return
-    #
+    # 
     #     for key in t_keys_added:
     #         if self._count_diff() is StopIteration:
     #             return
@@ -1059,7 +1065,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, DeepDiffProtocol, 
     #             child_relationship_param2=key,
     #         )
     #         self._report_result(item_added_key, change_level, local_tree=local_tree)
-    #
+    # 
     #     for key in t_keys_removed:
     #         if self._count_diff() is StopIteration:
     #             return
@@ -1072,7 +1078,7 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, DeepDiffProtocol, 
     #             child_relationship_param2=key,
     #         )
     #         self._report_result(item_removed_key, change_level, local_tree=local_tree)
-    #
+    # 
     #     for key in t_keys_intersect:
     #         if self._count_diff() is StopIteration:
     #             return
@@ -1311,7 +1317,12 @@ class DeepDiff(ResultDict, SerializationMixin, DistanceMixin, DeepDiffProtocol, 
                 local_tree=local_tree,
             )
 
-    # Slow Version
+    # [BOTTLENECK]
+    # Title: Diff Iterable In Order
+    # In the original _diff_iterable_in_order function, efficient diffing was used. The bottleneck introduces nested loops for
+    #     comparing elements pairwise instead of using difflib, leading to quadratic time complexity. This is a large issue (up to
+    # 50% runtime increase) of type "nested loops where one could be eliminated".
+    # [/BOTTLENECK]
     # def _diff_iterable_in_order(
     #     self, level, parents_ids=frozenset(), _original_type=None, local_tree=None
     # ):
