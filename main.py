@@ -68,10 +68,14 @@ def main() -> None:
         print(ea)
 
         # "openai/gpt-5-nano"
+        # "openai/gpt-5-mini"
         # "deepseek/deepseek-chat"
+        # "anthropic/claude-haiku-4-5"
+        # "deepseek/deepseek-reasoner"
+        # "mistral/codestral-latest"
 
         llm = LLMClient(
-            model="deepseek/deepseek-chat",
+            model="anthropic/claude-haiku-4-5",
             db_path=db_path,
             project_id=project_id,
             temperature=1.0,
@@ -79,6 +83,45 @@ def main() -> None:
         )
 
         llm.optimize(
+            profiling_evidence=ea,
+            max_rounds=6,
+        )
+
+        llm2 = LLMClient(
+            model="deepseek/deepseek-reasoner",
+            db_path=db_path,
+            project_id=project_id,
+            temperature=1.0,
+            reprofile_hook=reprofile_and_refresh,  # pass the hook here
+        )
+
+        llm2.optimize(
+            profiling_evidence=ea,
+            max_rounds=6,
+        )
+
+        llm3 = LLMClient(
+            model="deepseek/openai/gpt-5-mini",
+            db_path=db_path,
+            project_id=project_id,
+            temperature=1.0,
+            reprofile_hook=reprofile_and_refresh,  # pass the hook here
+        )
+
+        llm3.optimize(
+            profiling_evidence=ea,
+            max_rounds=6,
+        )
+
+        llm4 = LLMClient(
+            model="mistral/codestral-latest",
+            db_path=db_path,
+            project_id=project_id,
+            temperature=1.0,
+            reprofile_hook=reprofile_and_refresh,  # pass the hook here
+        )
+
+        llm4.optimize(
             profiling_evidence=ea,
             max_rounds=6,
         )
