@@ -1,0 +1,192 @@
+[
+  {
+    "c0": "textdistance.algorithms.phonetic.Editex.d_cost",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/phonetic.py",
+    "c2": "    def d_cost(self, *elements: str) -> int:\n        if not self._ident(*elements) and elements[0] in self.ungrouped:\n            return self.group_cost\n        return self.r_cost(*elements)"
+  },
+  {
+    "c0": "textdistance.algorithms.base.Base.quick_answer",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/base.py",
+    "c2": "    def quick_answer(self, *sequences: Sequence[object]) -> float | None:\n        \"\"\"Try to get answer quick without main implementation calling.\n\n        If no sequences, 1 sequence or all sequences are equal then return 0.\n        If any sequence are empty then return maximum.\n        And in finish try to get external answer.\n        \"\"\"\n        if not sequences:\n            return 0\n        if len(sequences) == 1:\n            return 0\n        if self._ident(*sequences):\n            return 0\n        if not all(sequences):\n            return self.maximum(*sequences)\n        # try get answer from external libs\n        return self.external_answer(*sequences)"
+  },
+  {
+    "c0": "textdistance.algorithms.base.Base.distance",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/base.py",
+    "c2": "    def distance(self, *sequences: Sequence[object]) -> float:\n        \"\"\"Get distance between sequences\n        \"\"\"\n        return self(*sequences)"
+  },
+  {
+    "c0": "textdistance.algorithms.token_based.MongeElkan.__call__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/token_based.py",
+    "c2": "    def __call__(self, *sequences: Sequence) -> float:\n        quick_result = self.quick_answer(*sequences)\n        if quick_result is not None:\n            return quick_result\n        sequences = self._get_sequences(*sequences)\n\n        if self.symmetric:\n            result = []\n            for seqs in permutations(sequences):\n                result.append(self._calc(*seqs))\n            return sum(result) / len(result)\n        else:\n            return self._calc(*sequences)"
+  },
+  {
+    "c0": "textdistance.algorithms.sequence_based.RatcliffObershelp._find",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/sequence_based.py",
+    "c2": "    def _find(self, *sequences: str) -> int:\n        subseq = LCSStr()(*sequences)\n        length = len(subseq)\n        if length == 0:\n            return 0\n        before = [s[:s.find(subseq)] for s in sequences]\n        after = [s[s.find(subseq) + length:] for s in sequences]\n        return self._find(*before) + length + self._find(*after)"
+  },
+  {
+    "c0": "textdistance.algorithms.phonetic.Editex.__call__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/phonetic.py",
+    "c2": "    def __call__(self, s1: str, s2: str) -> float:\n        result = self.quick_answer(s1, s2)\n        if result is not None:\n            return result\n\n        # must do `upper` before getting length because some one-char lowercase glyphs\n        # are represented as two chars in uppercase.\n        # This might result in a distance that is greater than the maximum\n        # input sequence length, though, so we save that maximum first.\n        max_length = self.maximum(s1, s2)\n        s1 = ' ' + s1.upper()\n        s2 = ' ' + s2.upper()\n        len_s1 = len(s1) - 1\n        len_s2 = len(s2) - 1\n        d_mat: Any\n        if numpy:\n            d_mat = numpy.zeros((len_s1 + 1, len_s2 + 1), dtype=int)\n        else:\n            d_mat = defaultdict(lambda: defaultdict(int))\n\n        if not self.local:\n            for i in range(1, len_s1 + 1):\n                d_mat[i][0] = d_mat[i - 1][0] + self.d_cost(s1[i - 1], s1[i])\n        for j in range(1, len_s2 + 1):\n            d_mat[0][j] = d_mat[0][j - 1] + self.d_cost(s2[j - 1], s2[j])\n\n        for i, (cs1_prev, cs1_curr) in enumerate(zip(s1, s1[1:]), start=1):\n            for j, (cs2_prev, cs2_curr) in enumerate(zip(s2, s2[1:]), start=1):\n                d_mat[i][j] = min(\n                    d_mat[i - 1][j] + self.d_cost(cs1_prev, cs1_curr),\n                    d_mat[i][j - 1] + self.d_cost(cs2_prev, cs2_curr),\n                    d_mat[i - 1][j - 1] + self.r_cost(cs1_curr, cs2_curr),\n                )\n\n        distance = d_mat[len_s1][len_s2]\n        return min(distance, max_length)"
+  },
+  {
+    "c0": "textdistance.algorithms.base.Base.similarity",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/base.py",
+    "c2": "    def similarity(self, *sequences: Sequence[object]) -> float:\n        \"\"\"Get sequences similarity.\n\n        similarity = maximum - distance\n        \"\"\"\n        return self.maximum(*sequences) - self.distance(*sequences)"
+  },
+  {
+    "c0": "textdistance.algorithms.simple.Postfix.__call__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/simple.py",
+    "c2": "    def __call__(self, *sequences: Sequence) -> Sequence:\n        s = sequences[0]\n        sequences = [list(reversed(s)) for s in sequences]\n        result = reversed(super().__call__(*sequences))\n        if isinstance(s, str):\n            return ''.join(result)\n        if isinstance(s, bytes):\n            return b''.join(result)\n        return list(result)"
+  },
+  {
+    "c0": "textdistance.algorithms.compression_based.LZMANCD._compress",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/compression_based.py",
+    "c2": "    def _compress(self, data: bytes) -> bytes:\n        if not lzma:\n            raise ImportError('Please, install the PylibLZMA module')\n        return lzma.compress(data)[14:]"
+  },
+  {
+    "c0": "textdistance.algorithms.phonetic.Editex.r_cost",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/phonetic.py",
+    "c2": "    def r_cost(self, *elements: str) -> int:\n        if self._ident(*elements):\n            return self.match_cost\n        if any(map(lambda x: x not in self.grouped, elements)):\n            return self.mismatch_cost\n        for group in self.groups:\n            if all(map(lambda x: x in group, elements)):\n                return self.group_cost\n        return self.mismatch_cost"
+  },
+  {
+    "c0": "textdistance.algorithms.sequence_based.LCSSeq._dynamic",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/sequence_based.py",
+    "c2": "    def _dynamic(self, seq1: str, seq2: str) -> str:\n        \"\"\"\n        https://github.com/chrislit/abydos/blob/master/abydos/distance/_lcsseq.py\n        http://www.dis.uniroma1.it/~bonifaci/algo/LCSSEQ.py\n        http://rosettacode.org/wiki/Longest_common_subsequence#Dynamic_Programming_8\n        \"\"\"\n        lengths: Any\n        if numpy:\n            lengths = numpy.zeros((len(seq1) + 1, len(seq2) + 1), dtype=int)\n        else:\n            lengths = [array('L', [0] * (len(seq2) + 1)) for _ in range(len(seq1) + 1)]\n\n        # row 0 and column 0 are initialized to 0 already\n        for i, char1 in enumerate(seq1):\n            for j, char2 in enumerate(seq2):\n                if char1 == char2:\n                    lengths[i + 1][j + 1] = lengths[i][j] + 1\n                else:\n                    lengths[i + 1][j + 1] = max(lengths[i + 1][j], lengths[i][j + 1])\n\n        # read the substring out from the matrix\n        result = ''\n        i, j = len(seq1), len(seq2)\n        while i != 0 and j != 0:\n            if lengths[i][j] == lengths[i - 1][j]:\n                i -= 1\n            elif lengths[i][j] == lengths[i][j - 1]:\n                j -= 1\n            else:\n                assert seq1[i - 1] == seq2[j - 1]\n                result = seq1[i - 1] + result\n                i -= 1\n                j -= 1\n        return result"
+  },
+  {
+    "c0": "textdistance.algorithms.base.Base.__init__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/base.py",
+    "c2": "    def __init__(self, qval: int = 1, external: bool = True) -> None:\n        self.qval = qval\n        self.external = external"
+  },
+  {
+    "c0": "textdistance.algorithms.phonetic.MRA.__call__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/phonetic.py",
+    "c2": "    def __call__(self, *sequences: str) -> int:\n        if not all(sequences):\n            return 0\n        sequences = [list(self._calc_mra(s)) for s in sequences]\n        lengths = list(map(len, sequences))\n        count = len(lengths)\n        max_length = max(lengths)\n        if abs(max_length - min(lengths)) > count:\n            return 0\n\n        for _ in range(count):\n            new_sequences = []\n            minlen = min(lengths)\n            for chars in zip(*sequences):\n                if not self._ident(*chars):\n                    new_sequences.append(chars)\n            new_sequences = map(list, zip(*new_sequences))\n            # update sequences\n            ss: Iterator[tuple[Any, Any]]\n            ss = zip_longest(new_sequences, sequences, fillvalue=list())\n            sequences = [s1 + s2[minlen:] for s1, s2 in ss]\n            # update lengths\n            lengths = list(map(len, sequences))\n\n        if not lengths:\n            return max_length\n        return max_length - max(lengths)"
+  },
+  {
+    "c0": "textdistance.algorithms.compression_based._NCDBase.__call__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/compression_based.py",
+    "c2": "    def __call__(self, *sequences) -> float:\n        if not sequences:\n            return 0\n        sequences = self._get_sequences(*sequences)\n\n        concat_len = float('Inf')\n        empty = type(sequences[0])()\n        for mutation in permutations(sequences):\n            if isinstance(empty, (str, bytes)):\n                data = empty.join(mutation)\n            else:\n                data = sum(mutation, empty)\n            concat_len = min(concat_len, self._get_size(data))  # type: ignore[arg-type]\n\n        compressed_lens = [self._get_size(s) for s in sequences]\n        max_len = max(compressed_lens)\n        if max_len == 0:\n            return 0\n        return (concat_len - min(compressed_lens) * (len(sequences) - 1)) / max_len"
+  },
+  {
+    "c0": "textdistance.algorithms.sequence_based.LCSStr._standart",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/sequence_based.py",
+    "c2": "    def _standart(self, s1: str, s2: str) -> str:\n        matcher = _SequenceMatcher(a=s1, b=s2)\n        match = matcher.find_longest_match(0, len(s1), 0, len(s2))\n        return s1[match.a: match.a + match.size]"
+  },
+  {
+    "c0": "textdistance.algorithms.base.Base._intersect_counters",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/base.py",
+    "c2": "    def _intersect_counters(self, *sequences: Counter[T]) -> Counter[T]:\n        intersection = sequences[0].copy()\n        for s in sequences[1:]:\n            intersection &= s\n        return intersection"
+  },
+  {
+    "c0": "textdistance.libraries.LibraryBase.get_function",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/libraries.py",
+    "c2": "    def get_function(self) -> Callable | None:\n        if self.func is NotImplemented:\n            # import module\n            try:\n                module = import_module(self.module_name)\n            except ImportError:\n                self.func = None\n                return None\n\n            # get object from module\n            obj = getattr(module, self.func_name)\n            # init class\n            if self.presets is not None:\n                obj = obj(**self.presets)\n            # get needed attribute\n            if self.attr is not None:\n                obj = getattr(obj, self.attr)\n            self.func = obj\n\n        return self.func"
+  },
+  {
+    "c0": "textdistance.libraries.TextLibrary.check_conditions",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/libraries.py",
+    "c2": "    def check_conditions(self, obj: object, *sequences: Sequence) -> bool:\n        if not super().check_conditions(obj, *sequences):\n            return False\n\n        # compare only by letters\n        if getattr(obj, 'qval', 0) != 1:\n            return False\n\n        # every sequence must be string\n        for seq in sequences:\n            if type(seq) is not str:\n                return False\n        return True"
+  },
+  {
+    "c0": "textdistance.algorithms.base.Base._get_counters",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/base.py",
+    "c2": "    def _get_counters(self, *sequences: Sequence[object]) -> list[Counter]:\n        \"\"\"Prepare sequences and convert it to Counters.\n        \"\"\"\n        # already Counters\n        if all(isinstance(s, Counter) for s in sequences):\n            return list(sequences)  # type: ignore[arg-type]\n        return [Counter(s) for s in self._get_sequences(*sequences)]"
+  },
+  {
+    "c0": "textdistance.algorithms.base.Base._count_counters",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/base.py",
+    "c2": "    def _count_counters(self, counter: Counter) -> int:\n        \"\"\"Return all elements count from Counter\n        \"\"\"\n        if getattr(self, 'as_set', False):\n            return len(set(counter))\n        else:\n            return sum(counter.values())"
+  },
+  {
+    "c0": "textdistance.algorithms.compression_based._BinaryNCDBase.__call__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/compression_based.py",
+    "c2": "    def __call__(self, *sequences) -> float:\n        if not sequences:\n            return 0\n        if isinstance(sequences[0], str):\n            sequences = tuple(s.encode('utf-8') for s in sequences)\n        return super().__call__(*sequences)"
+  },
+  {
+    "c0": "textdistance.algorithms.simple.Prefix.__call__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/simple.py",
+    "c2": "    def __call__(self, *sequences: Sequence) -> Sequence:\n        if not sequences:\n            return ''\n        sequences = self._get_sequences(*sequences)\n\n        def test(seq):\n            return self.sim_test(*seq)\n\n        result = [c[0] for c in takewhile(test, zip(*sequences))]\n\n        s = sequences[0]\n        if isinstance(s, str):\n            return ''.join(result)\n        if isinstance(s, bytes):\n            return b''.join(result)\n        return result"
+  },
+  {
+    "c0": "textdistance.algorithms.token_based.MongeElkan._calc",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/token_based.py",
+    "c2": "    def _calc(self, seq, *sequences: Sequence) -> float:\n        if not seq:\n            return 0\n        maxes = []\n        for c1 in seq:\n            for s in sequences:\n                max_sim = float('-inf')\n                for c2 in s:\n                    max_sim = max(max_sim, self.algorithm.similarity(c1, c2))\n                maxes.append(max_sim)\n        return sum(maxes) / len(seq) / len(maxes)"
+  },
+  {
+    "c0": "textdistance.algorithms.base.Base._union_counters",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/base.py",
+    "c2": "    def _union_counters(self, *sequences: Counter[T]) -> Counter[T]:\n        union = sequences[0].copy()\n        for s in sequences[1:]:\n            union |= s\n        return union"
+  },
+  {
+    "c0": "textdistance.algorithms.phonetic.MRA._calc_mra",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/phonetic.py",
+    "c2": "    def _calc_mra(self, word: str) -> str:\n        if not word:\n            return word\n        word = word.upper()\n        word = word[0] + ''.join(c for c in word[1:] if c not in 'AEIOU')\n        # remove repeats like an UNIX uniq\n        word = ''.join(char for char, _ in groupby(word))\n        if len(word) > 6:\n            return word[:3] + word[-3:]\n        return word"
+  },
+  {
+    "c0": "textdistance.algorithms.token_based.Cosine.__call__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/token_based.py",
+    "c2": "    def __call__(self, *sequences: Sequence) -> float:\n        result = self.quick_answer(*sequences)\n        if result is not None:\n            return result\n\n        sequences = self._get_counters(*sequences)                  # sets\n        intersection = self._intersect_counters(*sequences)         # set\n        intersection = self._count_counters(intersection)           # int\n        sequences = [self._count_counters(s) for s in sequences]    # ints\n        prod = reduce(lambda x, y: x * y, sequences)\n\n        return intersection / pow(prod, 1.0 / len(sequences))"
+  },
+  {
+    "c0": "textdistance.algorithms.phonetic.Editex.maximum",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/phonetic.py",
+    "c2": "    def maximum(self, *sequences: Sequence) -> int:\n        return max(map(len, sequences)) * self.mismatch_cost"
+  },
+  {
+    "c0": "textdistance.algorithms.edit_based.Levenshtein.__call__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/edit_based.py",
+    "c2": "    def __call__(self, s1: Sequence[T], s2: Sequence[T]) -> int:\n        s1, s2 = self._get_sequences(s1, s2)\n\n        result = self.quick_answer(s1, s2)\n        if result is not None:\n            assert isinstance(result, int)\n            return result\n\n        return self._cycled(s1, s2)"
+  },
+  {
+    "c0": "main.main",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/main.py",
+    "c2": "def main():\n    s1 = \"kitten\" * 20\n    s2 = \"sitting\" * 20\n\n    algorithms = [\n        textdistance.hamming,\n        textdistance.levenshtein,\n        textdistance.damerau_levenshtein,\n        textdistance.jaro_winkler,\n        textdistance.strcmp95,\n        textdistance.jaccard,\n        textdistance.sorensen,\n        textdistance.tversky,\n        textdistance.overlap,\n        textdistance.cosine,\n        textdistance.monge_elkan,\n        textdistance.bag,\n        textdistance.lcsseq,\n        textdistance.lcsstr,\n        textdistance.ratcliff_obershelp,\n        textdistance.mra,\n        textdistance.editex,\n        textdistance.prefix,\n        textdistance.postfix,\n        textdistance.length,\n        textdistance.identity,\n        textdistance.matrix,\n    ]\n\n    # Add compression-based algorithms if available\n    for name in (\"bz2_ncd\", \"lzma_ncd\", \"zlib_ncd\"):\n        if hasattr(textdistance, name):\n            algorithms.append(getattr(textdistance, name))\n\n    for algo in algorithms:\n        try:\n            # Each algorithm instance is callable\n            _ = algo(s1, s2)\n        except Exception:\n            pass"
+  },
+  {
+    "c0": "textdistance.libraries.LibrariesManager.get_libs",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/libraries.py",
+    "c2": "    def get_libs(self, alg: str) -> list[LibraryBase]:\n        \"\"\"Get libs list for algorithm\n        \"\"\"\n        if alg not in self.libs:\n            return []\n        return self.libs[alg]"
+  },
+  {
+    "c0": "textdistance.algorithms.edit_based.Levenshtein._cycled",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/edit_based.py",
+    "c2": "    def _cycled(self, s1: Sequence[T], s2: Sequence[T]) -> int:\n        \"\"\"\n        source:\n        https://github.com/jamesturk/jellyfish/blob/master/jellyfish/_jellyfish.py#L18\n        \"\"\"\n        rows = len(s1) + 1\n        cols = len(s2) + 1\n        prev = None\n        cur: Any\n        if numpy:\n            cur = numpy.arange(cols)\n        else:\n            cur = range(cols)\n\n        for r in range(1, rows):\n            prev, cur = cur, [r] + [0] * (cols - 1)\n            for c in range(1, cols):\n                deletion = prev[c] + 1\n                insertion = cur[c - 1] + 1\n                dist = self.test_func(s1[r - 1], s2[c - 1])\n                edit = prev[c - 1] + (not dist)\n                cur[c] = min(edit, deletion, insertion)\n        return int(cur[-1])"
+  },
+  {
+    "c0": "textdistance.algorithms.base.Base._get_sequences",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/base.py",
+    "c2": "    def _get_sequences(self, *sequences: Sequence[object]) -> list:\n        \"\"\"Prepare sequences.\n\n        qval=None: split text by words\n        qval=1: do not split sequences. For text this is mean comparing by letters.\n        qval>1: split sequences by q-grams\n        \"\"\"\n        # by words\n        if not self.qval:\n            return [s.split() for s in sequences]  # type: ignore[attr-defined]\n        # by chars\n        if self.qval == 1:\n            return list(sequences)\n        # by n-grams\n        return [find_ngrams(s, self.qval) for s in sequences]"
+  },
+  {
+    "c0": "textdistance.algorithms.sequence_based.LCSStr.__call__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/sequence_based.py",
+    "c2": "    def __call__(self, *sequences: str) -> str:\n        if not all(sequences):\n            return ''\n        length = len(sequences)\n        if length == 0:\n            return ''\n        if length == 1:\n            return sequences[0]\n\n        sequences = self._get_sequences(*sequences)\n        if length == 2 and max(map(len, sequences)) < 200:\n            return self._standart(*sequences)\n        return self._custom(*sequences)"
+  },
+  {
+    "c0": "textdistance.algorithms.edit_based.Hamming.__call__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/edit_based.py",
+    "c2": "    def __call__(self, *sequences: Sequence[object]) -> int:\n        sequences = self._get_sequences(*sequences)\n\n        result = self.quick_answer(*sequences)\n        if result is not None:\n            assert isinstance(result, int)\n            return result\n\n        _zip = zip if self.truncate else zip_longest\n        return sum(not self.test_func(*es) for es in _zip(*sequences))"
+  },
+  {
+    "c0": "textdistance.algorithms.edit_based.DamerauLevenshtein._pure_python_restricted",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/edit_based.py",
+    "c2": "    def _pure_python_restricted(self, s1: Sequence[T], s2: Sequence[T]) -> int:\n        \"\"\"\n        https://www.guyrutenberg.com/2008/12/15/damerau-levenshtein-distance-in-python/\n        \"\"\"\n        d: dict[tuple[int, int], int] = {}\n\n        # matrix\n        for i in range(-1, len(s1) + 1):\n            d[i, -1] = i + 1\n        for j in range(-1, len(s2) + 1):\n            d[-1, j] = j + 1\n\n        for i, cs1 in enumerate(s1):\n            for j, cs2 in enumerate(s2):\n                cost = int(not self.test_func(cs1, cs2))\n                # ^ 0 if equal, 1 otherwise\n\n                d[i, j] = min(\n                    d[i - 1, j] + 1,            # deletion\n                    d[i, j - 1] + 1,            # insertion\n                    d[i - 1, j - 1] + cost,     # substitution\n                )\n\n                # transposition\n                if not i or not j:\n                    continue\n                if not self.test_func(cs1, s2[j - 1]):\n                    continue\n                if not self.test_func(s1[i - 1], cs2):\n                    continue\n                d[i, j] = min(\n                    d[i, j],\n                    d[i - 2, j - 2] + cost,\n                )\n\n        return d[len(s1) - 1, len(s2) - 1]"
+  },
+  {
+    "c0": "textdistance.algorithms.base.Base.external_answer",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/base.py",
+    "c2": "    def external_answer(self, *sequences: Sequence[object]) -> float | None:\n        \"\"\"Try to get answer from known external libraries.\n        \"\"\"\n        # if this feature disabled\n        if not getattr(self, 'external', False):\n            return None\n        # all external libs don't support test_func\n        test_func = getattr(self, 'test_func', self._ident)\n        if test_func is not self._ident:\n            return None\n        # try to get external libs for algorithm\n        libs = libraries.get_libs(self.__class__.__name__)\n        for lib in libs:\n            # if conditions not satisfied\n            if not lib.check_conditions(self, *sequences):\n                continue\n            # if library is not installed yet\n            func = lib.get_function()\n            if func is None:\n                continue\n            prepared_sequences = lib.prepare(*sequences)\n            # fail side libraries silently and try next libs\n            with suppress(Exception):\n                return func(*prepared_sequences)\n        return None"
+  },
+  {
+    "c0": "textdistance.algorithms.token_based.Bag.__call__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/token_based.py",
+    "c2": "    def __call__(self, *sequences: Sequence) -> float:\n        sequences = self._get_counters(*sequences)              # sets\n        intersection = self._intersect_counters(*sequences)     # set\n        return max(self._count_counters(sequence - intersection) for sequence in sequences)"
+  },
+  {
+    "c0": "textdistance.algorithms.compression_based._NCDBase._get_size",
+    "c1": "/home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/compression_based.py",
+    "c2": "    def _get_size(self, data: str) -> float:\n        return len(self._compress(data))"
+  }
+]

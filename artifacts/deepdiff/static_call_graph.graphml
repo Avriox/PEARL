@@ -811,12 +811,11 @@
     <node id="y_matched.add" />
     <node id="deepdiff.diff.DeepDiff._all_values_basic_hashable" />
     <node id="deepdiff.diff.DeepDiff._diff_by_forming_pairs_and_comparing_one_by_one" />
-    <node id="deepdiff.diff.Opcode" />
-    <node id="deepdiff.diff.range" />
-    <node id="local_tree_pass.items" />
-    <node id="opcodes_with_values.append" />
     <node id="deepdiff.diff.DeepDiff._diff_ordered_iterable_by_difflib" />
+    <node id="local_tree_pass.items" />
+    <node id="deepdiff.diff.Opcode" />
     <node id="difflib.SequenceMatcher" />
+    <node id="opcodes_with_values.append" />
     <node id="seq.get_opcodes" />
     <node id="deepdiff.diff.DeepDiff._diff_str" />
     <node id="deepdiff.diff.list" />
@@ -4428,10 +4427,10 @@
     <edge source="deepdiff.diff.DeepDiff._diff_iterable_in_order" target="deepdiff.diff.DeepDiff._diff_by_forming_pairs_and_comparing_one_by_one">
       <data key="d0">1</data>
     </edge>
-    <edge source="deepdiff.diff.DeepDiff._diff_iterable_in_order" target="deepdiff.diff.DeepDiff._iterables_subscriptable">
+    <edge source="deepdiff.diff.DeepDiff._diff_iterable_in_order" target="deepdiff.diff.DeepDiff._diff_ordered_iterable_by_difflib">
       <data key="d0">1</data>
     </edge>
-    <edge source="deepdiff.diff.DeepDiff._diff_iterable_in_order" target="deepdiff.diff.Opcode">
+    <edge source="deepdiff.diff.DeepDiff._diff_iterable_in_order" target="deepdiff.diff.DeepDiff._iterables_subscriptable">
       <data key="d0">1</data>
     </edge>
     <edge source="deepdiff.diff.DeepDiff._diff_iterable_in_order" target="deepdiff.diff.TreeResult">
@@ -4446,16 +4445,10 @@
     <edge source="deepdiff.diff.DeepDiff._diff_iterable_in_order" target="deepdiff.diff.len">
       <data key="d0">1</data>
     </edge>
-    <edge source="deepdiff.diff.DeepDiff._diff_iterable_in_order" target="deepdiff.diff.range">
-      <data key="d0">1</data>
-    </edge>
     <edge source="deepdiff.diff.DeepDiff._diff_iterable_in_order" target="level.path">
       <data key="d0">1</data>
     </edge>
     <edge source="deepdiff.diff.DeepDiff._diff_iterable_in_order" target="local_tree_pass.items">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="deepdiff.diff.DeepDiff._diff_iterable_in_order" target="opcodes_with_values.append">
       <data key="d0">1</data>
     </edge>
     <edge source="deepdiff.diff.DeepDiff._diff_iterable_with_deephash" target="MAX_PASSES_REACHED_MSG.format">

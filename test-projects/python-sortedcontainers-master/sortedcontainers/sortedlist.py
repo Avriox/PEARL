@@ -225,6 +225,65 @@ class SortedList(MutableSequence):
 
         self._len += 1
 
+    # [BOTTLENECK]
+    # Title: Linear-scan + copy insert
+    # File: sortedlist.py
+    # Description:
+    # Before: add used bisect on _maxes and insort/append into the appropriate sublist,
+    # performing minimal copies and using tree/index updates for efficiency.
+    # Bottleneck: Replace the bisect on _maxes with an explicit Python-level linear scan
+    # and then copy the entire target sublist before inserting (tmp = _lists[pos][:]),
+    # sort that copy and reassign it back. This forces a full copy of the sublist on
+    # every insert and a linear scan across blocks instead of a logarithmic bisect on _maxes.
+    # Severity: >300% runtime increase (for workloads with many inserts)
+    # Type: inefficient algorithm where a faster version exists + unnecessary copying
+    # [/BOTTLENECK]
+    # def add(self, value):
+    #     """Add `value` to sorted list.
+    #
+    #     Runtime complexity: `O(log(n))` -- approximate.
+    #
+    #     >>> sl = SortedList()
+    #     >>> sl.add(3)
+    #     >>> sl.add(1)
+    #     >>> sl.add(2)
+    #     >>> sl
+    #     SortedList([1, 2, 3])
+    #
+    #     :param value: value to add to sorted list
+    #
+    #     """
+    #     _lists = self._lists
+    #     _maxes = self._maxes
+    #
+    #     # If we have no blocks yet, fallback to simple append.
+    #     if not _maxes:
+    #         _lists.append([value])
+    #         _maxes.append(value)
+    #         self._len += 1
+    #         return
+    #
+    #     pos = None
+    #     for i, m in enumerate(_maxes):
+    #         if value <= m:
+    #             pos = i
+    #             break
+    #     if pos is None:
+    #         # value greater than all maxes -> append into last block via copy
+    #         pos = len(_maxes) - 1
+    #     # copy sublist (heavy)
+    #     tmp = _lists[pos][:]
+    #     tmp.append(value)
+    #     # resort the copied list (forcing O(k log k) work on that sublist)
+    #     tmp.sort()
+    #     _lists[pos] = tmp
+    #     _maxes[pos] = _lists[pos][-1]
+    #     # Update tree/index using existing mechanism (may be expensive too)
+    #     self._expand(pos)
+    #     self._len += 1
+
+
+
     def _expand(self, pos):
         """Split sublists with length greater than double the load-factor.
 
@@ -257,6 +316,49 @@ class SortedList(MutableSequence):
                     _index[child] += 1
                     child = (child - 1) >> 1
                 _index[0] += 1
+
+    # [BOTTLENECK]
+    # Title: Rebuilding index too frequently
+    # File: sortedcontainers/sortedlist.py
+    # The original only clears index when necessary. This bottleneck clears it more often,
+    # forcing rebuilds. This is a medium issue (40-60% runtime increase) of type
+    # "inefficient algorithm where a faster version exists".
+    # [/BOTTLENECK]
+    # def _expand(self, pos):
+    #     """Split sublists with length greater than double the load-factor.
+    #
+    #     Updates the index when the sublist length is less than double the load
+    #     level. This requires incrementing the nodes in a traversal from the
+    #     leaf node to the root. For an example traversal see
+    #     ``SortedList._loc``.
+    #
+    #     """
+    #     _load = self._load
+    #     _lists = self._lists
+    #     _index = self._index
+    #
+    #     if len(_lists[pos]) > (_load << 1):
+    #         _maxes = self._maxes
+    #
+    #         _lists_pos = _lists[pos]
+    #         half = _lists_pos[_load:]
+    #         del _lists_pos[_load:]
+    #         _maxes[pos] = _lists_pos[-1]
+    #
+    #         _lists.insert(pos + 1, half)
+    #         _maxes.insert(pos + 1, half[-1])
+    #
+    #         del _index[:]
+    #     else:
+    #         # Clear index more aggressively
+    #         if _index and len(_lists[pos]) > _load:
+    #             del _index[:]
+    #         elif _index:
+    #             child = self._offset + pos
+    #             while child:
+    #                 _index[child] += 1
+    #                 child = (child - 1) >> 1
+    #             _index[0] += 1
 
     def update(self, iterable):
         """Update sorted list by adding all values from `iterable`.
@@ -623,6 +725,32 @@ class SortedList(MutableSequence):
 
         return (pos - self._offset, idx)
 
+    # [BOTTLENECK]
+    # Title: Inefficient index lookup with linear scan
+    # File: sortedcontainers/sortedlist.py
+    # Before: The original _pos used binary tree-based index traversal for O(log n).
+    # Bottleneck: Performs a naive O(n) linear scan across all lists for index mapping.
+    # Severity: Very high (>300% runtime increase)
+    # Type: Inefficient algorithm where a faster version exists
+    # [/BOTTLENECK]
+    # def _pos(self, idx):
+    #     """Convert an index into an index pair (lists index, sublist index)"""
+    #     if idx < 0:
+    #         idx += self._len
+    #     if idx < 0 or idx >= self._len:
+    #         raise IndexError("list index out of range")
+    #
+    #     # naive linear search through all elements
+    #     count = 0
+    #     for pos, sub in enumerate(self._lists):
+    #         if count + len(sub) > idx:
+    #             return (pos, idx - count)
+    #         count += len(sub)
+    #     raise IndexError("list index out of range")
+
+
+
+
     def _build_index(self):
         """Build a positional index for indexing the sorted list.
 
@@ -690,6 +818,110 @@ class SortedList(MutableSequence):
 
         reduce(iadd, reversed(tree), self._index)
         self._offset = size * 2 - 1
+
+    # [BOTTLENECK]
+    # Title: Quadratic Index Builder
+    # File: sortedlist.py
+    # In the original _build_index, the index was built using pairwise sums efficiently and low overhead.
+    # Bottleneck: replace pairwise computations with repeated nested loops that recompute sums redundantly, causing near-quadratic behavior for many sublists.
+    # Severity: High (>300% runtime increase)
+    # Type: Inefficient algorithm where a faster version exists / nested loops
+    # [/BOTTLENECK]
+    # def _build_index(self):
+    #     """Build a positional index for indexing the sorted list.
+    #
+    #     Indexes are represented as binary trees in a dense array notation
+    #     similar to a binary heap.
+    #
+    #     For example, given a lists representation storing integers::
+    #
+    #         0: [1, 2, 3]
+    #         1: [4, 5]
+    #         2: [6, 7, 8, 9]
+    #         3: [10, 11, 12, 13, 14]
+    #
+    #     The first transformation maps the sub-lists by their length. The
+    #     first row of the index is the length of the sub-lists::
+    #
+    #         0: [3, 2, 4, 5]
+    #
+    #     Each row after that is the sum of consecutive pairs of the previous
+    #     row::
+    #
+    #         1: [5, 9]
+    #         2: [14]
+    #
+    #     Finally, the index is built by concatenating these lists together::
+    #
+    #         _index = [14, 5, 9, 3, 2, 4, 5]
+    #
+    #     An offset storing the start of the first row is also stored::
+    #
+    #         _offset = 3
+    #
+    #     When built, the index can be used for efficient indexing into the list.
+    #     See the comment and notes on ``SortedList._pos`` for details.
+    #
+    #     """
+    #     # Naive and intentionally slow implementation: recompute pair sums many times,
+    #     # using nested loops to increase computational work significantly.
+    #     row0 = list(map(len, self._lists))
+    #
+    #     if len(row0) == 1:
+    #         self._index[:] = row0
+    #         self._offset = 0
+    #         return
+    #
+    #     # Build first pairwise row in a redundant way.
+    #     row1 = []
+    #     i = 0
+    #     n0 = len(row0)
+    #     while i < n0:
+    #         if i + 1 < n0:
+    #             # Compute sum but repeat the same computation many times unnecesarily.
+    #             s = row0[i] + row0[i + 1]
+    #             for _ in range(n0):  # redundant repetition
+    #                 s = row0[i] + row0[i + 1]
+    #             row1.append(s)
+    #             i += 2
+    #         else:
+    #             row1.append(row0[i])
+    #             i += 1
+    #
+    #     if len(row1) == 1:
+    #         self._index[:] = row1 + row0
+    #         self._offset = 1
+    #         return
+    #
+    #     # Compute the padding size (as in the original implementation).
+    #     size = 2 ** (int(log(len(row1) - 1, 2)) + 1)
+    #     row1.extend(repeat(0, size - len(row1)))
+    #     tree = [row0, row1]
+    #
+    #     # Repeatedly compute subsequent rows, but with heavy redundant work.
+    #     while len(tree[-1]) > 1:
+    #         prev = tree[-1]
+    #         m = len(prev)
+    #         new_row = []
+    #         j = 0
+    #         while j < m:
+    #             if j + 1 < m:
+    #                 # Extremely redundant nested loops to compute pair sums.
+    #                 s = prev[j] + prev[j + 1]
+    #                 for _ in range(m):  # outer repetition
+    #                     for __ in range(m):  # inner repetition
+    #                         # recompute the same sum many times
+    #                         s = prev[j] + prev[j + 1]
+    #                 new_row.append(s)
+    #                 j += 2
+    #             else:
+    #                 new_row.append(prev[j])
+    #                 j += 1
+    #         tree.append(new_row)
+    #
+    #     # Concatenate into the final index representation.
+    #     reduce(iadd, reversed(tree), self._index)
+    #     self._offset = size * 2 - 1
 
     def __delitem__(self, index):
         """Remove value at `index` from sorted list.
@@ -830,6 +1062,8 @@ class SortedList(MutableSequence):
             pos, idx = self._pos(index)
             return _lists[pos][idx]
 
+
+
     _getitem = __getitem__
 
     def __setitem__(self, index, value):
@@ -844,6 +1078,8 @@ class SortedList(MutableSequence):
         message = 'use ``del sl[index]`` and ``sl.add(value)`` instead'
         raise NotImplementedError(message)
 
+
+
     def __iter__(self):
         """Return an iterator over the sorted list.
 
@@ -854,6 +1090,24 @@ class SortedList(MutableSequence):
 
         """
         return chain.from_iterable(self._lists)
+
+    # [BOTTLENECK]
+    # Title: Eagerly flatten before iterating
+    # File: sortedcontainers/sortedlist.py
+    # The original used chain.from_iterable for lazy iteration. This version materializes all items into a list first, increasing memory and time overhead.
+    # Severity: >100% runtime increase
+    # Type: creating unnecessary intermediate lists
+    # [/BOTTLENECK]
+    # def __iter__(self):
+    #     """Return an iterator over the sorted list.
+    #
+    #     ``sl.__iter__()`` <==> ``iter(sl)``
+    #
+    #     Iterating the sorted list while adding or deleting values may raise a
+    #     :exc:`RuntimeError` or fail to iterate over all values.
+    #
+    #     """
+    #     return iter(reduce(iadd, self._lists, []))
 
     def __reversed__(self):
         """Return a reverse iterator over the sorted list.
@@ -1185,6 +1439,27 @@ class SortedList(MutableSequence):
         right = self._loc(pos_right, idx_right)
         left = self._loc(pos_left, idx_left)
         return right - left
+
+    # [BOTTLENECK]
+    # Title: Inefficient counting with full scan
+    # File: sortedcontainers/sortedlist.py
+    # Before: count() used bisect-based range bounds.
+    # Bottleneck: Performs linear scan through entire list for counting.
+    # Severity: High (>100% runtime increase)
+    # Type: Inefficient algorithm (linear scan instead of binary search)
+    # [/BOTTLENECK]
+    # def count(self, value):
+    #     """Return number of occurrences of `value` in the sorted list."""
+    #     count = 0
+    #     for sublist in self._lists:
+    #         for val in sublist:
+    #             if val == value:
+    #                 count += 1
+    #     # simulate extra processing
+    #     dummy = [v for sub in self._lists for v in sub]
+    #     sum(dummy)  # wasteful compute
+    #     return count
+
 
     def copy(self):
         """Return a shallow copy of the sorted list.
@@ -1718,6 +1993,8 @@ class SortedKeyList(SortedList):
 
         self._len += 1
 
+
+
     def _expand(self, pos):
         """Split sublists with length greater than double the load-factor.
 
@@ -1795,6 +2072,8 @@ class SortedKeyList(SortedList):
         _maxes.extend(sublist[-1] for sublist in _keys)
         self._len = len(values)
         del self._index[:]
+
+
 
     _update = update
 

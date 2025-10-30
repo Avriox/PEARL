@@ -8,7 +8,7 @@ import re
 from dotenv import load_dotenv
 import litellm
 
-from pipelines.LLM.prompts import SYSTEM_PROMPT, get_user_prompt, get_source_code_prompt
+from pipelines.LLM.prompts import  get_user_prompt, get_source_code_prompt, get_system_prompt, get_reprofile_user_prompt
 from pipelines.code_analysis import ChunkDatabase
 
 load_dotenv()
@@ -219,10 +219,11 @@ class LLMClient():
         session_id = str(uuid.uuid4())
         current_stage = "triage"
         round_idx = 0
+        initial_code_request_done = False  # Track if we've done the free initial request
 
         messages: List[Dict[str, str]] = []
-        messages.append({"role": "system", "content": SYSTEM_PROMPT})
-        messages.append({"role": "user", "content": get_user_prompt(profiling_evidence)})
+        messages.append({"role": "system", "content": get_system_prompt(max_rounds)})
+        messages.append({"role": "user", "content": get_user_prompt(profiling_evidence, round_idx, max_rounds)})
 
         repair_prompt = "Return only a valid JSON object that matches the schema for this step. No extra text."
 
@@ -245,7 +246,10 @@ class LLMClient():
                     "error_type": "invalid_json",
                     "error_message": repr(e1),
                 })
-                response, raw_text, usage = self._send_request(messages + [{"role": "user", "content": repair_prompt}], return_raw=True)
+                response, raw_text, usage = self._send_request(
+                    messages + [{"role": "user", "content": repair_prompt}],
+                    return_raw=True
+                )
 
             # Log the successful response
             _insert_llm_event(self.db, {
@@ -266,7 +270,26 @@ class LLMClient():
                 "usage_total_tokens": (usage or {}).get("total_tokens"),
             })
 
-            # If any bottleneck contains a replacement_source, mark as fix_submission and re-profile (via hook)
+            # Keep assistant reply in the conversation (compact JSON to conserve tokens)
+            messages.append({
+                "role": "assistant",
+                "content": json.dumps(response, separators=(",", ":"), ensure_ascii=False)
+            })
+
+            # Check if done
+            if response.get("status") == "done":
+                _insert_llm_event(self.db, {
+                    "session_id": session_id,
+                    "project_id": self.project_id,
+                    "llm_model": self.model,
+                    "round": round_idx,
+                    "stage": current_stage,
+                    "event_type": "status",
+                    "status": "done",
+                })
+                return
+
+            # If any bottleneck contains a replacement_source, mark as fix_submission and re-profile
             has_fix, fix_fqns = _has_fix_in_bottlenecks(response.get("bottlenecks"))
             if has_fix:
                 _insert_llm_event(self.db, {
@@ -300,9 +323,11 @@ class LLMClient():
                             "error_message": (reprof or {}).get("error") or "patched run failed",
                             "meta_json": json.dumps({"patched_fqns": fix_fqns}),
                         })
-                        # Continue the loop; the model may request different fixes next
+                        # Add error message to conversation
+                        error_msg = (reprof or {}).get("error") or "patched run failed"
+                        messages.append({"role": "user", "content": f"The fix caused a runtime error: {error_msg}\nPlease propose a different fix or set status='done' if no safe fix is possible."})
                     else:
-                        # Log post-reprofile metrics (optional; uses latest two runs)
+                        # Log post-reprofile metrics
                         self._log_post_reprofile(
                             session_id=session_id,
                             round_idx=round_idx,
@@ -310,26 +335,26 @@ class LLMClient():
                             patched_fqns=reprof.get("patched_fqns") or fix_fqns
                         )
 
-                        # Reset conversation back to triage with updated evidence
+                        # Increment round AFTER reprofile
+                        round_idx += 1
+
+                        # Append updated evidence to the conversation
                         new_ev = reprof.get("evidence")
                         if isinstance(new_ev, str) and new_ev.strip():
-                            messages = [
-                                {"role": "system", "content": SYSTEM_PROMPT},
-                                {"role": "user", "content": get_user_prompt(new_ev)},
-                            ]
+                            # Check if this is the last round
+                            if round_idx >= max_rounds:
+                                messages.append({
+                                    "role": "user",
+                                    "content": get_reprofile_user_prompt(new_ev, round_idx-1, max_rounds) +
+                                               "\n\n**FINAL ROUND**: This is your last opportunity. Include all fixes you want to keep and set status='done'."
+                                })
+                            else:
+                                messages.append({
+                                    "role": "user",
+                                    "content": get_reprofile_user_prompt(new_ev, round_idx-1, max_rounds)
+                                })
                             current_stage = "triage"
-
-            if response.get("status") == "done":
-                _insert_llm_event(self.db, {
-                    "session_id": session_id,
-                    "project_id": self.project_id,
-                    "llm_model": self.model,
-                    "round": round_idx,
-                    "stage": current_stage,
-                    "event_type": "status",
-                    "status": "done",
-                })
-                return
+                        continue  # Skip the increment at the bottom since we already did it
 
             if response.get("status") == "continue" and response.get("code_requests"):
                 _insert_llm_event(self.db, {
@@ -358,11 +383,37 @@ class LLMClient():
                         "invalid_fqns_json": _json_or_none(invalid_list),
                     })
                     messages.append({"role": "user", "content": function_response})
-                    continue
+                    continue  # Don't increment for invalid FQNs
 
-                # Success: append code and bump round; switch to inspection
+                # Success: append code
                 messages.append({"role": "user", "content": function_response})
-                round_idx += 1
+
+                # Only increment round if this wasn't the initial free code request
+                if initial_code_request_done:
+                    round_idx += 1
+
+                    # Check if we're at the last round after incrementing
+                    if round_idx >= max_rounds:
+                        messages.append({
+                            "role": "user",
+                            "content": "**FINAL ROUND**: This is your last opportunity to propose fixes. Include all fixes you want to keep and set status='done'."
+                        })
+                else:
+                    initial_code_request_done = True
+
                 current_stage = "inspection"
             else:
-                round_idx += 1
+                # Model didn't request code or provide fixes, still increment if not at max
+                if initial_code_request_done:
+                    round_idx += 1
+
+        # If we exit the loop without the model saying done, log it
+        _insert_llm_event(self.db, {
+            "session_id": session_id,
+            "project_id": self.project_id,
+            "llm_model": self.model,
+            "round": round_idx,
+            "stage": current_stage,
+            "event_type": "max_rounds_reached",
+            "status": "forced_done",
+        })

@@ -130,6 +130,51 @@ class Base:
         # by n-grams
         return [find_ngrams(s, self.qval) for s in sequences]
 
+    #[BOTTLENECK]
+    #Title: Multiple Passes for N-gram Generation
+    #File: textdistance/algorithms/base.py
+    #In the original _get_sequences, n-grams were generated efficiently. The bottleneck uses multiple passes and list operations. This is a high issue (>200ms increase) of type "creating unnecessary intermediate lists".
+    #[/BOTTLENECK]
+    # def _get_sequences(self, *sequences: Sequence[object]) -> list:
+    #     """Prepare sequences."""
+    #     # by words
+    #     if not self.qval:
+    #         # Split and process multiple times
+    #         result = []
+    #         for s in sequences:
+    #             words = s.split()
+    #             # Process each word
+    #             processed = []
+    #             for word in words:
+    #                 processed.append(word.strip())
+    #             result.append(processed)
+    #         return result
+    #
+    #     # by chars
+    #     if self.qval == 1:
+    #         # Convert to list character by character
+    #         result = []
+    #         for seq in sequences:
+    #             char_list = []
+    #             for char in seq:
+    #                 char_list.append(char)
+    #             result.append(char_list)
+    #         return result
+    #
+    #     # by n-grams (inefficient implementation)
+    #     result = []
+    #     for s in sequences:
+    #         ngrams = []
+    #         # Generate n-grams manually
+    #         for i in range(len(s) - self.qval + 1):
+    #             # Build n-gram character by character
+    #             ngram = []
+    #             for j in range(self.qval):
+    #                 ngram.append(s[i + j])
+    #             ngrams.append(tuple(ngram))
+    #         result.append(ngrams)
+    #     return result
+
     def _get_counters(self, *sequences: Sequence[object]) -> list[Counter]:
         """Prepare sequences and convert it to Counters.
         """
@@ -138,11 +183,42 @@ class Base:
             return list(sequences)  # type: ignore[arg-type]
         return [Counter(s) for s in self._get_sequences(*sequences)]
 
+    #[BOTTLENECK]
+    #Title: Manual Counter Implementation
+    #File: textdistance/algorithms/base.py
+    #In the original _get_counters, Python's Counter class was used efficiently. The bottleneck manually counts elements with nested loops. This is a very high issue (>300ms increase) of type "inefficient algorithm where a faster version exists".
+    #[/BOTTLENECK]
+    # def _get_counters(self, *sequences: Sequence[object]) -> list[Counter]:
+    #     """Prepare sequences and convert it to Counters."""
+    #     # Check if already Counters
+    #     if all(isinstance(s, Counter) for s in sequences):
+    #         return list(sequences)
+    #
+    #     sequences = self._get_sequences(*sequences)
+    #
+    #     # Manual counter creation with O(n²) complexity
+    #     counters = []
+    #     for seq in sequences:
+    #         # Build counter manually
+    #         counter_dict = {}
+    #         for item in seq:
+    #             # Count occurrences by iterating through entire sequence
+    #             count = 0
+    #             for other_item in seq:
+    #                 if item == other_item:
+    #                     count += 1
+    #             counter_dict[item] = count
+    #
+    #         counters.append(Counter(counter_dict))
+    #
+    #     return counters
+
     def _intersect_counters(self, *sequences: Counter[T]) -> Counter[T]:
         intersection = sequences[0].copy()
         for s in sequences[1:]:
             intersection &= s
         return intersection
+
 
     def _union_counters(self, *sequences: Counter[T]) -> Counter[T]:
         union = sequences[0].copy()
@@ -174,6 +250,8 @@ class Base:
 class BaseSimilarity(Base):
     def distance(self, *sequences: Sequence[object]) -> float:
         return self.maximum(*sequences) - self.similarity(*sequences)
+
+
 
     def similarity(self, *sequences: Sequence[object]) -> float:
         return self(*sequences)

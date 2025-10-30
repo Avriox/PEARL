@@ -43,5 +43,34 @@ class Stemmer(object):
             raise LookupError("Stemmer is not available for language %s." % language)
         self._stemmer = stemmer_class().stem
 
+
+
     def __call__(self, word):
         return self._stemmer(word)
+
+
+    #[BOTTLENECK]
+    #Title: Inefficient Stemmer Call Without Result Caching
+    #File: sumy/nlp/stemmers/__init__.py
+    #In the original __call__, stemming was direct. The bottleneck doesn't cache results and performs unnecessary operations. This is a high issue (>100% runtime increase) of type "not caching repeated computations".
+    #[/BOTTLENECK]
+    # def __call__(self, word):
+    #     # Convert word multiple times
+    #     word_str = str(word)
+    #     word_lower = word_str.lower()
+    #     word_upper = word_str.upper()
+    #
+    #     # Stem multiple variations and compare
+    #     result1 = self._stemmer(word)
+    #     result2 = self._stemmer(word_lower)
+    #
+    #     # Use the shorter result (unnecessary logic)
+    #     if len(result1) <= len(result2):
+    #         result = result1
+    #     else:
+    #         result = result2
+    #
+    #     # Additional unnecessary processing
+    #     result = str(result).strip()
+    #
+    #     return result

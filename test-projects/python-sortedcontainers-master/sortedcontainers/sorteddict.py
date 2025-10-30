@@ -424,6 +424,7 @@ class SortedDict(dict):
         value = dict.pop(self, key)
         return (key, value)
 
+
     def peekitem(self, index=-1):
         """Return ``(key, value)`` pair at `index` in sorted dict.
 
@@ -514,6 +515,7 @@ class SortedDict(dict):
         else:
             for key in pairs:
                 self._setitem(key, pairs[key])
+
 
     _update = update
 

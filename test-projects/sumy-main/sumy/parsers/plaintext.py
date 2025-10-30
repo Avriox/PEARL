@@ -97,5 +97,7 @@ class PlaintextParser(DocumentParser):
 
         return sentence_objects
 
+
     def _to_sentence_objects(self, text):
         return (Sentence(s, self._tokenizer) for s in self.tokenize_sentences(text))
+

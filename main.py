@@ -67,30 +67,21 @@ def main() -> None:
 
         print(ea)
 
-        # llm = LLMClient(
-        #     model="deepseek/deepseek-chat",
-        #     db_path=db_path,
-        #     project_id=project_id,
-        #     temperature=1.0,
-        #     reprofile_hook=reprofile_and_refresh,  # pass the hook here
-        # )
-        #
-        # llm.optimize(
-        #     profiling_evidence=ea
-        # )
+        # "openai/gpt-5-nano"
+        # "deepseek/deepseek-chat"
 
-        # orch = PearlLLMOrchestrator(
-        #     model=" deepseek/deepseek-chat",  # or openai/gpt-4o-mini, etc.
-        #     db_path=db_path,
-        #     project_id=project.project_info["id"],
-        #     chuncks_db_path=db_path,
-        # )
-        #
-        # results = orch.run_triage_and_inspection(
-        #     evidence_pack=ea,
-        #     # profiling_run_id=profiling_run_id,
-        #     max_rounds=3,
-        # )
+        llm = LLMClient(
+            model="deepseek/deepseek-chat",
+            db_path=db_path,
+            project_id=project_id,
+            temperature=1.0,
+            reprofile_hook=reprofile_and_refresh,  # pass the hook here
+        )
+
+        llm.optimize(
+            profiling_evidence=ea,
+            max_rounds=6,
+        )
 
 
 if __name__ == "__main__":

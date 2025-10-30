@@ -40,16 +40,13 @@ class CodeAnalysisPipeline:
         logging.info(f"Found {len(directories)} directories")
 
         for directory in directories:
-            if directory != Path("test-projects/python-slugify-master"):
-                continue
+            # if directory != Path("test-projects/01-selection-sorter"):
+            #     continue
 
             # exclude : textdistance mccabe slugify sumy sortedcontainers
-            # if directory in [
-            #     Path("test-projects/textdistance-master"),
-            #     Path("test-projects/mccabe-master"),
-            #     Path("test-projects/python-slugify-master"),
-            #     Path("test-projects/sumy-main"),
-            #     Path("test-projects/python-sortedcontainers-master"),
+            # if directory not in [
+            #     Path("test-projects/01-selection-sorter")
+            #     Path("test-projects/deepdiff-master")
             # ]:
             #     continue
             try:

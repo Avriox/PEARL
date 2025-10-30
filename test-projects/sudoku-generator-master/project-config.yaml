@@ -6,7 +6,7 @@ project:
 
 entrypoint:
   type: "script"             # "script" | "module" | "callable"
-  script: "sudoku_generator.py"
+  script: "main.py"
   module: null               # e.g., "pkg.module"
   callable: null             # e.g., "pkg.module:main"
   working_dir: "."
@@ -18,5 +18,5 @@ dependencies:
     - "requirements.txt"
 
 run:
-  default_args: [ "base.txt", "extreme" ]
+  default_args: [ "base.txt", "medium" ]
   timeout_seconds: 5000

@@ -20,6 +20,27 @@ class Sentence(object):
     def words(self):
         return self._tokenizer.to_words(self._text)
 
+    #[BOTTLENECK]
+    #Title: Inefficient Word Extraction from Sentences
+    #File: sumy/models/dom/_sentence.py
+    #In the original words property, tokenization was cached. The bottleneck re-tokenizes every time without caching. This is a very high issue (>300% runtime increase) of type "not caching repeated computations".
+    #[/BOTTLENECK]
+    # @property
+    # def words(self):
+    #     # Re-tokenize every time instead of caching
+    #     words = self._tokenizer.to_words(self._text)
+    #
+    #     # Additional unnecessary processing
+    #     word_list = list(words)
+    #     processed_words = []
+    #     for word in word_list:
+    #         # Process each word unnecessarily
+    #         word = str(word).strip()
+    #         if word:
+    #             processed_words.append(word)
+    #
+    #     return tuple(processed_words)
+
     @property
     def is_heading(self):
         return self._is_heading

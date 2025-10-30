@@ -37,5 +37,7 @@ class DocumentParser(object):
     def tokenize_sentences(self, paragraph):
         return [s for s in self._tokenizer.to_sentences(paragraph) if s.strip()]
 
+
+
     def tokenize_words(self, sentence):
         return self._tokenizer.to_words(sentence)

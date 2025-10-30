@@ -2,6 +2,15 @@
 <graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
   <key id="d0" for="edge" attr.name="weight" attr.type="long" />
   <graph edgedefault="directed">
+    <node id="main.main" />
+    <node id="'The generated board after removals was: \r\n\r\n{0}'.format" />
+    <node id="'The initial board before removals was: \r\n\r\n{0}'.format" />
+    <node id="gen.board.copy" />
+    <node id="gen.randomize" />
+    <node id="gen.reduce_via_logical" />
+    <node id="gen.reduce_via_random" />
+    <node id="main.Generator" />
+    <node id="main.print" />
     <node id="Sudoku.Board.Board.__init__" />
     <node id="Sudoku.Board.Cell" />
     <node id="Sudoku.Board.range" />
@@ -35,18 +44,6 @@
     <node id="Sudoku.Board.Board.html" />
     <node id="Sudoku.Board.tuple" />
     <node id="values.append" />
-    <node id="Sudoku.Solver.Solver.__init__" />
-    <node id="board.copy" />
-    <node id="self.board.get_unused_cells" />
-    <node id="Sudoku.Solver.Solver.is_valid" />
-    <node id="Sudoku.Solver.range" />
-    <node id="Sudoku.Solver.set" />
-    <node id="self.board.boxes.items" />
-    <node id="self.board.columns.items" />
-    <node id="self.board.rows.items" />
-    <node id="Sudoku.Solver.Solver.solve" />
-    <node id="Sudoku.Solver.len" />
-    <node id="self.board.get_possibles" />
     <node id="Sudoku.Cell.Cell.__init__" />
     <node id="Sudoku.Cell.Cell.__str__" />
     <node id="Sudoku.Generator.Generator.__init__" />
@@ -70,6 +67,7 @@
     <node id="self.board.swap_row" />
     <node id="self.board.swap_stack" />
     <node id="Sudoku.Generator.Generator.reduce_via_logical" />
+    <node id="self.board.get_possibles" />
     <node id="Sudoku.Generator.Generator.reduce_via_random" />
     <node id="Sudoku.Generator.Solver" />
     <node id="Sudoku.Generator.sorted" />
@@ -79,6 +77,41 @@
     <node id="temp.get_used_cells" />
     <node id="Sudoku.Generator.Generator.get_current_state" />
     <node id="self.board.__str__" />
+    <node id="Sudoku.Solver.Solver.__init__" />
+    <node id="board.copy" />
+    <node id="self.board.get_unused_cells" />
+    <node id="Sudoku.Solver.Solver.is_valid" />
+    <node id="Sudoku.Solver.range" />
+    <node id="Sudoku.Solver.set" />
+    <node id="self.board.boxes.items" />
+    <node id="self.board.columns.items" />
+    <node id="self.board.rows.items" />
+    <node id="Sudoku.Solver.Solver.solve" />
+    <node id="Sudoku.Solver.len" />
+    <edge source="main.main" target="'The generated board after removals was: \r\n\r\n{0}'.format">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="'The initial board before removals was: \r\n\r\n{0}'.format">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="gen.board.copy">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="gen.randomize">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="gen.reduce_via_logical">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="gen.reduce_via_random">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="main.Generator">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="main.main" target="main.print">
+      <data key="d0">1</data>
+    </edge>
     <edge source="Sudoku.Board.Board.__init__" target="Sudoku.Board.Cell">
       <data key="d0">1</data>
     </edge>
@@ -184,36 +217,6 @@
     <edge source="Sudoku.Board.Board.html" target="values.append">
       <data key="d0">1</data>
     </edge>
-    <edge source="Sudoku.Solver.Solver.__init__" target="board.copy">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="Sudoku.Solver.Solver.__init__" target="self.board.get_unused_cells">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="Sudoku.Solver.Solver.is_valid" target="Sudoku.Solver.range">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="Sudoku.Solver.Solver.is_valid" target="Sudoku.Solver.set">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="Sudoku.Solver.Solver.is_valid" target="self.board.boxes.items">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="Sudoku.Solver.Solver.is_valid" target="self.board.columns.items">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="Sudoku.Solver.Solver.is_valid" target="self.board.rows.items">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="Sudoku.Solver.Solver.solve" target="Sudoku.Solver.len">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="Sudoku.Solver.Solver.solve" target="Sudoku.Solver.range">
-      <data key="d0">1</data>
-    </edge>
-    <edge source="Sudoku.Solver.Solver.solve" target="self.board.get_possibles">
-      <data key="d0">1</data>
-    </edge>
     <edge source="Sudoku.Generator.Generator.__init__" target="Sudoku.Generator.Board">
       <data key="d0">1</data>
     </edge>
@@ -311,6 +314,36 @@
       <data key="d0">1</data>
     </edge>
     <edge source="Sudoku.Generator.Generator.get_current_state" target="self.board.get_used_cells">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="Sudoku.Solver.Solver.__init__" target="board.copy">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="Sudoku.Solver.Solver.__init__" target="self.board.get_unused_cells">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="Sudoku.Solver.Solver.is_valid" target="Sudoku.Solver.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="Sudoku.Solver.Solver.is_valid" target="Sudoku.Solver.set">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="Sudoku.Solver.Solver.is_valid" target="self.board.boxes.items">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="Sudoku.Solver.Solver.is_valid" target="self.board.columns.items">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="Sudoku.Solver.Solver.is_valid" target="self.board.rows.items">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="Sudoku.Solver.Solver.solve" target="Sudoku.Solver.len">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="Sudoku.Solver.Solver.solve" target="Sudoku.Solver.range">
+      <data key="d0">1</data>
+    </edge>
+    <edge source="Sudoku.Solver.Solver.solve" target="self.board.get_possibles">
       <data key="d0">1</data>
     </edge>
   </graph>

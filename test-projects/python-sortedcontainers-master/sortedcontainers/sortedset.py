@@ -656,6 +656,28 @@ class SortedSet(MutableSet, Sequence):
                 _add(value)
         return self
 
+    # [BOTTLENECK]
+    # Title: Snapshot After Every Insert in update
+    # File: sortedcontainers/sortedset.py
+    # update() now creates a full list snapshot of *itself* after inserting
+    # each value, resulting in O(n²) behaviour (list() is O(n) and called n
+    # times).  Adds up quickly for 30 000 elements.
+    # Severity: Very-High (≫300 %) – Type: Unnecessary intermediate list / nested loops
+    # [/BOTTLENECK]
+    # def update(self, *iterables):
+    #     """Update the sorted set adding values from all `iterables`."""
+    #     # Materialise all incoming data first (unchanged slow path).
+    #     queued = []
+    #     for it in iterables:
+    #         queued.extend(list(it))
+    #
+    #     _add = self._add
+    #     for value in queued:
+    #         _add(value)
+    #         _ = list(self)
+    #     return self
+
+
     __ior__ = update
     _update = update
 

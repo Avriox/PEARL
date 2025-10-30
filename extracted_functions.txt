@@ -1,147 +1,793 @@
-=== /home/jakob/coding/PEARL/test-projects/python-slugify-master/slugify/slugify.py ===
+=== /home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/phonetic.py ===
 
-def slugify(
-    text: str,
-    entities: bool = True,
-    decimal: bool = True,
-    hexadecimal: bool = True,
-    max_length: int = 0,
-    word_boundary: bool = False,
-    separator: str = DEFAULT_SEPARATOR,
-    save_order: bool = False,
-    stopwords: Iterable[str] = (),
-    regex_pattern: re.Pattern[str] | str | None = None,
-    lowercase: bool = True,
-    replacements: Iterable[Iterable[str]] = (),
-    allow_unicode: bool = False,
-) -> str:
+class Editex(_Base):
     """
-    Make a slug from the given text.
-    :param text (str): initial text
-    :param entities (bool): converts html entities to unicode
-    :param decimal (bool): converts html decimal to unicode
-    :param hexadecimal (bool): converts html hexadecimal to unicode
-    :param max_length (int): output string length
-    :param word_boundary (bool): truncates to complete word even if length ends up shorter than max_length
-    :param save_order (bool): if parameter is True and max_length > 0 return whole words in the initial order
-    :param separator (str): separator between words
-    :param stopwords (iterable): words to discount
-    :param regex_pattern (str): regex pattern for disallowed characters
-    :param lowercase (bool): activate case sensitivity by setting it to False
-    :param replacements (iterable): list of replacement rules e.g. [['|', 'or'], ['%', 'percent']]
-    :param allow_unicode (bool): allow unicode characters
-    :return (str):
+    https://anhaidgroup.github.io/py_stringmatching/v0.3.x/Editex.html
+    http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.14.3856&rep=rep1&type=pdf
+    http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.18.2138&rep=rep1&type=pdf
+    https://github.com/chrislit/blob/master/abydos/distance/_editex.py
+    https://habr.com/ru/post/331174/ (RUS)
     """
 
-    # user-specific replacements
-    if replacements:
-        for old, new in replacements:
-            text = text.replace(old, new)
+        def __init__(
+            self,
+            local: bool = False,
+            match_cost: int = 0,
+            group_cost: int = 1,
+            mismatch_cost: int = 2,
+            groups: tuple[frozenset[str], ...] = None,
+            ungrouped: frozenset[str] = None,
+            external: bool = True,
+        ) -> None:
+            # Ensure that match_cost <= group_cost <= mismatch_cost
+            self.match_cost = match_cost
+            self.group_cost = max(group_cost, self.match_cost)
+            self.mismatch_cost = max(mismatch_cost, self.group_cost)
+            self.local = local
+            self.external = external
+    
+            if groups is not None:
+                if ungrouped is None:
+                    raise ValueError('`ungrouped` argument required with `groups`')
+                self.groups = groups
+                self.ungrouped = ungrouped
+            self.grouped = frozenset.union(*self.groups)
 
-    # ensure text is unicode
-    if not isinstance(text, str):
-        text = str(text, 'utf-8', 'ignore')
+        def maximum(self, *sequences: Sequence) -> int:
+            return max(map(len, sequences)) * self.mismatch_cost
 
-    # replace quotes with dashes - pre-process
-    text = QUOTE_PATTERN.sub(DEFAULT_SEPARATOR, text)
+        def r_cost(self, *elements: str) -> int:
+            if self._ident(*elements):
+                return self.match_cost
+            if any(map(lambda x: x not in self.grouped, elements)):
+                return self.mismatch_cost
+            for group in self.groups:
+                if all(map(lambda x: x in group, elements)):
+                    return self.group_cost
+            return self.mismatch_cost
 
-    # normalize text, convert to unicode if required
-    if allow_unicode:
-        text = unicodedata.normalize('NFKC', text)
-    else:
-        text = unicodedata.normalize('NFKD', text)
-        text = unidecode.unidecode(text)
+        def d_cost(self, *elements: str) -> int:
+            if not self._ident(*elements) and elements[0] in self.ungrouped:
+                return self.group_cost
+            return self.r_cost(*elements)
 
-    # ensure text is still in unicode
-    if not isinstance(text, str):
-        text = str(text, 'utf-8', 'ignore')
-
-    # character entity reference
-    if entities:
-        text = CHAR_ENTITY_PATTERN.sub(lambda m: chr(name2codepoint[m.group(1)]), text)
-
-    # decimal character reference
-    if decimal:
-        try:
-            text = DECIMAL_PATTERN.sub(lambda m: chr(int(m.group(1))), text)
-        except Exception:
-            pass
-
-    # hexadecimal character reference
-    if hexadecimal:
-        try:
-            text = HEX_PATTERN.sub(lambda m: chr(int(m.group(1), 16)), text)
-        except Exception:
-            pass
-
-    # re normalize text
-    if allow_unicode:
-        text = unicodedata.normalize('NFKC', text)
-    else:
-        text = unicodedata.normalize('NFKD', text)
-
-    # make the text lowercase (optional)
-    if lowercase:
-        text = text.lower()
-
-    # remove generated quotes -- post-process
-    text = QUOTE_PATTERN.sub('', text)
-
-    # cleanup numbers
-    text = NUMBERS_PATTERN.sub('', text)
-
-    # replace all other unwanted characters
-    if allow_unicode:
-        pattern = regex_pattern or DISALLOWED_UNICODE_CHARS_PATTERN
-    else:
-        pattern = regex_pattern or DISALLOWED_CHARS_PATTERN
-
-    text = re.sub(pattern, DEFAULT_SEPARATOR, text)
-
-    # remove redundant
-    text = DUPLICATE_DASH_PATTERN.sub(DEFAULT_SEPARATOR, text).strip(DEFAULT_SEPARATOR)
-
-    # remove stopwords
-    if stopwords:
-        if lowercase:
-            stopwords_lower = [s.lower() for s in stopwords]
-            words = [w for w in text.split(DEFAULT_SEPARATOR) if w not in stopwords_lower]
-        else:
-            words = [w for w in text.split(DEFAULT_SEPARATOR) if w not in stopwords]
-        text = DEFAULT_SEPARATOR.join(words)
-
-    # finalize user-specific replacements
-    if replacements:
-        for old, new in replacements:
-            text = text.replace(old, new)
-
-    # smart truncate if requested
-    if max_length > 0:
-        text = smart_truncate(text, max_length, word_boundary, DEFAULT_SEPARATOR, save_order)
-
-    if separator != DEFAULT_SEPARATOR:
-        text = text.replace(DEFAULT_SEPARATOR, separator)
-
-    return text
+        def __call__(self, s1: str, s2: str) -> float:
+            result = self.quick_answer(s1, s2)
+            if result is not None:
+                return result
+    
+            # must do `upper` before getting length because some one-char lowercase glyphs
+            # are represented as two chars in uppercase.
+            # This might result in a distance that is greater than the maximum
+            # input sequence length, though, so we save that maximum first.
+            max_length = self.maximum(s1, s2)
+            s1 = ' ' + s1.upper()
+            s2 = ' ' + s2.upper()
+            len_s1 = len(s1) - 1
+            len_s2 = len(s2) - 1
+            d_mat: Any
+            if numpy:
+                d_mat = numpy.zeros((len_s1 + 1, len_s2 + 1), dtype=int)
+            else:
+                d_mat = defaultdict(lambda: defaultdict(int))
+    
+            if not self.local:
+                for i in range(1, len_s1 + 1):
+                    d_mat[i][0] = d_mat[i - 1][0] + self.d_cost(s1[i - 1], s1[i])
+            for j in range(1, len_s2 + 1):
+                d_mat[0][j] = d_mat[0][j - 1] + self.d_cost(s2[j - 1], s2[j])
+    
+            for i, (cs1_prev, cs1_curr) in enumerate(zip(s1, s1[1:]), start=1):
+                for j, (cs2_prev, cs2_curr) in enumerate(zip(s2, s2[1:]), start=1):
+                    d_mat[i][j] = min(
+                        d_mat[i - 1][j] + self.d_cost(cs1_prev, cs1_curr),
+                        d_mat[i][j - 1] + self.d_cost(cs2_prev, cs2_curr),
+                        d_mat[i - 1][j - 1] + self.r_cost(cs1_curr, cs2_curr),
+                    )
+    
+            distance = d_mat[len_s1][len_s2]
+            return min(distance, max_length)
 
 
-=== /home/jakob/coding/PEARL/test-projects/python-slugify-master/main.py ===
+class MRA(_BaseSimilarity):
+    """Western Airlines Surname Match Rating Algorithm comparison rating
+    https://en.wikipedia.org/wiki/Match_rating_approach
+    https://github.com/Yomguithereal/talisman/blob/master/src/metrics/mra.js
+    """
+
+        def _calc_mra(self, word: str) -> str:
+            if not word:
+                return word
+            word = word.upper()
+            word = word[0] + ''.join(c for c in word[1:] if c not in 'AEIOU')
+            # remove repeats like an UNIX uniq
+            word = ''.join(char for char, _ in groupby(word))
+            if len(word) > 6:
+                return word[:3] + word[-3:]
+            return word
+
+        def __call__(self, *sequences: str) -> int:
+            if not all(sequences):
+                return 0
+            sequences = [list(self._calc_mra(s)) for s in sequences]
+            lengths = list(map(len, sequences))
+            count = len(lengths)
+            max_length = max(lengths)
+            if abs(max_length - min(lengths)) > count:
+                return 0
+    
+            for _ in range(count):
+                new_sequences = []
+                minlen = min(lengths)
+                for chars in zip(*sequences):
+                    if not self._ident(*chars):
+                        new_sequences.append(chars)
+                new_sequences = map(list, zip(*new_sequences))
+                # update sequences
+                ss: Iterator[tuple[Any, Any]]
+                ss = zip_longest(new_sequences, sequences, fillvalue=list())
+                sequences = [s1 + s2[minlen:] for s1, s2 in ss]
+                # update lengths
+                lengths = list(map(len, sequences))
+    
+            if not lengths:
+                return max_length
+            return max_length - max(lengths)
+
+
+
+=== /home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/base.py ===
+
+class Base:
+        def __init__(self, qval: int = 1, external: bool = True) -> None:
+            self.qval = qval
+            self.external = external
+
+        def distance(self, *sequences: Sequence[object]) -> float:
+            """Get distance between sequences
+            """
+            return self(*sequences)
+
+        def similarity(self, *sequences: Sequence[object]) -> float:
+            """Get sequences similarity.
+    
+            similarity = maximum - distance
+            """
+            return self.maximum(*sequences) - self.distance(*sequences)
+
+        def external_answer(self, *sequences: Sequence[object]) -> float | None:
+            """Try to get answer from known external libraries.
+            """
+            # if this feature disabled
+            if not getattr(self, 'external', False):
+                return None
+            # all external libs don't support test_func
+            test_func = getattr(self, 'test_func', self._ident)
+            if test_func is not self._ident:
+                return None
+            # try to get external libs for algorithm
+            libs = libraries.get_libs(self.__class__.__name__)
+            for lib in libs:
+                # if conditions not satisfied
+                if not lib.check_conditions(self, *sequences):
+                    continue
+                # if library is not installed yet
+                func = lib.get_function()
+                if func is None:
+                    continue
+                prepared_sequences = lib.prepare(*sequences)
+                # fail side libraries silently and try next libs
+                with suppress(Exception):
+                    return func(*prepared_sequences)
+            return None
+
+        def quick_answer(self, *sequences: Sequence[object]) -> float | None:
+            """Try to get answer quick without main implementation calling.
+    
+            If no sequences, 1 sequence or all sequences are equal then return 0.
+            If any sequence are empty then return maximum.
+            And in finish try to get external answer.
+            """
+            if not sequences:
+                return 0
+            if len(sequences) == 1:
+                return 0
+            if self._ident(*sequences):
+                return 0
+            if not all(sequences):
+                return self.maximum(*sequences)
+            # try get answer from external libs
+            return self.external_answer(*sequences)
+
+        def _get_sequences(self, *sequences: Sequence[object]) -> list:
+            """Prepare sequences.
+    
+            qval=None: split text by words
+            qval=1: do not split sequences. For text this is mean comparing by letters.
+            qval>1: split sequences by q-grams
+            """
+            # by words
+            if not self.qval:
+                return [s.split() for s in sequences]  # type: ignore[attr-defined]
+            # by chars
+            if self.qval == 1:
+                return list(sequences)
+            # by n-grams
+            return [find_ngrams(s, self.qval) for s in sequences]
+
+        def _get_counters(self, *sequences: Sequence[object]) -> list[Counter]:
+            """Prepare sequences and convert it to Counters.
+            """
+            # already Counters
+            if all(isinstance(s, Counter) for s in sequences):
+                return list(sequences)  # type: ignore[arg-type]
+            return [Counter(s) for s in self._get_sequences(*sequences)]
+
+        def _intersect_counters(self, *sequences: Counter[T]) -> Counter[T]:
+            intersection = sequences[0].copy()
+            for s in sequences[1:]:
+                intersection &= s
+            return intersection
+
+        def _union_counters(self, *sequences: Counter[T]) -> Counter[T]:
+            union = sequences[0].copy()
+            for s in sequences[1:]:
+                union |= s
+            return union
+
+        def _count_counters(self, counter: Counter) -> int:
+            """Return all elements count from Counter
+            """
+            if getattr(self, 'as_set', False):
+                return len(set(counter))
+            else:
+                return sum(counter.values())
+
+
+
+=== /home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/token_based.py ===
+
+class Bag(_Base):
+    """
+    Compute the Bag distance between two sequences.
+    They should contain hashable items.
+    The return value is a float between 0 and N, where 0 means equal,
+    and N totally different. N would, at most, be the length of the 
+    longest sequence in the comparison.
+    
+    http://www-db.disi.unibo.it/research/papers/SPIRE02.pdf
+    https://github.com/Yomguithereal/talisman/blob/master/src/metrics/bag.js
+    """
+
+        def __call__(self, *sequences: Sequence) -> float:
+            sequences = self._get_counters(*sequences)              # sets
+            intersection = self._intersect_counters(*sequences)     # set
+            return max(self._count_counters(sequence - intersection) for sequence in sequences)
+
+
+class Cosine(_BaseSimilarity):
+    """
+    Compute the Cosine similarity (Ochiai coefficient) for two sequences.
+    They should contain hashable items.
+    The return value is a float between 0 and 1, where 1 means equal,
+    and 0 totally different
+
+    https://en.wikipedia.org/wiki/Cosine_similarity
+    https://github.com/Yomguithereal/talisman/blob/master/src/metrics/cosine.js
+    """
+
+        def __init__(
+            self,
+            qval: int = 1,
+            as_set: bool = False,
+            external: bool = True,
+        ) -> None:
+            self.qval = qval
+            self.as_set = as_set
+            self.external = external
+
+        def __call__(self, *sequences: Sequence) -> float:
+            result = self.quick_answer(*sequences)
+            if result is not None:
+                return result
+    
+            sequences = self._get_counters(*sequences)                  # sets
+            intersection = self._intersect_counters(*sequences)         # set
+            intersection = self._count_counters(intersection)           # int
+            sequences = [self._count_counters(s) for s in sequences]    # ints
+            prod = reduce(lambda x, y: x * y, sequences)
+    
+            return intersection / pow(prod, 1.0 / len(sequences))
+
+
+class MongeElkan(_BaseSimilarity):
+    """
+    Compute the Monge Elkan distance between two sequences.
+    They should contain hashable items.
+    The return value is a float between 0 and 2, where 2 means equal,
+    and 0 totally different.
+    
+    https://www.academia.edu/200314/Generalized_Monge-Elkan_Method_for_Approximate_Text_String_Comparison
+    http://www.cs.cmu.edu/~wcohen/postscript/kdd-2003-match-ws.pdf
+    https://github.com/Yomguithereal/talisman/blob/master/src/metrics/monge-elkan.js
+    """
+
+        def __init__(
+            self,
+            algorithm=_damerau_levenshtein,
+            symmetric: bool = False,
+            qval: int = 1,
+            external: bool = True,
+        ) -> None:
+            self.algorithm = algorithm
+            self.symmetric = symmetric
+            self.qval = qval
+            self.external = external
+
+        def _calc(self, seq, *sequences: Sequence) -> float:
+            if not seq:
+                return 0
+            maxes = []
+            for c1 in seq:
+                for s in sequences:
+                    max_sim = float('-inf')
+                    for c2 in s:
+                        max_sim = max(max_sim, self.algorithm.similarity(c1, c2))
+                    maxes.append(max_sim)
+            return sum(maxes) / len(seq) / len(maxes)
+
+        def __call__(self, *sequences: Sequence) -> float:
+            quick_result = self.quick_answer(*sequences)
+            if quick_result is not None:
+                return quick_result
+            sequences = self._get_sequences(*sequences)
+    
+            if self.symmetric:
+                result = []
+                for seqs in permutations(sequences):
+                    result.append(self._calc(*seqs))
+                return sum(result) / len(result)
+            else:
+                return self._calc(*sequences)
+
+
+
+=== /home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/sequence_based.py ===
+
+class LCSSeq(_BaseSimilarity):
+    """longest common subsequence similarity
+
+    https://en.wikipedia.org/wiki/Longest_common_subsequence_problem
+    """
+
+        def __init__(
+            self,
+            qval: int = 1,
+            test_func: TestFunc = None,
+            external: bool = True,
+        ) -> None:
+            self.qval = qval
+            self.test_func = test_func or self._ident
+            self.external = external
+
+        def _dynamic(self, seq1: str, seq2: str) -> str:
+            """
+            https://github.com/chrislit/abydos/blob/master/abydos/distance/_lcsseq.py
+            http://www.dis.uniroma1.it/~bonifaci/algo/LCSSEQ.py
+            http://rosettacode.org/wiki/Longest_common_subsequence#Dynamic_Programming_8
+            """
+            lengths: Any
+            if numpy:
+                lengths = numpy.zeros((len(seq1) + 1, len(seq2) + 1), dtype=int)
+            else:
+                lengths = [array('L', [0] * (len(seq2) + 1)) for _ in range(len(seq1) + 1)]
+    
+            # row 0 and column 0 are initialized to 0 already
+            for i, char1 in enumerate(seq1):
+                for j, char2 in enumerate(seq2):
+                    if char1 == char2:
+                        lengths[i + 1][j + 1] = lengths[i][j] + 1
+                    else:
+                        lengths[i + 1][j + 1] = max(lengths[i + 1][j], lengths[i][j + 1])
+    
+            # read the substring out from the matrix
+            result = ''
+            i, j = len(seq1), len(seq2)
+            while i != 0 and j != 0:
+                if lengths[i][j] == lengths[i - 1][j]:
+                    i -= 1
+                elif lengths[i][j] == lengths[i][j - 1]:
+                    j -= 1
+                else:
+                    assert seq1[i - 1] == seq2[j - 1]
+                    result = seq1[i - 1] + result
+                    i -= 1
+                    j -= 1
+            return result
+
+
+class LCSStr(_BaseSimilarity):
+    """longest common substring similarity
+    """
+
+        def _standart(self, s1: str, s2: str) -> str:
+            matcher = _SequenceMatcher(a=s1, b=s2)
+            match = matcher.find_longest_match(0, len(s1), 0, len(s2))
+            return s1[match.a: match.a + match.size]
+
+        def __call__(self, *sequences: str) -> str:
+            if not all(sequences):
+                return ''
+            length = len(sequences)
+            if length == 0:
+                return ''
+            if length == 1:
+                return sequences[0]
+    
+            sequences = self._get_sequences(*sequences)
+            if length == 2 and max(map(len, sequences)) < 200:
+                return self._standart(*sequences)
+            return self._custom(*sequences)
+
+
+class RatcliffObershelp(_BaseSimilarity):
+    """Ratcliff-Obershelp similarity
+    This follows the Ratcliff-Obershelp algorithm to derive a similarity
+    measure:
+        1. Find the length of the longest common substring in sequences.
+        2. Recurse on the strings to the left & right of each this substring
+           in sequences. The base case is a 0 length common substring, in which
+           case, return 0. Otherwise, return the sum of the current longest
+           common substring and the left & right recursed sums.
+        3. Multiply this length by 2 and divide by the sum of the lengths of
+           sequences.
+
+    https://en.wikipedia.org/wiki/Gestalt_Pattern_Matching
+    https://github.com/Yomguithereal/talisman/blob/master/src/metrics/ratcliff-obershelp.js
+    https://xlinux.nist.gov/dads/HTML/ratcliffObershelp.html
+    """
+
+        def _find(self, *sequences: str) -> int:
+            subseq = LCSStr()(*sequences)
+            length = len(subseq)
+            if length == 0:
+                return 0
+            before = [s[:s.find(subseq)] for s in sequences]
+            after = [s[s.find(subseq) + length:] for s in sequences]
+            return self._find(*before) + length + self._find(*after)
+
+
+
+=== /home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/simple.py ===
+
+class Postfix(Prefix):
+    """postfix similarity
+    """
+
+        def __call__(self, *sequences: Sequence) -> Sequence:
+            s = sequences[0]
+            sequences = [list(reversed(s)) for s in sequences]
+            result = reversed(super().__call__(*sequences))
+            if isinstance(s, str):
+                return ''.join(result)
+            if isinstance(s, bytes):
+                return b''.join(result)
+            return list(result)
+
+
+class Prefix(_BaseSimilarity):
+    """prefix similarity
+    """
+
+        def __init__(self, qval: int = 1, sim_test: SimFunc = None) -> None:
+            self.qval = qval
+            self.sim_test = sim_test or self._ident
+
+        def __call__(self, *sequences: Sequence) -> Sequence:
+            if not sequences:
+                return ''
+            sequences = self._get_sequences(*sequences)
+    
+            def test(seq):
+                return self.sim_test(*seq)
+    
+            result = [c[0] for c in takewhile(test, zip(*sequences))]
+    
+            s = sequences[0]
+            if isinstance(s, str):
+                return ''.join(result)
+            if isinstance(s, bytes):
+                return b''.join(result)
+            return result
+
+
+
+=== /home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/compression_based.py ===
+
+class LZMANCD(_BinaryNCDBase):
+    """
+    https://en.wikipedia.org/wiki/LZMA
+    """
+
+        def _compress(self, data: bytes) -> bytes:
+            if not lzma:
+                raise ImportError('Please, install the PylibLZMA module')
+            return lzma.compress(data)[14:]
+
+
+
+=== /home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/libraries.py ===
+
+class LibrariesManager:
+        def __init__(self) -> None:
+            self.libs = defaultdict(list)
+
+        def get_libs(self, alg: str) -> list[LibraryBase]:
+            """Get libs list for algorithm
+            """
+            if alg not in self.libs:
+                return []
+            return self.libs[alg]
+
+
+class LibraryBase:
+        def __init__(
+            self,
+            module_name: str,
+            func_name: str,
+            *,
+            presets: dict[str, Any] | None = None,
+            attr: str | None = None,
+            conditions: dict[str, bool] | None = None,
+        ) -> None:
+            self.module_name = module_name
+            self.func_name = func_name
+            self.presets = presets
+            self.conditions = conditions
+            self.attr = attr
+
+        def get_function(self) -> Callable | None:
+            if self.func is NotImplemented:
+                # import module
+                try:
+                    module = import_module(self.module_name)
+                except ImportError:
+                    self.func = None
+                    return None
+    
+                # get object from module
+                obj = getattr(module, self.func_name)
+                # init class
+                if self.presets is not None:
+                    obj = obj(**self.presets)
+                # get needed attribute
+                if self.attr is not None:
+                    obj = getattr(obj, self.attr)
+                self.func = obj
+    
+            return self.func
+
+
+class TextLibrary(LibraryBase):
+        def check_conditions(self, obj: object, *sequences: Sequence) -> bool:
+            if not super().check_conditions(obj, *sequences):
+                return False
+    
+            # compare only by letters
+            if getattr(obj, 'qval', 0) != 1:
+                return False
+    
+            # every sequence must be string
+            for seq in sequences:
+                if type(seq) is not str:
+                    return False
+            return True
+
+
+
+=== /home/jakob/coding/PEARL/test-projects/textdistance-master/textdistance/algorithms/edit_based.py ===
+
+class DamerauLevenshtein(_Base):
+    """
+    Compute the absolute Damerau-Levenshtein distance between the two sequences.
+    The Damerau-Levenshtein distance is the minimum number of edit operations necessary
+    for transforming one sequence into the other. The edit operations allowed are:
+
+        * deletion:      ABC -> BC, AC, AB
+        * insertion:     ABC -> ABCD, EABC, AEBC..
+        * substitution:  ABC -> ABE, ADC, FBC..
+        * transposition: ABC -> ACB, BAC
+
+    If `restricted=False`, it will calculate unrestricted distance,
+    where the same character can be touched more than once.
+    So the distance between BA and ACB is 2: BA -> AB -> ACB.
+
+    https://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance
+    """
+
+        def __init__(
+            self,
+            qval: int = 1,
+            test_func: TestFunc | None = None,
+            external: bool = True,
+            restricted: bool = True,
+        ) -> None:
+            self.qval = qval
+            self.test_func = test_func or self._ident
+            self.external = external
+            self.restricted = restricted
+
+        def _pure_python_restricted(self, s1: Sequence[T], s2: Sequence[T]) -> int:
+            """
+            https://www.guyrutenberg.com/2008/12/15/damerau-levenshtein-distance-in-python/
+            """
+            d: dict[tuple[int, int], int] = {}
+    
+            # matrix
+            for i in range(-1, len(s1) + 1):
+                d[i, -1] = i + 1
+            for j in range(-1, len(s2) + 1):
+                d[-1, j] = j + 1
+    
+            for i, cs1 in enumerate(s1):
+                for j, cs2 in enumerate(s2):
+                    cost = int(not self.test_func(cs1, cs2))
+                    # ^ 0 if equal, 1 otherwise
+    
+                    d[i, j] = min(
+                        d[i - 1, j] + 1,            # deletion
+                        d[i, j - 1] + 1,            # insertion
+                        d[i - 1, j - 1] + cost,     # substitution
+                    )
+    
+                    # transposition
+                    if not i or not j:
+                        continue
+                    if not self.test_func(cs1, s2[j - 1]):
+                        continue
+                    if not self.test_func(s1[i - 1], cs2):
+                        continue
+                    d[i, j] = min(
+                        d[i, j],
+                        d[i - 2, j - 2] + cost,
+                    )
+    
+            return d[len(s1) - 1, len(s2) - 1]
+
+
+class Hamming(_Base):
+    """
+    Compute the Hamming distance between the two or more sequences.
+    The Hamming distance is the number of differing items in ordered sequences.
+
+    https://en.wikipedia.org/wiki/Hamming_distance
+    """
+
+        def __init__(
+            self,
+            qval: int = 1,
+            test_func: TestFunc | None = None,
+            truncate: bool = False,
+            external: bool = True,
+        ) -> None:
+            self.qval = qval
+            self.test_func = test_func or self._ident
+            self.truncate = truncate
+            self.external = external
+
+        def __call__(self, *sequences: Sequence[object]) -> int:
+            sequences = self._get_sequences(*sequences)
+    
+            result = self.quick_answer(*sequences)
+            if result is not None:
+                assert isinstance(result, int)
+                return result
+    
+            _zip = zip if self.truncate else zip_longest
+            return sum(not self.test_func(*es) for es in _zip(*sequences))
+
+
+class Levenshtein(_Base):
+    """
+    Compute the absolute Levenshtein distance between the two sequences.
+    The Levenshtein distance is the minimum number of edit operations necessary
+    for transforming one sequence into the other. The edit operations allowed are:
+
+        * deletion:     ABC -> BC, AC, AB
+        * insertion:    ABC -> ABCD, EABC, AEBC..
+        * substitution: ABC -> ABE, ADC, FBC..
+
+    https://en.wikipedia.org/wiki/Levenshtein_distance
+    TODO: https://gist.github.com/kylebgorman/1081951/9b38b7743a3cb5167ab2c6608ac8eea7fc629dca
+    """
+
+        def __init__(
+            self,
+            qval: int = 1,
+            test_func: TestFunc | None = None,
+            external: bool = True,
+        ) -> None:
+            self.qval = qval
+            self.test_func = test_func or self._ident
+            self.external = external
+
+        def _cycled(self, s1: Sequence[T], s2: Sequence[T]) -> int:
+            """
+            source:
+            https://github.com/jamesturk/jellyfish/blob/master/jellyfish/_jellyfish.py#L18
+            """
+            rows = len(s1) + 1
+            cols = len(s2) + 1
+            prev = None
+            cur: Any
+            if numpy:
+                cur = numpy.arange(cols)
+            else:
+                cur = range(cols)
+    
+            for r in range(1, rows):
+                prev, cur = cur, [r] + [0] * (cols - 1)
+                for c in range(1, cols):
+                    deletion = prev[c] + 1
+                    insertion = cur[c - 1] + 1
+                    dist = self.test_func(s1[r - 1], s2[c - 1])
+                    edit = prev[c - 1] + (not dist)
+                    cur[c] = min(edit, deletion, insertion)
+            return int(cur[-1])
+
+        def __call__(self, s1: Sequence[T], s2: Sequence[T]) -> int:
+            s1, s2 = self._get_sequences(s1, s2)
+    
+            result = self.quick_answer(s1, s2)
+            if result is not None:
+                assert isinstance(result, int)
+                return result
+    
+            return self._cycled(s1, s2)
+
+
+
+=== /home/jakob/coding/PEARL/test-projects/textdistance-master/main.py ===
 
 def main():
-    texts = [
-        "This is a test ---",
-        "影師嗎",
-        "C'est déjà l'été.",
-        "Компьютер",
-        "the quick brown fox jumps over the lazy dog",
-        "ÜBER Über German Umlaut",
-        "i love 🦄",
-        "10 | 20 %",
+    s1 = "kitten" * 20
+    s2 = "sitting" * 20
+
+    algorithms = [
+        textdistance.hamming,
+        textdistance.levenshtein,
+        textdistance.damerau_levenshtein,
+        textdistance.jaro_winkler,
+        textdistance.strcmp95,
+        textdistance.jaccard,
+        textdistance.sorensen,
+        textdistance.tversky,
+        textdistance.overlap,
+        textdistance.cosine,
+        textdistance.monge_elkan,
+        textdistance.bag,
+        textdistance.lcsseq,
+        textdistance.lcsstr,
+        textdistance.ratcliff_obershelp,
+        textdistance.mra,
+        textdistance.editex,
+        textdistance.prefix,
+        textdistance.postfix,
+        textdistance.length,
+        textdistance.identity,
+        textdistance.matrix,
     ]
 
-    # make it heavy: repeat these texts many times
-    workload = texts * 1000  # adjust multiplier for how long you want it to run
+    # Add compression-based algorithms if available
+    for name in ("bz2_ncd", "lzma_ncd", "zlib_ncd"):
+        if hasattr(textdistance, name):
+            algorithms.append(getattr(textdistance, name))
 
-    slugs = [slugify(t, allow_unicode=False) for t in workload]
+    for algo in algorithms:
+        try:
+            # Each algorithm instance is callable
+            _ = algo(s1, s2)
+        except Exception:
+            pass
 
 

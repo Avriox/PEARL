@@ -1,0 +1,102 @@
+[
+  {
+    "c0": "Sudoku.Board.Board.swap_row",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Board.py",
+    "c2": "    def swap_row(self, row_index1, row_index2, allow=False):\n        if allow or row_index1 // 3 == row_index2 // 3:\n            for x in range(0, len(self.rows[row_index2])):\n                temp = self.rows[row_index1][x].value\n                self.rows[row_index1][x].value = self.rows[row_index2][x].value\n                self.rows[row_index2][x].value = temp\n        else:\n            raise Exception('Tried to swap non-familial rows.')"
+  },
+  {
+    "c0": "Sudoku.Board.Board.__str__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Board.py",
+    "c2": "    def __str__(self):\n        output = []\n        for index, row in self.rows.items():\n            my_set = map(str, [x.value for x in row])\n            new_set = []\n            for x in my_set:\n                if x == '0':\n                    new_set.append(\"_\")\n                else:\n                    new_set.append(x)\n            output.append('|'.join(new_set))\n        return '\\r\\n'.join(output)"
+  },
+  {
+    "c0": "Sudoku.Board.Board.get_possibles",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Board.py",
+    "c2": "    def get_possibles(self, cell):\n        possibilities = self.rows[cell.row] + self.columns[cell.col] + self.boxes[cell.box]\n        excluded = set([x.value for x in possibilities if x.value != 0 and x.value != cell.value])\n        results = [x for x in range(1, 10) if x not in excluded]\n        return results"
+  },
+  {
+    "c0": "Sudoku.Generator.Generator.randomize",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Generator.py",
+    "c2": "    def randomize(self, iterations):\n\n        # not allowing transformations on a partial puzzle\n        if len(self.board.get_used_cells()) == 81:\n\n            # looping through iterations\n            for x in range(0, iterations):\n\n                # to get a random column/row\n                case = random.randint(0, 4)\n\n                # to get a random band/stack\n                block = random.randint(0, 2) * 3\n\n                # in order to select which row and column we shuffle an array of\n                # indices and take both elements\n                options = list(range(0, 3))\n                random.shuffle(options)\n                piece1, piece2 = options[0], options[1]\n\n                # pick case according to random to do transformation\n                if case == 0:\n                    self.board.swap_row(block + piece1, block + piece2)\n                elif case == 1:\n                    self.board.swap_column(block + piece1, block + piece2)\n                elif case == 2:\n                    self.board.swap_stack(piece1, piece2)\n                elif case == 3:\n                    self.board.swap_band(piece1, piece2)\n        else:\n            raise Exception('Rearranging partial board may compromise uniqueness.')"
+  },
+  {
+    "c0": "Sudoku.Cell.Cell.__init__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Cell.py",
+    "c2": "    def __init__(self, row, col, box):\n        self.row = row\n        self.col = col\n        self.box = box\n\n        self.value = 0"
+  },
+  {
+    "c0": "Sudoku.Board.Board.copy",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Board.py",
+    "c2": "    def copy(self):\n        b = Board()\n        for row in range(0, len(self.rows)):\n            for col in range(0, len(self.columns)):\n                b.rows[row][col].value = self.rows[row][col].value\n        return b"
+  },
+  {
+    "c0": "Sudoku.Solver.Solver.__init__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Solver.py",
+    "c2": "    def __init__(self, board):\n        self.board = board.copy()\n        self.vacants = self.board.get_unused_cells()"
+  },
+  {
+    "c0": "Sudoku.Board.Board.swap_column",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Board.py",
+    "c2": "    def swap_column(self, col_index1, col_index2, allow=False):\n        if allow or col_index1 // 3 == col_index2 // 3:\n            for x in range(0, len(self.columns[col_index2])):\n                temp = self.columns[col_index1][x].value\n                self.columns[col_index1][x].value = self.columns[col_index2][x].value\n                self.columns[col_index2][x].value = temp\n        else:\n            raise Exception('Tried to swap non-familial columns.')"
+  },
+  {
+    "c0": "Sudoku.Solver.Solver.is_valid",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Solver.py",
+    "c2": "    def is_valid(self):\n        valid = set(range(1, 10))\n        for i, box in self.board.boxes.items():\n            if not valid == set([x.value for x in box]):\n                return False\n        for i, row in self.board.rows.items():\n            if not valid == set([x.value for x in row]):\n                return False\n        for i, col in self.board.columns.items():\n            if not valid == set([x.value for x in col]):\n                return False\n        return True"
+  },
+  {
+    "c0": "Sudoku.Generator.Generator.__init__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Generator.py",
+    "c2": "    def __init__(self, starting_file):\n\n        # opening file\n        f = open(starting_file)\n\n        # reducing file to a list of numbers\n        numbers = filter(lambda x: x in '123456789', list(reduce(lambda x, y: x + y, f.readlines())))\n        numbers = list(map(int, numbers))\n\n        # closing file\n        f.close()\n\n        # constructing board\n        self.board = Board(numbers)"
+  },
+  {
+    "c0": "Sudoku.Board.Board.get_density",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Board.py",
+    "c2": "    def get_density(self, cell):\n        possibilities = self.rows[cell.row] + self.columns[cell.col] + self.boxes[cell.box]\n        if cell.value != 0:\n            possibilities.remove(cell)\n        return len([x for x in set(possibilities) if x.value != 0]) / 20.0"
+  },
+  {
+    "c0": "Sudoku.Solver.Solver.solve",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Solver.py",
+    "c2": "    def solve(self):\n        index = 0\n        while -1 < index < len(self.vacants):\n            current = self.vacants[index]\n            flag = False\n            my_range = range(current.value + 1, 10)\n            for x in my_range:\n                if x in self.board.get_possibles(current):\n                    current.value = x\n                    flag = True\n                    break\n            if not flag:\n                current.value = 0\n                index -= 1\n            else:\n                index += 1\n        if len(self.vacants) == 0:\n            return False\n        else:\n            return index == len(self.vacants)"
+  },
+  {
+    "c0": "Sudoku.Board.Board.swap_band",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Board.py",
+    "c2": "    def swap_band(self, band_index1, band_index2):\n        for x in range(0, 3):\n            self.swap_row(band_index1 * 3 + x, band_index2 * 3 + x, True)"
+  },
+  {
+    "c0": "Sudoku.Board.Board.__init__",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Board.py",
+    "c2": "    def __init__(self, numbers=None):\n\n        # we keep list of cells and dictionaries to point to each cell\n        # by various locations\n        self.rows = {}\n        self.columns = {}\n        self.boxes = {}\n        self.cells = []\n\n        # looping rows\n        for row in range(0, 9):\n            # looping columns\n            for col in range(0, 9):\n                # calculating box\n                box = 3 * (row // 3) + (col // 3)\n\n                # creating cell instance\n                cell = Cell(row, col, box)\n\n                # if initial set is given, set cell value\n                if numbers is not None:\n                    cell.value = numbers.pop(0)\n                else:\n                    cell.value = 0\n\n                # initializing dictionary keys and corresponding lists\n                # if they are not initialized\n                if row not in self.rows:\n                    self.rows[row] = []\n                if col not in self.columns:\n                    self.columns[col] = []\n                if box not in self.boxes:\n                    self.boxes[box] = []\n\n                # adding cells to each list\n                self.rows[row].append(cell)\n                self.columns[col].append(cell)\n                self.boxes[box].append(cell)\n                self.cells.append(cell)"
+  },
+  {
+    "c0": "Sudoku.Generator.Generator.reduce_via_random",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Generator.py",
+    "c2": "    def reduce_via_random(self, cutoff=81):\n        temp = self.board\n        existing = temp.get_used_cells()\n\n        # sorting used cells by density heuristic, highest to lowest\n        new_set = [(x, self.board.get_density(x)) for x in existing]\n        elements = [x[0] for x in sorted(new_set, key=lambda x: x[1], reverse=True)]\n\n        # for each cell in sorted list\n        for cell in elements:\n            original = cell.value\n\n            # get list of other values to try in its place\n            complement = [x for x in range(1, 10) if x != original]\n            ambiguous = False\n\n            # check each value in list of other possibilities to try\n            for x in complement:\n\n                # set cell to value\n                cell.value = x\n\n                # create instance of solver\n                s = Solver(temp)\n\n                # if solver can fill every box and the solution is valid then\n                # puzzle becomes ambiguous after removing particular cell, so we can break out\n                if s.solve() and s.is_valid():\n                    cell.value = original\n                    ambiguous = True\n                    break\n\n            # if every value was checked and puzzle remains unique, we can remove it\n            if not ambiguous:\n                cell.value = 0\n                cutoff -= 1\n\n            # if we ever meet the cutoff limit we can break out\n            if cutoff == 0:\n                break"
+  },
+  {
+    "c0": "Sudoku.Board.Board.get_unused_cells",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Board.py",
+    "c2": "    def get_unused_cells(self):\n        return [x for x in self.cells if x.value == 0]"
+  },
+  {
+    "c0": "Sudoku.Board.Board.swap_stack",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Board.py",
+    "c2": "    def swap_stack(self, stack_index1, stack_index2):\n        for x in range(0, 3):\n            self.swap_column(stack_index1 * 3 + x, stack_index2 * 3 + x, True)"
+  },
+  {
+    "c0": "Sudoku.Board.Board.get_used_cells",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Board.py",
+    "c2": "    def get_used_cells(self):\n        return [x for x in self.cells if x.value != 0]"
+  },
+  {
+    "c0": "main.main",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/main.py",
+    "c2": "def main():\n    # setting difficulties and their cutoffs for each solve method\n    difficulties = {\n        'easy': (35, 0),\n        'medium': (81, 5),\n        'hard': (81, 10),\n        'extreme': (81, 15)\n    }\n\n    # getting desired difficulty from command line\n    difficulty = difficulties[sys.argv[2]]\n\n    # constructing generator object from puzzle file (space delimited columns, line delimited rows)\n    gen = Generator(sys.argv[1])\n\n    # applying 100 random transformations to puzzle\n    gen.randomize(100)\n\n    # getting a copy before slots are removed\n    initial = gen.board.copy()\n\n    # applying logical reduction with corresponding difficulty cutoff\n    gen.reduce_via_logical(difficulty[0])\n\n    # catching zero case\n    if difficulty[1] != 0:\n        # applying random reduction with corresponding difficulty cutoff\n        gen.reduce_via_random(difficulty[1])\n\n\n    # getting copy after reductions are completed\n    final = gen.board.copy()\n\n    # printing out complete board (solution)\n    print(\"The initial board before removals was: \\r\\n\\r\\n{0}\".format(initial))\n\n    # printing out board after reduction\n    print(\"The generated board after removals was: \\r\\n\\r\\n{0}\".format(final))"
+  },
+  {
+    "c0": "Sudoku.Generator.Generator.reduce_via_logical",
+    "c1": "/home/jakob/coding/PEARL/test-projects/sudoku-generator-master/Sudoku/Generator.py",
+    "c2": "    def reduce_via_logical(self, cutoff=81):\n        cells = self.board.get_used_cells()\n        random.shuffle(cells)\n        for cell in cells:\n            if len(self.board.get_possibles(cell)) == 1:\n                cell.value = 0\n                cutoff -= 1\n            if cutoff == 0:\n                break"
+  }
+]

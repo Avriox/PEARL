@@ -1,7 +1,7 @@
 import time
 import textdistance
 
-if __name__ == "__main__":
+def main():
     s1 = "kitten" * 20
     s2 = "sitting" * 20
 
@@ -41,3 +41,7 @@ if __name__ == "__main__":
             _ = algo(s1, s2)
         except Exception:
             pass
+
+
+if __name__ == "__main__":
+    main()

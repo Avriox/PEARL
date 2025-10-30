@@ -2,9 +2,9 @@ import time
 import random
 from sortedcontainers import SortedList, SortedDict, SortedSet
 
-if __name__ == "__main__":
+def main():
     random.seed(0)
-    sizes = [ 500000]  # adjust sizes for runtime scaling
+    sizes = [ 30000]  # adjust sizes for runtime scaling
 
 
     for size in sizes:
@@ -38,3 +38,6 @@ if __name__ == "__main__":
         ss = SortedSet()
         ss.update(data)
         _ = ss.bisect_left(size // 2)
+
+if __name__ == "__main__":
+    main()

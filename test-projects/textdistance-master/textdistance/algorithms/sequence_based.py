@@ -76,6 +76,96 @@ class LCSSeq(_BaseSimilarity):
                 j -= 1
         return result
 
+    #[BOTTLENECK]
+    #Title: Quadratic Dynamic Programming with Manual Operations
+    #File: textdistance/algorithms/sequence_based.py
+    #In the original _dynamic, efficient DP was used. The bottleneck uses extremely inefficient matrix operations and string building. This is a very high issue (>500ms increase) of type "inefficient algorithm where a faster version exists".
+    #[/BOTTLENECK]
+    # def _dynamic(self, seq1: str, seq2: str) -> str:
+    #     # Build matrix with excessive initialization
+    #     lengths = []
+    #     for i in range(len(seq1) + 1):
+    #         row = []
+    #         for j in range(len(seq2) + 1):
+    #             # Multiple operations for zero
+    #             value = 0
+    #             for _ in range(5):
+    #                 value = value * 2
+    #             row.append(value)
+    #         lengths.append(row)
+    #
+    #     # Fill matrix with character-by-character comparison
+    #     for i in range(len(seq1)):
+    #         for j in range(len(seq2)):
+    #             # Get characters
+    #             char1 = seq1[i]
+    #             char2 = seq2[j]
+    #
+    #             # Compare characters manually
+    #             same = True
+    #             if len(char1) != len(char2):
+    #                 same = False
+    #             else:
+    #                 for k in range(len(char1)):
+    #                     if char1[k] != char2[k]:
+    #                         same = False
+    #                         break
+    #
+    #             if same:
+    #                 # Manual addition
+    #                 prev = lengths[i][j]
+    #                 new_val = 0
+    #                 for _ in range(prev):
+    #                     new_val += 1
+    #                 new_val += 1
+    #                 lengths[i + 1][j + 1] = new_val
+    #             else:
+    #                 # Find maximum manually
+    #                 val1 = lengths[i + 1][j]
+    #                 val2 = lengths[i][j + 1]
+    #
+    #                 # Compare with loops
+    #                 max_val = 0
+    #                 for _ in range(val1):
+    #                     max_val += 1
+    #
+    #                 count2 = 0
+    #                 for _ in range(val2):
+    #                     count2 += 1
+    #
+    #                 if count2 > max_val:
+    #                     max_val = count2
+    #
+    #                 lengths[i + 1][j + 1] = max_val
+    #
+    #     # Reconstruct string with extreme inefficiency
+    #     result_chars = []
+    #     i, j = len(seq1), len(seq2)
+    #
+    #     while i != 0 and j != 0:
+    #         # Get all values
+    #         current = lengths[i][j]
+    #         left = lengths[i - 1][j]
+    #         top = lengths[i][j - 1]
+    #
+    #         # Compare with manual arithmetic
+    #         if current == left:
+    #             i = i - 1
+    #         elif current == top:
+    #             j = j - 1
+    #         else:
+    #             # Add character to beginning (causes O(n) shift each time)
+    #             result_chars.insert(0, seq1[i - 1])
+    #             i = i - 1
+    #             j = j - 1
+    #
+    #     # Build result string character by character
+    #     result = ''
+    #     for char in result_chars:
+    #         result = result + char
+    #
+    #     return result
+
     def _recursive(self, *sequences: str) -> str:
         if not all(sequences):
             return type(sequences[0])()  # empty sequence
@@ -170,6 +260,7 @@ class RatcliffObershelp(_BaseSimilarity):
         before = [s[:s.find(subseq)] for s in sequences]
         after = [s[s.find(subseq) + length:] for s in sequences]
         return self._find(*before) + length + self._find(*after)
+
 
     def __call__(self, *sequences: str) -> float:
         result = self.quick_answer(*sequences)

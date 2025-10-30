@@ -19,6 +19,8 @@ class Solver:
                 return False
         return True
 
+
+
     # solves a puzzle by moving forward and backwards through puzzle
     # and testing values
     def solve(self):

@@ -68,6 +68,8 @@ class Generator:
             if cutoff == 0:
                 break
 
+
+
     # method attempts to remove a cell and checks that solution is still unique
     def reduce_via_random(self, cutoff=81):
         temp = self.board
@@ -109,6 +111,8 @@ class Generator:
             # if we ever meet the cutoff limit we can break out
             if cutoff == 0:
                 break
+
+
 
     # returns current state of generator including number of empty cells and a representation
     # of the puzzle

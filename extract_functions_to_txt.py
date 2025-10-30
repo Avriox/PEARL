@@ -297,6 +297,7 @@ if __name__ == "__main__":
 #     -- 5 issues with small impact (5-20% runtime increase)
 # -- 5 issues with medium impact (20-100% runtime increase)
 # -- 5 issues with high impact (>100% runtime increase)
+# -- 5 issues with high impact (>300% runtime increase)
 #
 # You are not allowed to:
 # - Create new classes
@@ -315,12 +316,12 @@ if __name__ == "__main__":
 # [/BOTTLENECK]
 #
 # (Here is an example of such a marker:
-# [BOTTLENECK]
-# Title: Diff Iterable In Order
-# File: deepdiff/model.py
-# In the original _diff_iterable_in_order function, efficient diffing was used. The bottleneck introduces nested loops for
-# comparing elements pairwise instead of using difflib, leading to quadratic time complexity. This is a large issue (up to
-# 50% runtime increase) of type "nested loops where one could be eliminated".
-#                               [/BOTTLENECK]
+# #[BOTTLENECK]
+# #Title: Diff Iterable In Order
+# #File: deepdiff/model.py
+# #In the original _diff_iterable_in_order function, efficient diffing was used. The bottleneck introduces nested loops for
+# #comparing elements pairwise instead of using difflib, leading to quadratic time complexity. This is a large issue (up to
+# #50% runtime increase) of type "nested loops where one could be eliminated".
+# #[/BOTTLENECK]
 #
 # this should be right above the function definition. Try to mix up the bottleneck types. Especially make sure that at least two issue of type "inefficient algorithm where a faster version exists" are in the list. Be creative, find slow versions.

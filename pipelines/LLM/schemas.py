@@ -35,7 +35,7 @@ class BottleneckHypothesis(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     issue_description: str
     # Optional at triage; numeric for easier later analysis (0..100)
-    estimated_impact_percent: Optional[float] = Field(default=None, ge=0.0, le=100.0)
+    estimated_impact: Optional[float]
 
 
 class TriageReply(BaseModel):
@@ -59,7 +59,7 @@ class BottleneckFinding(BaseModel):
     issue_description: str
     suggested_fix_summary: str
     # Required at finding time; numeric (0..100)
-    estimated_impact_percent: float = Field(ge=0.0, le=100.0)
+    estimated_impact: float
 
 
 class InspectionReply(BaseModel):

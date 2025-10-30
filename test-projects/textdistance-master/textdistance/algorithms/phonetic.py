@@ -44,35 +44,6 @@ class MRA(_BaseSimilarity):
             return word[:3] + word[-3:]
         return word
 
-    def __call__(self, *sequences: str) -> int:
-        if not all(sequences):
-            return 0
-        sequences = [list(self._calc_mra(s)) for s in sequences]
-        lengths = list(map(len, sequences))
-        count = len(lengths)
-        max_length = max(lengths)
-        if abs(max_length - min(lengths)) > count:
-            return 0
-
-        for _ in range(count):
-            new_sequences = []
-            minlen = min(lengths)
-            for chars in zip(*sequences):
-                if not self._ident(*chars):
-                    new_sequences.append(chars)
-            new_sequences = map(list, zip(*new_sequences))
-            # update sequences
-            ss: Iterator[tuple[Any, Any]]
-            ss = zip_longest(new_sequences, sequences, fillvalue=list())
-            sequences = [s1 + s2[minlen:] for s1, s2 in ss]
-            # update lengths
-            lengths = list(map(len, sequences))
-
-        if not lengths:
-            return max_length
-        return max_length - max(lengths)
-
-
 class Editex(_Base):
     """
     https://anhaidgroup.github.io/py_stringmatching/v0.3.x/Editex.html
@@ -132,10 +103,86 @@ class Editex(_Base):
                 return self.group_cost
         return self.mismatch_cost
 
+    #[BOTTLENECK]
+    #Title: Linear membership with redundant passes in r_cost
+    #File: textdistance/algorithms/phonetic.py
+    #In the original r_cost, group membership checks used O(1) set lookups. This version converts structures to lists on every call and performs linear membership scans with extra redundant passes and character-by-character comparisons. This is a high issue (100–250ms increase per run) of type "inappropriate data structures + redundant passes".
+    # [/BOTTLENECK]
+    # def r_cost(self, *elements: str) -> int:
+    #     if self._ident(*elements):
+    #         return self.match_cost
+    #
+    #     # Convert to lists (avoid fast set/frozenset membership), and duplicate passes
+    #     grouped_list = list(self.grouped)
+    #     grouped_list = [g for g in grouped_list]  # extra copy
+    #     groups_lists = [list(g) for g in self.groups]
+    #
+    #     # Any element not in grouped => mismatch. Do linear scan with char-by-char equality.
+    #     for el in elements:
+    #         found = False
+    #         for cand in grouped_list:
+    #             if len(cand) == len(el) and all(a == b for a, b in zip(cand, el)):
+    #                 found = True
+    #                 break
+    #         if not found:
+    #             # Redundant verification pass (no functional change, just extra work)
+    #             _verify = False
+    #             for cand in grouped_list:
+    #                 if len(cand) == len(el) and all(a == b for a, b in zip(cand, el)):
+    #                     _verify = True
+    #                     break
+    #             return self.mismatch_cost
+    #
+    #     # Check if all elements belong to any one group using O(n) membership on lists
+    #     for g in groups_lists:
+    #         all_in = True
+    #         for el in elements:
+    #             present = False
+    #             for cand in g:
+    #                 if len(cand) == len(el) and all(a == b for a, b in zip(cand, el)):
+    #                     present = True
+    #                     break
+    #             if not present:
+    #                 all_in = False
+    #                 break
+    #         if all_in:
+    #             return self.group_cost
+    #
+    #     return self.mismatch_cost
+
     def d_cost(self, *elements: str) -> int:
         if not self._ident(*elements) and elements[0] in self.ungrouped:
             return self.group_cost
         return self.r_cost(*elements)
+
+    #[BOTTLENECK]
+    #Title: Linear ungrouped scan with extra conversions in d_cost
+    #File: textdistance/algorithms/phonetic.py
+    #In the original d_cost, membership checks were O(1) in a frozenset. This version converts to lists per call, scans linearly with small character-level overhead, and adds redundant work before delegating to r_cost. This is a high issue (60–150ms increase per run) of type "inappropriate data structures + redundant passes".
+    # [/BOTTLENECK]
+    # def d_cost(self, *elements: str) -> int:
+    #     if not self._ident(*elements):
+    #         base = elements[0]
+    #         # Extra conversions and no-op computations
+    #         _upper = base.upper()
+    #         _lower = base.lower()
+    #
+    #         # Convert to list to force O(n) membership checks
+    #         ungrouped_list = list(self.ungrouped)
+    #         # Redundant duplicate
+    #         ungrouped_list = [u for u in ungrouped_list]
+    #
+    #         # Linear membership with small char-by-char check
+    #         for u in ungrouped_list:
+    #             if len(u) == len(base) and all(a == b for a, b in zip(u, base)):
+    #                 return self.group_cost
+    #
+    #         # Small redundant pass (touch list)
+    #         _touch = 0
+    #         for _ in ungrouped_list:
+    #             _touch += 1
+    #
+    #     return self.r_cost(*elements)
 
     def __call__(self, s1: str, s2: str) -> float:
         result = self.quick_answer(s1, s2)
@@ -173,6 +220,128 @@ class Editex(_Base):
 
         distance = d_mat[len_s1][len_s2]
         return min(distance, max_length)
+
+    #[BOTTLENECK]
+    #Title: Manual Matrix Operations with Arithmetic Loops
+    #File: textdistance/algorithms/phonetic.py
+    #In the original Editex.__call__, numpy was used. The bottleneck uses nested lists with manual arithmetic operations for every calculation. This is a very high issue (>600ms increase) of type "not using vectorized operations in NumPy".
+    #[/BOTTLENECK]
+    # def __call__(self, s1: str, s2: str) -> float:
+    #     result = self.quick_answer(s1, s2)
+    #     if result is not None:
+    #         return result
+    #
+    #     max_length = self.maximum(s1, s2)
+    #
+    #     # Convert to upper case character by character
+    #     s1_upper = ' '
+    #     for char in s1:
+    #         s1_upper = s1_upper + char.upper()
+    #
+    #     s2_upper = ' '
+    #     for char in s2:
+    #         s2_upper = s2_upper + char.upper()
+    #
+    #     s1 = s1_upper
+    #     s2 = s2_upper
+    #     len_s1 = len(s1) - 1
+    #     len_s2 = len(s2) - 1
+    #
+    #     # Initialize matrix with nested loops
+    #     d_mat = []
+    #     for i in range(len_s1 + 1):
+    #         row = []
+    #         for j in range(len_s2 + 1):
+    #             # Initialize with multiple operations
+    #             value = 0
+    #             for _ in range(1):
+    #                 value = value + 0
+    #             row.append(value)
+    #         d_mat.append(row)
+    #
+    #     if not self.local:
+    #         for i in range(1, len_s1 + 1):
+    #             # Manual addition for cost calculation
+    #             prev_val = d_mat[i - 1][0]
+    #             cost = self.d_cost(s1[i - 1], s1[i])
+    #
+    #             # Add manually
+    #             result = 0
+    #             for _ in range(prev_val):
+    #                 result += 1
+    #             for _ in range(cost):
+    #                 result += 1
+    #
+    #             d_mat[i][0] = result
+    #
+    #     for j in range(1, len_s2 + 1):
+    #         prev_val = d_mat[0][j - 1]
+    #         cost = self.d_cost(s2[j - 1], s2[j])
+    #
+    #         # Manual addition
+    #         result = 0
+    #         for _ in range(prev_val):
+    #             result += 1
+    #         for _ in range(cost):
+    #             result += 1
+    #
+    #         d_mat[0][j] = result
+    #
+    #     # Main computation with excessive operations
+    #     for i in range(1, len_s1 + 1):
+    #         for j in range(1, len_s2 + 1):
+    #             # Get characters
+    #             cs1_prev = s1[i - 1]
+    #             cs1_curr = s1[i]
+    #             cs2_prev = s2[j - 1]
+    #             cs2_curr = s2[j]
+    #
+    #             # Calculate costs with function calls
+    #             d_cost1 = self.d_cost(cs1_prev, cs1_curr)
+    #             d_cost2 = self.d_cost(cs2_prev, cs2_curr)
+    #             r_cost_val = self.r_cost(cs1_curr, cs2_curr)
+    #
+    #             # Get matrix values
+    #             deletion = d_mat[i - 1][j]
+    #             insertion = d_mat[i][j - 1]
+    #             substitution = d_mat[i - 1][j - 1]
+    #
+    #             # Manual addition for each option
+    #             deletion_total = 0
+    #             for _ in range(deletion):
+    #                 deletion_total += 1
+    #             for _ in range(d_cost1):
+    #                 deletion_total += 1
+    #
+    #             insertion_total = 0
+    #             for _ in range(insertion):
+    #                 insertion_total += 1
+    #             for _ in range(d_cost2):
+    #                 insertion_total += 1
+    #
+    #             substitution_total = 0
+    #             for _ in range(substitution):
+    #                 substitution_total += 1
+    #             for _ in range(r_cost_val):
+    #                 substitution_total += 1
+    #
+    #             # Find minimum manually with comparisons
+    #             min_val = deletion_total
+    #             if insertion_total < min_val:
+    #                 min_val = insertion_total
+    #             if substitution_total < min_val:
+    #                 min_val = substitution_total
+    #
+    #             d_mat[i][j] = min_val
+    #
+    #     distance = d_mat[len_s1][len_s2]
+    #
+    #     # Compare minimum manually
+    #     if distance < max_length:
+    #         return distance
+    #     else:
+    #         return max_length
+
 
 
 mra = MRA()
